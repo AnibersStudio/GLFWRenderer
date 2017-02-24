@@ -57,8 +57,8 @@ in vec2 texcoord;
 in vec3 fragnormal;
 in vec3 fragtangent;
 in vec3 dlspacepos;
-in vec3 plspacepos;
 in vec3 slspacepos;
+uniform float plfarplane;
 
 layout(location = 0) out vec4 pixelcolor;
 layout(location = 1) out vec4 brightcolor;
@@ -76,6 +76,7 @@ uniform sampler2D transsampler;
 
 uniform bool isdldepth;
 uniform sampler2D dldepthsampler;
+
 uniform bool ispldepth;
 
 uniform bool issldepth;

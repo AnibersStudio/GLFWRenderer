@@ -16,6 +16,7 @@ DrawController::DrawController(unsigned int w, unsigned int h) : width(w), heigh
 		//Render Target:
 		ddepthfboptr = new FboStruct(FboSetting(depthtexwidth, depthtexheight, 0U, DepthTextureT, GL_DEPTH_COMPONENT32, GL_NONE, GL_NEAREST, GL_CLAMP_TO_BORDER));
 		sdepthfboptr = new FboStruct(FboSetting(depthtexwidth, depthtexheight, 0U, DepthTextureT, GL_DEPTH_COMPONENT32, GL_NONE, GL_NEAREST, GL_CLAMP_TO_BORDER));
+		pdepthfboptr = new FboStruct(FboSetting(depthtexwidth, depthtexheight, 0U, DepthCubeMapT, GL_DEPTH_COMPONENT32, GL_NONE, GL_NEAREST, GL_CLAMP_TO_BORDER));
 	}
 	{//Forward Render Passes
 		//Render source:
@@ -97,7 +98,7 @@ void DrawController::Draw(DrawContext & context)
 		flsc->SetBloom(context.Bloom != 0);
 
 		flsc->SetTextureDepth(lightdata.dlshadow ? ddepthfboptr->DepthComponent : 0, 0, lightdata.slshadow ? sdepthfboptr->DepthComponent : 0);
-		flsc->SetLightWVP(lightdata.dwvp, lightdata.pwvp, lightdata.swvp);
+		flsc->SetLightWVP(lightdata.dwvp, lightdata.swvp, lightdata.plfarplane);
 
 		flsc->SetDLight(lightdata.dlist.size(), lightdata.dlist.size() ? &lightdata.dlist[0] : nullptr);
 		flsc->SetPLight(lightdata.plist.size(), lightdata.plist.size() ? &lightdata.plist[0] : nullptr);
@@ -345,9 +346,6 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 	ForwardLightData res;
 	glViewport(0, 0, w, h);//GLcontext set
 
-	//if (vertices.size())
-	//	depthvaoptr->SetData(&vertices[0], vertices.size() * sizeof(vec3));
-
 	try 
 	{
 		//Choose a DirectionalLight
@@ -424,6 +422,46 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 		}
 	}
 
+	//{
+	//	//Choose a PointLight
+	//	auto pcomparator = [eye](const PointLight & lhs, const PointLight & rhs) ->bool { return lhs.IntenAt(eye) < rhs.IntenAt(eye); };
+	//	std::priority_queue<PointLight, std::vector<PointLight>, decltype(pcomparator)> pqueue(pcomparator);
+	//	for (auto & l : plist)
+	//	{
+	//		pqueue.push(l.second);
+	//	}
+	//	PointLight depthpl;
+	//	res.plist.push_back(PointLight());
+	//	while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT)
+	//	{
+	//		const PointLight & thispointlight = pqueue.top();
+	//		if (thispointlight.atten.hasshadow)
+	//		{
+	//			depthpl = thispointlight;
+	//			res.plshadow = true;
+	//			pqueue.pop();
+	//			break;
+	//		}
+	//		else
+	//		{
+	//			res.plist.push_back(thispointlight);
+	//		}
+	//	}
+	//	while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT)
+	//	{
+	//		const PointLight & thispointlight = pqueue.top();
+	//		res.plist.push_back(thispointlight);
+	//	}
+	//	if (res.plshadow)
+	//	{
+	//		res.plist[0] = depthpl;
+	//		//Calculate WVP
+	//		//for
+	//	}
+	//}
+
+
+
 	glViewport(0, 0, width, height);//GLcontext resume
 
 	return res;
@@ -452,6 +490,7 @@ std::vector<vec3> DrawController::GetNonTransObjList() const
 		for (auto & vert : matvecpair.second)
 		{
 			vertices.push_back(vert.position);
+
 		}
 	}
 	for (auto & trmodel : trobjlist)
@@ -523,6 +562,25 @@ FboStruct::FboStruct(FboSetting setting) : Setting(setting)
 		}
 		glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, DepthComponent, 0);
 		break;
+	case DepthCubeMapT:
+		glGenTextures(1, &DepthComponent);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, DepthComponent);
+		for (GLuint i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, setting.DepthFormat, setting.Width, setting.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, setting.ColorTexFilter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, setting.ColorTexFilter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, setting.ColorClamp);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, setting.ColorClamp);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, setting.ColorClamp);
+
+		if (setting.ColorClamp == GL_CLAMP_TO_BORDER)
+		{
+			glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, &setting.BorderColor[0]);
+		}
+		glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, DepthComponent, 0);//Attentions
+		break;
 	default:
 		break;
 	}
@@ -535,6 +593,7 @@ FboStruct::FboStruct(FboSetting setting) : Setting(setting)
 void FboStruct::BindFrameBuffer() const
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FrameBufferObject);
+
 	GLenum * DrawBuffersPtr = new GLenum[Setting.ColorBufferCount];
 	for (unsigned int i = 0; i != Setting.ColorBufferCount; i++)
 	{
@@ -546,6 +605,13 @@ void FboStruct::BindFrameBuffer() const
 void FboStruct::BindFrameBufferForDepth() const
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FrameBufferObject);
+	glDrawBuffer(GL_NONE);
+}
+
+void FboStruct::BindFrameBufferForDepth(int face) const
+{
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FrameBufferObject);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + face, DepthComponent, 0);
 	glDrawBuffer(GL_NONE);
 }
 

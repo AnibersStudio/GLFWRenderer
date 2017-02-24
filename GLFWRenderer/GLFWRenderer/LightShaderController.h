@@ -21,14 +21,14 @@ struct LightUniformGroup
 
 	GLuint isdldepthloc;
 	GLuint dldepthsamplerloc;
-	/*GLuint ispldepthloc;
-	GLuint pldepthsamplerloc;*/
+	GLuint ispldepthloc;
+	//GLuint pldepthsamplerloc;
 	GLuint issldepthloc;
 	GLuint sldepthsamplerloc;
 
 	GLuint dllightWVPloc;
-	GLuint pllightWVPloc;
 	GLuint sllightWVPloc;
+	GLuint plfarplaneloc;
 
 	GLuint WVPloc;
 	GLuint Eyeloc;
@@ -49,7 +49,7 @@ public:
 
 	void Use();
 	void SetMatrix(const glm::mat4 & W, const glm::mat4 & V, const glm::mat4 & P) const;
-	void SetLightWVP(const glm::mat4 & dlwvp, const glm::mat4 & plwvp, const glm::mat4 & slwvp);
+	void SetLightWVP(const glm::mat4 & dlwvp, const glm::mat4 & slwvp, float plfarplane);
 	void SetTextureDepth(GLuint dt, GLuint pt, GLuint st);
 	void SetEye(const glm::vec3 eyepos) const;
 	void SetBloom(bool isbloom) const;

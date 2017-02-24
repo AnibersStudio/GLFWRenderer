@@ -23,7 +23,7 @@ struct DrawContext
 
 enum DepthBufferType
 {
-	DepthBufferT, DepthTextureT, None
+	DepthBufferT, DepthTextureT, DepthCubeMapT, None
 };
 
 struct FboSetting
@@ -48,6 +48,7 @@ struct FboStruct
 	FboStruct(FboSetting setting);
 	void BindFrameBuffer() const;
 	void BindFrameBufferForDepth() const;
+	void BindFrameBufferForDepth(int i) const;
 	GLuint FrameBufferObject;
 	std::vector<GLuint> ColorBuffer;
 	GLuint DepthComponent;
@@ -84,8 +85,8 @@ struct ForwardLightData
 	bool plshadow = false;
 	bool slshadow = false;
 	mat4 dwvp = mat4(1.0);
-	mat4 pwvp = mat4(1.0);
 	mat4 swvp = mat4(1.0);
+	float plfarplane = 60.0f;
 	std::vector<DirectionalLight> dlist;
 	std::vector<PointLight> plist;
 	std::vector<SpotLight> slist;
@@ -148,6 +149,7 @@ protected:
 	FboStruct * mixfboptr;
 	FboStruct * ddepthfboptr;
 	FboStruct * sdepthfboptr;
+	FboStruct * pdepthfboptr;
 	FboStruct screenfbo;
 
 	VaoStruct * depthvaoptr;

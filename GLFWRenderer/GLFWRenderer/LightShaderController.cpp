@@ -42,11 +42,11 @@ void ForwardLightShaderController::SetMatrix(const glm::mat4 & W, const glm::mat
 	glUniformMatrix4fv(uniformgroup.WVPloc, 1, GL_FALSE, &WVP[0][0]);
 }
 
-void ForwardLightShaderController::SetLightWVP(const glm::mat4 & dlwvp, const glm::mat4 & plwvp, const glm::mat4 & slwvp)
+void ForwardLightShaderController::SetLightWVP(const glm::mat4 & dlwvp, const glm::mat4 & slwvp, float plfarplane)
 {
 	glUniformMatrix4fv(uniformgroup.dllightWVPloc, 1, GL_FALSE, &dlwvp[0][0]);
-	glUniformMatrix4fv(uniformgroup.pllightWVPloc, 1, GL_FALSE, &plwvp[0][0]);
 	glUniformMatrix4fv(uniformgroup.sllightWVPloc, 1, GL_FALSE, &slwvp[0][0]);
+	glUniform1f(uniformgroup.plfarplaneloc, plfarplane);
 }
 
 void ForwardLightShaderController::SetTextureDepth(GLuint dt, GLuint pt, GLuint st)
@@ -196,12 +196,12 @@ void ForwardLightShaderController::GetAllUniforms()
 	uniformgroup.materialloc.trans = GetUniformLocation("material.trans");
 
 	uniformgroup.dllightWVPloc = GetUniformLocation("dlLightWVP");
-	uniformgroup.pllightWVPloc = GetUniformLocation("plLightWVP");
 	uniformgroup.sllightWVPloc = GetUniformLocation("slLightWVP");
+	uniformgroup.plfarplaneloc = GetUniformLocation("plfarplane");
 
 	uniformgroup.isdldepthloc = GetUniformLocation("isdldepth");
 	uniformgroup.dldepthsamplerloc = GetUniformLocation("dldepthsampler");
-	//uniformgroup.ispldepthloc = GetUniformLocation("ispldepth");
+	uniformgroup.ispldepthloc = GetUniformLocation("ispldepth");
 	//uniformgroup.pldepthsamplerloc = GetUniformLocation("pldepthsampler");
 	uniformgroup.issldepthloc = GetUniformLocation("issldepth");
 	uniformgroup.sldepthsamplerloc = GetUniformLocation("sldepthsampler");
@@ -234,13 +234,13 @@ void ForwardLightShaderController::SetSafeState()
 	glUniform1i(uniformgroup.transsamplerloc, 4);
 
 	glUniform1ui(uniformgroup.isdldepthloc, 0);
-	//glUniform1ui(uniformgroup.ispldepthloc, 0);
+	glUniform1ui(uniformgroup.ispldepthloc, 0);
 	glUniform1ui(uniformgroup.issldepthloc, 0);
 	glUniform1i(uniformgroup.dldepthsamplerloc, 10);
 	//glUniform1i(uniformgroup.pldepthsamplerloc, 11);
 	glUniform1i(uniformgroup.sldepthsamplerloc, 12);
 
-	SetLightWVP(mat4(1.0), mat4(1.0), mat4(1.0));
+	SetLightWVP(mat4(1.0), mat4(1.0), 60.0f);
 }
 
 void ForwardLightShaderController::SetNoneTexture() const

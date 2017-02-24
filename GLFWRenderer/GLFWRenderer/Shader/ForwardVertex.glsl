@@ -9,12 +9,10 @@ out vec2 texcoord;
 out vec3 fragnormal;
 out vec3 fragtangent;
 out vec3 dlspacepos;
-out vec3 plspacepos;
 out vec3 slspacepos;
 
 uniform mat4 WVP;
 uniform mat4 dlLightWVP;
-uniform mat4 plLightWVP;
 uniform mat4 slLightWVP;
 
 void main()
@@ -26,8 +24,6 @@ void main()
 	fragtangent = tangent;
 	vec4 dlposh = dlLightWVP * vec4(position, 1.0);
 	dlspacepos = dlposh.xyz / dlposh.w;
-	vec4 plposh = plLightWVP * vec4(position, 1.0);
-	plspacepos = plposh.xyz / plposh.w;
 	vec4 slposh = slLightWVP * vec4(position, 1.0);
 	slspacepos = slposh.xyz / slposh.w;
 }

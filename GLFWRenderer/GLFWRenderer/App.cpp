@@ -27,10 +27,10 @@ App::App()
 	SpotLight sl[] = {
 		SpotLight(2.0, glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.5 ,true, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 1.0, 0.0, 0.02, 0.9, 0.7)
 	};
-	drawer->GetDLight()[0] = dl[0];
+	//drawer->GetDLight()[0] = dl[0];
 	//drawer->GetDLight()[1] = dl[1];
 	//drawer->GetPLight()[0] = pl[0];
-	//drawer->GetSLight()[0] = sl[0];
+	drawer->GetSLight()[0] = sl[0];
 	drawstate.isHDR = false;
 	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
 	drawstate.Bloom = 0;//Be awared: Bloom touching bandwith bottleneck. 
