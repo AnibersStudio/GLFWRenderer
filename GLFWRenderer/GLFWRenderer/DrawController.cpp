@@ -97,7 +97,7 @@ void DrawController::Draw(DrawContext & context)
 		flsc->SetEye(context.Eye);
 		flsc->SetBloom(context.Bloom != 0);
 
-		flsc->SetTextureDepth(lightdata.dlshadow ? ddepthfboptr->DepthComponent : 0, 0, lightdata.slshadow ? sdepthfboptr->DepthComponent : 0);
+		flsc->SetTextureDepth(lightdata.dlshadow ? ddepthfboptr->DepthComponent : 0, lightdata.plshadow ? pdepthfboptr->DepthComponent : 0, lightdata.slshadow ? sdepthfboptr->DepthComponent : 0);
 		flsc->SetLightWVP(lightdata.dwvp, lightdata.swvp, lightdata.plfarplane);
 
 		flsc->SetDLight(lightdata.dlist.size(), lightdata.dlist.size() ? &lightdata.dlist[0] : nullptr);
@@ -340,6 +340,21 @@ void DrawController::RenderDepthSingleFace(FboStruct * target, mat4 lightwvp, si
 	glDrawArrays(GL_TRIANGLES, 0, vertsize);
 }
 
+void DrawController::RenderDepthCubeFace(FboStruct * target, const mat4 lightview[6], const vec3& lightpos, size_t vertsize, float farplane)
+{
+	depthvaoptr->BindVao();
+	dsc->Use();
+	for (int i = 0; i != 6; i++)
+	{
+		target->BindFrameBufferForDepth(i);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		dsc->SetLightWVP(lightview[i]);
+		dsc->SetLinearDepth(lightpos, farplane);
+		glDrawArrays(GL_TRIANGLES, 0, vertsize);
+	}
+	dsc->SetSafeState();
+}
+
 
 ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, vec3 eye, size_t vertsize)
 {
@@ -353,8 +368,8 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 		res.dlshadow = true;
 		res.dlist.push_back(depthdl);
 		//Calculate WVP
-		mat4 othoproj = ortho(-80.0f, 80.0f, -80.0f, 80.0f, 0.1f, 64.0f);
-		vec3 lightpos = eye - depthdl.direction * 32.0f;
+		mat4 othoproj = ortho(-80.0f, 80.0f, -80.0f, 80.0f, 0.1f, 128.0f);
+		vec3 lightpos = eye - depthdl.direction * 64.0f;
 		vec3 up(0.0, 1.0, 0.0);
 		if ((up.x / depthdl.direction.x) - (up.y / depthdl.direction.y) < 0.0001 || (up.z / depthdl.direction.z) - (up.y / depthdl.direction.y))
 			up = vec3(1.0, 0.0, 0.0);
@@ -381,14 +396,13 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 		{
 			squeue.push(l.second);
 		}
-		SpotLight depthsl;
 		res.slist.push_back(SpotLight());
-		while (squeue.size() && res.slist.size() <= MAXSPOTLIGHT)
+		while (squeue.size() && res.slist.size() <= MAXSPOTLIGHT && !res.slshadow)
 		{
 			const SpotLight & thisspotlight = squeue.top();
 			if (thisspotlight.atten.hasshadow)
 			{
-				depthsl = thisspotlight;
+				res.slist[0] = thisspotlight;
 				res.slshadow = true;
 				squeue.pop();
 				break;
@@ -404,17 +418,15 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 			res.slist.push_back(thisspotlight);
 		}
 		if (res.slshadow)
-		{
-			res.slist[0] = depthsl;
-			//Calculate WVP
-			float fov = 2 * degrees(acos(depthsl.zerocos));
-			float range = min(64.0f, CalculateLightRange(depthsl.bl.intensity, depthsl.atten, 0.05));
-			float nearplane = clamp((range - 24.0) / 32.0 * 1.4 + 0.1, 0.1, 1.5);
+		{//Calculate WVP
+			float fov = 2 * degrees(acos(res.slist[0].zerocos));
+			float range = min(64.0f, CalculateLightRange(res.slist[0].bl.intensity, res.slist[0].atten, 0.02));
+			float nearplane = clamp((range - 16.0) / 32.0 * 0.4 + 0.1, 0.1, 0.5);
 			mat4 persproj = perspective(fov, w / (float)h, nearplane, range);
 			vec3 up(0.0, 1.0, 0.0);
-			if ((up.x * depthsl.direction.y) - (up.y * depthsl.direction.x) < 0.0001 && (up.z * depthsl.direction.y) - (up.y * depthsl.direction.z) < 0.0001)
+			if ((up.x * res.slist[0].direction.y) - (up.y * res.slist[0].direction.x) < 0.0001 && (up.z * res.slist[0].direction.y) - (up.y * res.slist[0].direction.z) < 0.0001)
 				up = vec3(1.0, 0.0, 0.0);
-			mat4 lightview = lookAt(depthsl.position, depthsl.position + depthsl.direction, up);
+			mat4 lightview = lookAt(res.slist[0].position, res.slist[0].position + res.slist[0].direction, up);
 			res.swvp = persproj * lightview;
 			
 			//Render depth
@@ -422,45 +434,68 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 		}
 	}
 
-	//{
-	//	//Choose a PointLight
-	//	auto pcomparator = [eye](const PointLight & lhs, const PointLight & rhs) ->bool { return lhs.IntenAt(eye) < rhs.IntenAt(eye); };
-	//	std::priority_queue<PointLight, std::vector<PointLight>, decltype(pcomparator)> pqueue(pcomparator);
-	//	for (auto & l : plist)
-	//	{
-	//		pqueue.push(l.second);
-	//	}
-	//	PointLight depthpl;
-	//	res.plist.push_back(PointLight());
-	//	while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT)
-	//	{
-	//		const PointLight & thispointlight = pqueue.top();
-	//		if (thispointlight.atten.hasshadow)
-	//		{
-	//			depthpl = thispointlight;
-	//			res.plshadow = true;
-	//			pqueue.pop();
-	//			break;
-	//		}
-	//		else
-	//		{
-	//			res.plist.push_back(thispointlight);
-	//		}
-	//	}
-	//	while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT)
-	//	{
-	//		const PointLight & thispointlight = pqueue.top();
-	//		res.plist.push_back(thispointlight);
-	//	}
-	//	if (res.plshadow)
-	//	{
-	//		res.plist[0] = depthpl;
-	//		//Calculate WVP
-	//		//for
-	//	}
-	//}
-
-
+	{
+		//Choose a PointLight
+		auto pcomparator = [eye](const PointLight & lhs, const PointLight & rhs) ->bool { return lhs.IntenAt(eye) < rhs.IntenAt(eye); };
+		std::priority_queue<PointLight, std::vector<PointLight>, decltype(pcomparator)> pqueue(pcomparator);
+		for (auto & l : plist)
+		{
+			pqueue.push(l.second);
+		}
+		res.plist.push_back(PointLight());
+		while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT && !res.plshadow)
+		{
+			const PointLight & thispointlight = pqueue.top();
+			if (thispointlight.atten.hasshadow)
+			{
+				res.plist[0] = thispointlight;
+				res.plshadow = true;
+				pqueue.pop();
+				break;
+			}
+			else
+			{
+				res.plist.push_back(thispointlight);
+			}
+		}
+		while (pqueue.size() && res.plist.size() <= MAXPOINTLIGHT)
+		{
+			const PointLight & thispointlight = pqueue.top();
+			res.plist.push_back(thispointlight);
+		}
+		if (res.plshadow)
+		{
+			//Calculate WVP
+			float fov = 90.0f;
+			float range = min(48.0f, CalculateLightRange(res.plist[0].bl.intensity, res.plist[0].atten, 0.05));
+			float nearplane = clamp((range - 16.0) / 32.0 * 0.4 + 0.1, 0.1, 0.5);
+			mat4 persproj = perspective(fov, 1.0f, nearplane, range);
+			res.plfarplane = range;
+			static vec3 facedir[6] = {
+				vec3{ 1.0, 0.0, 0.0 },
+				vec3{ -1.0, 0.0, 0.0 },
+				vec3{ 0.0, 1.0, 0.0 },
+				vec3{ 0.0, -1.0, 0.0 },
+				vec3{ 0.0, 0.0, 1.0 },
+				vec3{ 0.0, 0.0, -1.0 }
+			};
+			static vec3 faceupvec[6] = {
+				vec3{ 0.0, -1.0, 0.0 },
+				vec3{ 0.0, -1.0, 0.0 },
+				vec3{ 0.0, 0.0, 1.0 },
+				vec3{ 0.0, 0.0, -1.0 },
+				vec3{ 0.0, -1.0, 0.0 },
+				vec3{ 0.0, -1.0, 0.0 }
+			};
+			mat4 lightviewarray[6];
+			for (int i = 0; i != 6; i++)
+			{
+				mat4 lightview = lookAt(res.plist[0].position, res.plist[0].position + facedir[i], faceupvec[i]);
+				lightviewarray[i] = persproj * lightview;
+			}
+			RenderDepthCubeFace(pdepthfboptr, lightviewarray, res.plist[0].position, vertsize, res.plfarplane);
+		}
+	}
 
 	glViewport(0, 0, width, height);//GLcontext resume
 

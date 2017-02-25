@@ -56,12 +56,12 @@ void ForwardLightShaderController::SetTextureDepth(GLuint dt, GLuint pt, GLuint 
 		glActiveTexture(GL_TEXTURE0 + 10);
 		glBindTexture(GL_TEXTURE_2D, dt);
 		glUniform1i(uniformgroup.isdldepthloc, 1);
-	//}
-	//if (pt)
-	//{
-	//	glActiveTexture(GL_TEXTURE0 + 11);
-	//	glBindTexture(GL_TEXTURE_2D, pt);
-	//	glUniform1i(uniformgroup.ispldepthloc, 1);
+	}
+	if (pt)
+	{
+		glActiveTexture(GL_TEXTURE0 + 11);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, pt);
+		glUniform1i(uniformgroup.ispldepthloc, 1);
 	}
 	if (st)
 	{
@@ -202,7 +202,7 @@ void ForwardLightShaderController::GetAllUniforms()
 	uniformgroup.isdldepthloc = GetUniformLocation("isdldepth");
 	uniformgroup.dldepthsamplerloc = GetUniformLocation("dldepthsampler");
 	uniformgroup.ispldepthloc = GetUniformLocation("ispldepth");
-	//uniformgroup.pldepthsamplerloc = GetUniformLocation("pldepthsampler");
+	uniformgroup.pldepthsamplerloc = GetUniformLocation("pldepthsampler");
 	uniformgroup.issldepthloc = GetUniformLocation("issldepth");
 	uniformgroup.sldepthsamplerloc = GetUniformLocation("sldepthsampler");
 }
@@ -237,7 +237,7 @@ void ForwardLightShaderController::SetSafeState()
 	glUniform1ui(uniformgroup.ispldepthloc, 0);
 	glUniform1ui(uniformgroup.issldepthloc, 0);
 	glUniform1i(uniformgroup.dldepthsamplerloc, 10);
-	//glUniform1i(uniformgroup.pldepthsamplerloc, 11);
+	glUniform1i(uniformgroup.pldepthsamplerloc, 11);
 	glUniform1i(uniformgroup.sldepthsamplerloc, 12);
 
 	SetLightWVP(mat4(1.0), mat4(1.0), 60.0f);
@@ -480,4 +480,19 @@ void DepthShaderController::Use()
 void DepthShaderController::GetAllUniforms()
 {
 	uniformgroup.LightWVPloc = GetUniformLocation("LightWVP");
+	uniformgroup.islinearloc = GetUniformLocation("islinear");
+	uniformgroup.lightposloc = GetUniformLocation("lightpos");
+	uniformgroup.farplaneloc = GetUniformLocation("farplane");
+}
+
+void DepthShaderController::SetSafeState()
+{
+	glUniform1i(uniformgroup.islinearloc, 0);
+}
+
+void DepthShaderController::SetLinearDepth(const vec3 & lightpos, float farplane)
+{
+	glUniform1i(uniformgroup.islinearloc, 1);
+	glUniform3fv(uniformgroup.lightposloc, 1, &lightpos[0]);
+	glUniform1f(uniformgroup.farplaneloc, farplane);
 }

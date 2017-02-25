@@ -22,15 +22,15 @@ App::App()
 		DirectionalLight(0.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2,  glm::vec3(0.0f, 0.0f, -1.0f))
 	};
 	PointLight pl[] = {
-		PointLight(5.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.5f, true, glm::vec3(0.0f, 0.0f, 2.0f), 1.0f, 0.2f, 0.0f)
+		PointLight(5.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.5f, true, glm::vec3(0.0f, 2.0f, 2.0f), 1.0f, 0.2f, 0.0f)
 	};
 	SpotLight sl[] = {
 		SpotLight(2.0, glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.5 ,true, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 1.0, 0.0, 0.02, 0.9, 0.7)
 	};
 	//drawer->GetDLight()[0] = dl[0];
 	//drawer->GetDLight()[1] = dl[1];
-	//drawer->GetPLight()[0] = pl[0];
-	drawer->GetSLight()[0] = sl[0];
+	drawer->GetPLight()[0] = pl[0];
+	//drawer->GetSLight()[0] = sl[0];
 	drawstate.isHDR = false;
 	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
 	drawstate.Bloom = 0;//Be awared: Bloom touching bandwith bottleneck. 
@@ -87,6 +87,13 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 			direction.y = curdir.y;
 			direction.z = curdir.z;
 			break;
+		case GLFW_KEY_O:
+			std::cout << "SLight Y:" << ++drawer->GetSLight()[0].position.y << std::endl;
+			break;
+		case GLFW_KEY_P:
+			std::cout << "SLight Y:" << --drawer->GetSLight()[0].position.y << std::endl;
+			break;
+
 		default:
 			moment.keys[key] = true;
 		}

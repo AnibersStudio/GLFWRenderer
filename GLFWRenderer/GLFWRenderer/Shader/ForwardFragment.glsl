@@ -78,6 +78,7 @@ uniform bool isdldepth;
 uniform sampler2D dldepthsampler;
 
 uniform bool ispldepth;
+uniform samplerCube pldepthsampler;
 
 uniform bool issldepth;
 uniform sampler2D sldepthsampler;
@@ -103,8 +104,10 @@ vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, ve
 vec3 CalDL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
 vec3 CalPL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
 vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
-float calculateshadow(vec3 normal, vec3 lightdir, sampler2D depthsampler, vec3 lightspacepos, float distance);
+float calculateshadow(vec3 lightdir, sampler2D depthsampler, vec3 lightspacepos, float distance);
 float calculateshadow(vec3 normal, vec3 lightdir, sampler2D depthsampler, vec3 lightspacepos);
+float calculateshadow(vec3 lightpos, samplerCube sampler, vec3 fragpos, float farplane);
+vec4 visualizecubemap(vec3 lightpos, samplerCube sampler, vec3 fragpos);
 
 void main()
 {
@@ -169,7 +172,17 @@ void main()
 	}
 	
 	vec4 plfactor = vec4 (0.0, 0.0, 0.0, 0.0);
-	for (uint i = 0U; i != 0U; i++ )
+	{
+		float shadowfactor = 1.0;
+		if (ispldepth)
+		{
+			shadowfactor = calculateshadow(pl[0].position, pldepthsampler, fragposition, plfarplane);
+		}
+		plfactor += shadowfactor * vec4(CalPL(0U, normal, diffusecolor, specularcolor), 0.0);
+		pixelcolor = visualizecubemap(pl[0].position, pldepthsampler, fragposition);
+		//pixelcolor = vec4(vec3(plfarplane/96.0), 1.0);
+	}
+	for (uint i = 1U; i != 1U; i++ )
 	{
 		plfactor += vec4(CalPL(i, normal, diffusecolor, specularcolor), 0.0);
 	}
@@ -179,7 +192,7 @@ void main()
 		float shadowfactor = 1.0;
 		if (issldepth)
 		{
-			shadowfactor = calculateshadow(normal, sl[0].direction, sldepthsampler, slspacepos, length(fragposition - sl[0].position));
+			shadowfactor = calculateshadow(sl[0].direction, sldepthsampler, slspacepos, length(fragposition - sl[0].position));
 		}
 		slfactor += shadowfactor * vec4(CalSL(0U, normal, diffusecolor, specularcolor), 0.0);
 	}
@@ -191,7 +204,7 @@ void main()
 	vec4 outcolor = dlfactor + plfactor + slfactor + vec4(emissivecolor, 1.0) + vec4(ambientcolor, 1.0);
 	outcolor.a = trans;
 
-	pixelcolor = outcolor;
+//	pixelcolor = outcolor;
 	if (isbloom)
 	{
 		float brightness = dot(outcolor.xyz, vec3(0.299, 0.587, 0.144));//Perceived luminance
@@ -258,7 +271,7 @@ vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
 	return vec3(0.0, 0.0, 0.0);
 }
 
-float calculateshadow(vec3 normal, vec3 lightdir, sampler2D sampler, vec3 lightspacepos, float distance)
+float calculateshadow(vec3 lightdir, sampler2D sampler, vec3 lightspacepos, float distance)
 {
 	float bias = 1.0f/(distance * distance - 2 * distance);
 	vec3 projcoord = lightspacepos;
@@ -273,7 +286,7 @@ float calculateshadow(vec3 normal, vec3 lightdir, sampler2D sampler, vec3 lights
 		for(int y = -1; y <= 1; ++y)
 		{
 			float pcfdepth = texture(sampler, projcoord.xy + vec2(x, y) * texelSize).r; 
-			shadow += currentdepth - bias <= pcfdepth ? 1.0 : 0.0;        
+			shadow += currentdepth - bias > pcfdepth ? 0.0 : 1.0;        
 		}    
 	}
 	shadow /= 9;
@@ -297,9 +310,37 @@ float calculateshadow(vec3 normal, vec3 lightdir, sampler2D sampler, vec3 lights
 		for(int y = -1; y <= 1; ++y)
 		{
 			float pcfdepth = texture(sampler, projcoord.xy + vec2(x, y) * texelSize).r; 
-			shadow += currentdepth - bias <= pcfdepth ? 1.0 : 0.0;        
+			shadow += currentdepth - bias > pcfdepth ? 0.0 : 1.0;        
 		}    
 	}
 	shadow /= 9;
 	return shadow;
+}
+
+float calculateshadow(vec3 lightpos, samplerCube sampler, vec3 fragpos, float farplane)
+{
+	vec3 fragtolight = fragpos - lightpos;
+	float closestdepth = texture(sampler, fragtolight).r;
+	closestdepth *= farplane;
+	float currentdepth = length(fragtolight);
+	float bias = 0.01;
+
+	float shadow = currentdepth > closestdepth ? 0.0 : 1.0;
+
+	return shadow;
+}
+
+vec4 visualizecubemap(vec3 lightpos, samplerCube sampler, vec3 fragpos)
+{
+	vec3 fragtolight = fragpos - lightpos;
+	fragtolight.x = -fragtolight.x;
+	float closestdepth = texture(sampler, fragtolight).r;
+	closestdepth *= plfarplane;
+	float currentdepth = length(fragtolight);
+	float bias = 0.01;
+
+	float shadow = currentdepth > closestdepth ? 0.0 : 1.0;
+
+	return vec4(vec3(closestdepth/plfarplane), 1.0);
+	//return vec4(vec3(currentdepth/plfarplane), 1.0);
 }

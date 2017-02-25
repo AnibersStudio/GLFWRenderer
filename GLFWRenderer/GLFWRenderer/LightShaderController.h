@@ -22,7 +22,7 @@ struct LightUniformGroup
 	GLuint isdldepthloc;
 	GLuint dldepthsamplerloc;
 	GLuint ispldepthloc;
-	//GLuint pldepthsamplerloc;
+	GLuint pldepthsamplerloc;
 	GLuint issldepthloc;
 	GLuint sldepthsamplerloc;
 
@@ -155,6 +155,9 @@ private:
 struct DepthUniformGroup
 {
 	GLuint LightWVPloc;
+	GLuint islinearloc;
+	GLuint lightposloc;
+	GLuint farplaneloc;
 };
 
 class DepthShaderController : public ShaderController
@@ -164,8 +167,11 @@ public:
 	bool LoadShaderPipeline();
 	void SetLightWVP(const mat4& mvp);
 	void Use();
+	void SetSafeState();
+	void SetLinearDepth(const vec3& lightpos, float farplane);
 protected:
 	void GetAllUniforms();
+
 private:
 	std::string vertexpath;
 	std::string fragmentpath;

@@ -161,6 +161,7 @@ protected:
 	void EyeAdaptMC();
 	void PrepareQuad();
 	void RenderDepthSingleFace(FboStruct * target, mat4 lightwvp, size_t vertsize);
+	void RenderDepthCubeFace(FboStruct * target, const mat4 lightview[6], const vec3& lightpos, size_t vertsize, float farplane);
 	ForwardLightData RenderShadow(unsigned int w, unsigned int h, vec3 eye, size_t vertsize);
 	float CalculateLightRange(float intensity, Attenuation attenuation, float threshold);
 	std::vector<vec3> GetNonTransObjList() const;
