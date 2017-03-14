@@ -82,10 +82,7 @@ void DrawController::Draw(DrawContext & context)
 		nontransvertices = GetNonTransObjList();
 		depthvaoptr->SetData(&nontransvertices[0], nontransvertices.size() * sizeof(vec3));
 	}
-	if (context.isShadow)
-	{//Render Shadow
-		lightdata = RenderShadow(depthtexwidth, depthtexheight, context.Eye, nontransvertices.size());
-	}
+	lightdata = RenderShadow(context.isShadow, depthtexwidth, depthtexheight, context.Eye, nontransvertices.size());
 	{//Render Depth only
 		RenderDepthSingleFace(hdrfboptr, context.W * context.V * context.P, nontransvertices.size());
 	}
@@ -93,6 +90,7 @@ void DrawController::Draw(DrawContext & context)
 	{//Prepare Foward render
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		flsc->Use();
+		flsc->SetSafeState();
 		flsc->SetMatrix(context.W, context.V, context.P);
 		flsc->SetEye(context.Eye);
 		flsc->SetBloom(context.Bloom != 0);
@@ -106,7 +104,7 @@ void DrawController::Draw(DrawContext & context)
 
 		forwardvaoptr->BindVao();
 	}
-	
+
 	for (auto & matvecpair : mesh)//For every material that vertices share
 	{//Render non-trans them
 		auto & material = matvecpair.first;
@@ -228,9 +226,9 @@ void DrawController::Draw(DrawContext & context)
 		}
 		else
 		{
-			//hdrsc->SetScreenTexture(sdepthfboptr->DepthComponent);
+			hdrsc->SetScreenTexture(ddepthfboptr->DepthComponent);
 
-			hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
+			//hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
 		}
 
 		hdrsc->SetIsHDR(context.isHDR);
@@ -356,7 +354,7 @@ void DrawController::RenderDepthCubeFace(FboStruct * target, const mat4 lightvie
 }
 
 
-ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, vec3 eye, size_t vertsize)
+ForwardLightData DrawController::RenderShadow(bool ishadow, unsigned int w, unsigned int h, vec3 eye, size_t vertsize)
 {
 	ForwardLightData res;
 	glViewport(0, 0, w, h);//GLcontext set
@@ -417,7 +415,7 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 			const SpotLight & thisspotlight = squeue.top();
 			res.slist.push_back(thisspotlight);
 		}
-		if (res.slshadow)
+		if (res.slshadow && ishadow)
 		{//Calculate WVP
 			float fov = 2 * degrees(acos(res.slist[0].zerocos));
 			float range = min(64.0f, CalculateLightRange(res.slist[0].bl.intensity, res.slist[0].atten, 0.02));
@@ -431,6 +429,10 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 			
 			//Render depth
 			RenderDepthSingleFace(sdepthfboptr, res.swvp, vertsize);
+		}
+		else
+		{
+			res.slshadow = false;
 		}
 	}
 
@@ -463,7 +465,7 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 			const PointLight & thispointlight = pqueue.top();
 			res.plist.push_back(thispointlight);
 		}
-		if (res.plshadow)
+		if (res.plshadow && ishadow)
 		{
 			//Calculate WVP
 			float fov = 90.0f;
@@ -494,6 +496,10 @@ ForwardLightData DrawController::RenderShadow(unsigned int w, unsigned int h, ve
 				lightviewarray[i] = persproj * lightview;
 			}
 			RenderDepthCubeFace(pdepthfboptr, lightviewarray, res.plist[0].position, vertsize, res.plfarplane);
+		}
+		else
+		{
+			res.plshadow = false;
 		}
 	}
 
@@ -676,12 +682,13 @@ void VaoStruct::BindVao() const
 
 void VaoStruct::SetData(const void * dataptr, size_t datasize)
 {
-	if (datasize > VboSize)
+	/*if (datasize > VboSize)
 	{
 		VboSize = datasize * 1.2;
 		MallocVbo(VboSize);
 	}
-	SetSubData(dataptr, datasize);
+	SetSubData(dataptr, datasize);*/
+	glNamedBufferDataEXT(Vbo, (GLsizeiptr)datasize, dataptr, StorageHint);
 }
 
 void VaoStruct::MallocVbo(size_t vbosize) const
@@ -691,6 +698,9 @@ void VaoStruct::MallocVbo(size_t vbosize) const
 
 void VaoStruct::SetSubData(const void * dataptr, size_t datasize) const
 {
-	glNamedBufferSubDataEXT(Vbo, (GLintptr)0, (GLsizeiptr)datasize, dataptr);
 
+	//glBindBuffer(GL_ARRAY_BUFFER, Vbo);
+	//glBufferSubData(GL_ARRAY_BUFFER, (GLintptr)0, (GLsizeiptr)datasize, dataptr);
+
+	glNamedBufferSubDataEXT(Vbo, (GLintptr)0, (GLsizeiptr)datasize, dataptr);
 }

@@ -100,7 +100,7 @@ layout (std140) uniform spotlight
 
 uniform Material material;
 
-vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
+vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, vec3 specularcolor, float multiplier);
 vec3 CalDL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
 vec3 CalPL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
 vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor);
@@ -109,10 +109,17 @@ float calculateshadow(vec3 normal, vec3 lightdir, sampler2D depthsampler, vec3 l
 float calculateshadow(vec3 lightpos, samplerCube sampler, vec3 fragpos, float farplane);
 vec4 visualizecubemap(vec3 lightpos, samplerCube sampler, vec3 fragpos);
 
+vec3 sampleoffsetdir[12] = vec3[]
+(
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);
+
 void main()
 {
 	vec3 diffusecolor, ambientcolor, specularcolor, emissivecolor;
-	
+
 	if (isdiffuse)
 	{
 		diffusecolor = (texture(diffusesampler, texcoord)).xyz;
@@ -179,8 +186,6 @@ void main()
 			shadowfactor = calculateshadow(pl[0].position, pldepthsampler, fragposition, plfarplane);
 		}
 		plfactor += shadowfactor * vec4(CalPL(0U, normal, diffusecolor, specularcolor), 0.0);
-		pixelcolor = visualizecubemap(pl[0].position, pldepthsampler, fragposition);
-		//pixelcolor = vec4(vec3(plfarplane/96.0), 1.0);
 	}
 	for (uint i = 1U; i != 1U; i++ )
 	{
@@ -203,8 +208,7 @@ void main()
 
 	vec4 outcolor = dlfactor + plfactor + slfactor + vec4(emissivecolor, 1.0) + vec4(ambientcolor, 1.0);
 	outcolor.a = trans;
-
-//	pixelcolor = outcolor;
+	pixelcolor = outcolor;
 	if (isbloom)
 	{
 		float brightness = dot(outcolor.xyz, vec3(0.299, 0.587, 0.144));//Perceived luminance
@@ -219,13 +223,19 @@ void main()
 	}
 }
 
-vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
+vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, vec3 specularcolor, float multiplier)
 {
 	float diffusefactor = dot(normal, -lightdir);
+
 	vec3 diffusecomponent = vec3(0.0, 0.0, 0.0);
 	vec3 specularcomponent = vec3(0.0, 0.0, 0.0);
 	if (diffusefactor > 0)
 	{
+		if (diffusefactor * multiplier < 0.01)
+		{
+			return vec3(0.0);
+		}
+
 		diffusecomponent = light.diffuse * light.color * diffusefactor * diffusecolor;
 
 		vec3 eyedir = normalize(Eye - fragposition);
@@ -234,12 +244,12 @@ vec3 CalLight(BaseLight light, vec3 lightdir, vec3 normal, vec3 diffusecolor, ve
 		specularfactor = clamp(specularfactor, 0.0, 1.0);
 		specularcomponent = light.specular * light.color * specularfactor * specularcolor;
 	}
-	return (diffusecomponent + specularcomponent) * light.intensity;//Intensity has been calculated.
+	return (diffusecomponent + specularcomponent) * multiplier;
 }
 
 vec3 CalDL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
 {
-	return CalLight(dl[index].bl, dl[index].direction, normal, diffusecolor, specularcolor);
+	return CalLight(dl[index].bl, dl[index].direction, normal, diffusecolor, specularcolor, dl[index].bl.intensity) ;
 }
 
 vec3 CalPL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
@@ -249,7 +259,7 @@ vec3 CalPL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
 	float atten = 1.0 /(pl[index].atten.constant + distance * pl[index].atten.linear + distance * distance * pl[index].atten.exp);
 	lightdir = normalize(lightdir);
 	
-	return CalLight(pl[index].bl, lightdir, normal, diffusecolor, specularcolor) * atten;
+	return CalLight(pl[index].bl, lightdir, normal, diffusecolor, specularcolor, atten * pl[index].bl.intensity);
 }
 
 vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
@@ -257,6 +267,7 @@ vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
 	vec3 lightdir = fragposition - sl[index].position;
 	float distance = length(lightdir);
 	float atten = 1.0 / (sl[index].atten.constant + distance * sl[index].atten.linear + distance * distance * sl[index].atten.exp);
+	
 	lightdir = normalize(lightdir);
 	float lightcos = dot(lightdir, sl[index].direction);
 	if (lightcos > sl[index].zerocos)
@@ -266,7 +277,7 @@ vec3 CalSL(uint index, vec3 normal, vec3 diffusecolor, vec3 specularcolor)
 		{
 			spotfactor = (lightcos - sl[index].zerocos) / (sl[index].fullcos - sl[index].zerocos);
 		}
-		return CalLight(sl[index].bl, lightdir, normal, diffusecolor, specularcolor) * spotfactor * atten;
+		return CalLight(sl[index].bl, lightdir, normal, diffusecolor, specularcolor, spotfactor * atten * sl[index].bl.intensity);
 	}
 	return vec3(0.0, 0.0, 0.0);
 }
@@ -320,12 +331,27 @@ float calculateshadow(vec3 normal, vec3 lightdir, sampler2D sampler, vec3 lights
 float calculateshadow(vec3 lightpos, samplerCube sampler, vec3 fragpos, float farplane)
 {
 	vec3 fragtolight = fragpos - lightpos;
-	float closestdepth = texture(sampler, fragtolight).r;
-	closestdepth *= farplane;
-	float currentdepth = length(fragtolight);
-	float bias = 0.01;
 
-	float shadow = currentdepth > closestdepth ? 0.0 : 1.0;
+	float currentdepth = length(fragtolight);
+	float bias = 0.2;
+	
+	float shadow;
+	int samplecount = 12;
+	float diskradius = 0.01; 
+	if (currentdepth > farplane)
+	{
+		shadow = 1.0;
+	}
+	else
+	{
+		for (int i = 0; i != samplecount; i++)
+		{
+			float pcfdepth = texture(sampler, fragtolight + sampleoffsetdir[i] * diskradius).r;
+			pcfdepth *= farplane;
+			shadow += currentdepth - bias > pcfdepth ? 0.0 : 1.0;
+		}
+	}
+	shadow /= samplecount;
 
 	return shadow;
 }
@@ -333,7 +359,6 @@ float calculateshadow(vec3 lightpos, samplerCube sampler, vec3 fragpos, float fa
 vec4 visualizecubemap(vec3 lightpos, samplerCube sampler, vec3 fragpos)
 {
 	vec3 fragtolight = fragpos - lightpos;
-	fragtolight.x = -fragtolight.x;
 	float closestdepth = texture(sampler, fragtolight).r;
 	closestdepth *= plfarplane;
 	float currentdepth = length(fragtolight);

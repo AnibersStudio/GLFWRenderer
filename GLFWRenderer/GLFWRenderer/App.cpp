@@ -8,28 +8,34 @@ App::App()
 
 	IndexedModel t("Res/MC/Stein.obj", true);
 	ArrayModel am(t);
+	ArrayModel am5(t);
 	IndexedModel t2("Res/MC/Sand.obj");
 	ArrayModel am2(t2);
 	ArrayModel am3(t2);
+	//ArrayModel am4(t2);
 
 	am.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
 	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
+	//am5.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
+	//am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
-	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-4.0, 0.0, 0.0)));
+	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
+	//am4.Transform(translate(glm::mat4(1.0), glm::vec3(-6.0, 0.0, 0.0)));
+	
 
 	DirectionalLight dl[] = { 
 		DirectionalLight(1.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2, glm::vec3(0.0f, -1.0f, 0.0f)),
 		DirectionalLight(0.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2,  glm::vec3(0.0f, 0.0f, -1.0f))
 	};
 	PointLight pl[] = {
-		PointLight(5.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.5f, true, glm::vec3(0.0f, 2.0f, 2.0f), 1.0f, 0.2f, 0.0f)
+		PointLight(2.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.5f, true, glm::vec3(0.0f, 3.0f, 2.0f), 1.0f, 0.0f, 0.02f)
 	};
 	SpotLight sl[] = {
 		SpotLight(2.0, glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.5 ,true, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 1.0, 0.0, 0.02, 0.9, 0.7)
 	};
-	//drawer->GetDLight()[0] = dl[0];
+	drawer->GetDLight()[0] = dl[0];
 	//drawer->GetDLight()[1] = dl[1];
-	drawer->GetPLight()[0] = pl[0];
+	//drawer->GetPLight()[0] = pl[0];
 	//drawer->GetSLight()[0] = sl[0];
 	drawstate.isHDR = false;
 	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
@@ -38,9 +44,7 @@ App::App()
 
 	init(moment.keys, false, 128);
 
-	int i = 0;
-
-	*drawer << PositionedArrayModel(am) << PositionedArrayModel(am2) << PositionedArrayModel(am3);
+	*drawer << PositionedArrayModel(am2) << PositionedArrayModel(am3) << PositionedArrayModel(am) ;
 
 }
 
@@ -93,7 +97,12 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 		case GLFW_KEY_P:
 			std::cout << "SLight Y:" << --drawer->GetSLight()[0].position.y << std::endl;
 			break;
-
+		case GLFW_KEY_U:
+			std::cout << "PLight Y:" << ++drawer->GetPLight()[0].position.y << std::endl;
+			break;
+		case GLFW_KEY_I:
+			std::cout << "PLight Y:" << --drawer->GetPLight()[0].position.y << std::endl;
+			break;
 		default:
 			moment.keys[key] = true;
 		}

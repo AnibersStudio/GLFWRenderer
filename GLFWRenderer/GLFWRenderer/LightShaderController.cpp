@@ -20,14 +20,10 @@ bool ForwardLightShaderController::LoadShaderPipeline()
 	}
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
-	bool linkstate = LinkShader();
+	LinkShader();
 
-	if (linkstate)
-	{
-		GetAllUniforms();
-		SetupUniformBuffer();
-	}
-	return linkstate;
+	
+	return true;
 }
 
 void ForwardLightShaderController::Use()
@@ -271,14 +267,10 @@ bool HDRShaderController::LoadShaderPipeline()
 	}
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
-	bool linkstate = LinkShader();
+	LinkShader();
 
-	if (linkstate)
-	{
-		GetAllUniforms();
-	}
-	return linkstate;
-	return false;
+
+	return true;
 }
 
 void HDRShaderController::SetGamma(float g)
@@ -342,14 +334,9 @@ bool BloomShaderController::LoadShaderPipeline()
 	}
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
-	bool linkstate = LinkShader();
+	LinkShader();
 
-	if (linkstate)
-	{
-		GetAllUniforms();
-	}
-	return linkstate;
-	return false;
+	return true;
 }
 
 void BloomShaderController::SetImageTexture(GLuint blurbuffer)
@@ -399,14 +386,9 @@ bool MixShaderController::LoadShaderPipeline()
 	}
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
-	bool linkstate = LinkShader();
+	LinkShader();
 
-	if (linkstate)
-	{
-		GetAllUniforms();
-	}
-	return linkstate;
-	return false;
+	return true;
 }
 
 void MixShaderController::SetColorTexture(GLuint buffer)
@@ -457,14 +439,9 @@ bool DepthShaderController::LoadShaderPipeline()
 	}
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
-	bool linkstate = LinkShader();
+	LinkShader();
 
-	if (linkstate)
-	{
-		GetAllUniforms();
-	}
-	return linkstate;
-	return false;
+	return true;
 }
 
 void DepthShaderController::SetLightWVP(const mat4 & wvp)
@@ -496,3 +473,4 @@ void DepthShaderController::SetLinearDepth(const vec3 & lightpos, float farplane
 	glUniform3fv(uniformgroup.lightposloc, 1, &lightpos[0]);
 	glUniform1f(uniformgroup.farplaneloc, farplane);
 }
+

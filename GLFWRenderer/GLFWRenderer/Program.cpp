@@ -2,6 +2,13 @@
 
 int main()
 {
-	App app;
-	app.Run();
+	try
+	{
+		App app;
+		app.Run();
+	}
+	catch (std::exception& e)
+	{
+		std::cout << e.what();
+	}
 }
