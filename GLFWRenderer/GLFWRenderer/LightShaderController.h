@@ -1,11 +1,16 @@
 #pragma once
+#include <boost\any.hpp>
 #include "ShaderController.h"
 #include "Texture.h"
 #include "Light.h"
 #include "Model.h"
+
 #define MAXPOINTLIGHT 512
 #define MAXSPOTLIGHT 256
 #define MAXDIRECTIONALLIGHT 4
+
+
+
 struct LightUniformGroup
 {
 	GLuint isdiffuseloc;

@@ -7,7 +7,6 @@ uniform mat4 LightWVP;
 
 void main()
 {
-	vec4 position = LightWVP * vec4(position, 1.0f);
-	fragpos = position.xyz / position.w;
-	gl_Position = position;
+	gl_Position = LightWVP * vec4(position, 1.0f);
+	fragpos = position;
 }

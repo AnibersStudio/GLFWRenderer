@@ -1,6 +1,6 @@
 #include "ShaderController.h"
 
-bool ShaderController::AddShader(GLenum shadertype, const char * shadertext)
+void ShaderController::AddShader(GLenum shadertype, const char * shadertext)
 {
 	GLuint shader = glCreateShader(shadertype);
 	glShaderSource(shader, 1, &shadertext, NULL);
@@ -19,15 +19,14 @@ bool ShaderController::AddShader(GLenum shadertype, const char * shadertext)
 		logadd = new GLchar[loglength + 1];
 		glGetShaderInfoLog(shader, loglength, &loglength, logadd);
 		{//编译出错，做善后处理
-			std::cerr << "Compile Error, Log Below\n" << logadd << std::endl;
+			ShaderErrorException exp("", logadd);
 			delete[] logadd;
-			system("pause");
+			throw exp;
 		}
 	}
-	return compilestate == GL_TRUE;
 }
 
-bool ShaderController::LinkShader()
+void ShaderController::LinkShader()
 {
 	shaderprogram = glCreateProgram();
 	for (auto soit = shaderobjlist.begin(); soit != shaderobjlist.end(); soit++)
@@ -39,7 +38,6 @@ bool ShaderController::LinkShader()
 	glGetProgramiv(shaderprogram, GL_LINK_STATUS, &linked);
 	if (linked)
 	{
-		compiled = true;
 		for (auto soit : shaderobjlist)
 		{
 			glDeleteShader(soit);
@@ -53,25 +51,96 @@ bool ShaderController::LinkShader()
 		logadd = new GLchar[loglength + 1];
 		glGetProgramInfoLog(shaderprogram, loglength, &loglength, logadd);
 		{//渲染程序链接出错，做善后处理
-			std::cout << "Link Error, Log Below\n" << logadd << "\n";
+			ShaderErrorException exp("", logadd);
 			delete[] logadd;
-			system("pause");
+			throw exp;
 		}
 	}
-	return linked == GL_TRUE;
 }
 
 GLuint ShaderController::GetUniformLocation(const std::string & uniformname) const
 {
-	if (compiled)
-	{
-		GLuint uniformloc = glGetUniformLocation(shaderprogram, uniformname.c_str());
-		if (uniformloc == 0xFFFFFFFF)
-			std::cerr << "Get uniform location: " + uniformname + " error.";
-		return uniformloc;
-	}
-	else
-		return 0xFFFFFFFF;
+	GLuint uniformloc = glGetUniformLocation(shaderprogram, uniformname.c_str());
+	if (uniformloc == 0xFFFFFFFF)
+		throw ShaderErrorException{tostr(shaderprogram) + ":" + uniformname, "Error getting location of uniform. Maybe optimized out by compiler."};
+	return uniformloc;
 }
 
+LightShaderController::LightShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist)
+{
+	std::vector<std::pair<std::string, GLenum>> shadervec(shaderlist);
+	ConstructShader(shadervec);
+	std::vector<ShaderVarRec> variablevec(variablelist);
+	ConstructVarMap(variablevec);
+	GetAllUniformLocation();
+}
 
+LightShaderController::LightShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist)
+{
+	ConstructShader(shaderlist);
+	ConstructVarMap(variablelist);
+	GetAllUniformLocation();
+}
+
+void LightShaderController::Clear()
+{
+	for (auto & v : varmap)
+	{
+		v.second.isset = false;
+	}
+}
+//TODO
+void LightShaderController::Set(std::string name, boost::any value)
+{
+	for (auto & v : varmap)
+	{
+		
+	}
+}
+//TODO
+void LightShaderController::Safe()
+{
+}
+//TODO
+void LightShaderController::Draw()
+{
+}
+
+void LightShaderController::ConstructShader(std::vector<std::pair<std::string, GLenum>> shaderlist)
+{
+	for (auto shader : shaderlist)
+	{
+		AddShader(shader.second, ReadFile(shader.first).c_str());
+	}
+	LinkShader();
+}
+
+void LightShaderController::ConstructVarMap(std::vector<ShaderVarRec> variablelist)
+{
+	for (auto variable : variablelist)
+	{
+		variable.location = 0xFFFFFFFF;
+		varmap[variable.name] = variable;
+	}
+}
+
+std::string LightShaderController::ReadFile(std::string path)
+{
+	std::string content;
+	std::ifstream in(path);
+	std::string tmp;
+	while (std::getline(in, tmp))
+	{
+		content += tmp;
+		content += "\n";
+	}
+	return content;
+}
+
+void LightShaderController::GetAllUniformLocation()
+{
+	for (auto & v : varmap)
+	{
+		v.second.location = GetUniformLocation(v.second.name);
+	}
+}

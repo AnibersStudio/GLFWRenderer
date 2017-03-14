@@ -2,6 +2,10 @@
 #include "CommonTools.h"
 #include <fstream>
 
+
+
+
+
 bool ForwardLightShaderController::LoadShaderPipeline()
 {
 	std::string vers, fras;
@@ -496,3 +500,4 @@ void DepthShaderController::SetLinearDepth(const vec3 & lightpos, float farplane
 	glUniform3fv(uniformgroup.lightposloc, 1, &lightpos[0]);
 	glUniform1f(uniformgroup.farplaneloc, farplane);
 }
+
