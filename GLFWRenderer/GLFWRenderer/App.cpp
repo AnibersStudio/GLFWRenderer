@@ -40,7 +40,7 @@ App::App()
 	drawstate.isHDR = false;
 	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
 	drawstate.Bloom = 0;//Be awared: Bloom touching bandwith bottleneck. 
-	drawstate.isShadow = true;
+	drawstate.isShadow = false;
 
 	init(moment.keys, false, 128);
 

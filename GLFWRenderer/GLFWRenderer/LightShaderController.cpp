@@ -2,6 +2,10 @@
 #include "CommonTools.h"
 #include <fstream>
 
+
+
+
+
 bool ForwardLightShaderController::LoadShaderPipeline()
 {
 	std::string vers, fras;
