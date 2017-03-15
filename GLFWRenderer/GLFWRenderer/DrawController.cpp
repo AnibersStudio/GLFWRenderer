@@ -87,6 +87,9 @@ void DrawController::Draw(DrawContext & context)
 		RenderDepthSingleFace(hdrfboptr, context.W * context.V * context.P, nontransvertices.size());
 	}
 	hdrfboptr->BindFrameBuffer();
+
+	screenfbo.BindFrameBuffer();
+
 	{//Prepare Foward render
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		flsc->Use();
@@ -159,86 +162,75 @@ void DrawController::Draw(DrawContext & context)
 	}
 	glDisable(GL_BLEND);
 
-	//Those codes are for just render a quad with texture. Debug use only.
-	//const Texture2D * tex = TextureLoader::Load2DTexture(std::string("1.png"), false);
-	//hdrsc->Use();
-	//tex->Bind(0);
-	//hdrsc->SetIsHDR(true);
-	//hdrsc->SetGamma(context.gamma);
-	//glBindVertexArray(quadvao);
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//glBindVertexArray(0);
+	//if (context.Bloom){//Bloom render to brightcolor 
+	//	bsc->Use();
+	//	bool firstpass = true;
+	//	quadvaoptr->BindVao();
+	//	for (int i = 0; i != context.Bloom; i++)
+	//	{
+	//		pingpongfboptr[i % 2].BindFrameBuffer();
+	//		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	//		bsc->SetBlurDirection((bool)(i % 2));
+
+	//		if (firstpass)
+	//		{
+	//			bsc->SetImageTexture(hdrfboptr->ColorBuffer[1]);
+	//			firstpass = false;
+	//		}
+	//		else
+	//		{
+	//			bsc->SetImageTexture(pingpongfboptr[!(i % 2)].ColorBuffer[0]);
+	//		}
+	//		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//	}
+	//	glBindVertexArray(0);
+	//}
 
 
-	if (context.Bloom){//Bloom render to brightcolor 
-		bsc->Use();
-		bool firstpass = true;
-		quadvaoptr->BindVao();
-		for (int i = 0; i != context.Bloom; i++)
-		{
-			pingpongfboptr[i % 2].BindFrameBuffer();
-			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	//if (context.Bloom){//Mix brightcolor and color
+	//	mixfboptr->BindFrameBuffer();
+	//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	//	quadvaoptr->BindVao();
+	//	msc->Use();
+	//	msc->SetBrightColorTexture(pingpongfboptr[(context.Bloom - 1) % 2].ColorBuffer[0]);
+	//	msc->SetColorTexture(hdrfboptr->ColorBuffer[0]);
+	//	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//	glBindVertexArray(0);
+	//}
 
-			bsc->SetBlurDirection((bool)(i % 2));
+	//switch (context.isEyeAdapt)
+	//{
+	//case EyeAdaptReadback:
+	//	EyeAdaptMC();
+	//	break;
+	//case EyeAdaptRenderToTex:
 
-			if (firstpass)
-			{
-				bsc->SetImageTexture(hdrfboptr->ColorBuffer[1]);
-				firstpass = false;
-			}
-			else
-			{
-				bsc->SetImageTexture(pingpongfboptr[!(i % 2)].ColorBuffer[0]);
-			}
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		}
-		glBindVertexArray(0);
-	}
+	//	break;
+	//}
+	//screenfbo.BindFrameBuffer();
+	//{//HDR reprocess
+	//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	//	hdrsc->Use();
+	//	if (context.Bloom)
+	//	{
+	//		hdrsc->SetScreenTexture(mixfboptr->ColorBuffer[0]);
+	//	}
+	//	else
+	//	{
+	//		hdrsc->SetScreenTexture(ddepthfboptr->DepthComponent);
 
+	//		//hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
+	//	}
 
-	if (context.Bloom){//Mix brightcolor and color
-		mixfboptr->BindFrameBuffer();
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		quadvaoptr->BindVao();
-		msc->Use();
-		msc->SetBrightColorTexture(pingpongfboptr[(context.Bloom - 1) % 2].ColorBuffer[0]);
-		msc->SetColorTexture(hdrfboptr->ColorBuffer[0]);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindVertexArray(0);
-	}
-
-	switch (context.isEyeAdapt)
-	{
-	case EyeAdaptReadback:
-		EyeAdaptMC();
-		break;
-	case EyeAdaptRenderToTex:
-
-		break;
-	}
-	screenfbo.BindFrameBuffer();
-	{//HDR reprocess
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		hdrsc->Use();
-		if (context.Bloom)
-		{
-			hdrsc->SetScreenTexture(mixfboptr->ColorBuffer[0]);
-		}
-		else
-		{
-			hdrsc->SetScreenTexture(ddepthfboptr->DepthComponent);
-
-			//hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
-		}
-
-		hdrsc->SetIsHDR(context.isHDR);
-		hdrsc->SetGamma(context.gamma);
-		hdrsc->SetExposure(eadata.exposure);
-		quadvaoptr->BindVao();
-		
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindVertexArray(0);
-	}
+	//	hdrsc->SetIsHDR(context.isHDR);
+	//	hdrsc->SetGamma(context.gamma);
+	//	hdrsc->SetExposure(eadata.exposure);
+	//	quadvaoptr->BindVao();
+	//	
+	//	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//	glBindVertexArray(0);
+	//}
 }
 
 DrawController & DrawController::operator<<(const PositionedArrayModel & rhs)

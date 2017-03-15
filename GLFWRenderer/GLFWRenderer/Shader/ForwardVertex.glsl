@@ -1,6 +1,6 @@
 #version 430 core
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 texturecood;
+layout(location = 1) in vec2 texturecoord;
 layout(location = 2) in vec3 normal;
 layout (location = 3) in vec3 tangent;
 
@@ -19,7 +19,7 @@ void main()
 {
 	gl_Position =  WVP * vec4(position, 1.0);
 	fragposition = position;
-	texcoord = texturecood;
+	texcoord = texturecoord;
 	fragnormal = normal;
 	fragtangent = tangent;
 	vec4 dlposh = dlLightWVP * vec4(position, 1.0);

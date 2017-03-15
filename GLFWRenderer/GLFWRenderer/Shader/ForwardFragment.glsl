@@ -208,6 +208,9 @@ void main()
 
 	vec4 outcolor = dlfactor + plfactor + slfactor + vec4(emissivecolor, 1.0) + vec4(ambientcolor, 1.0);
 	outcolor.a = trans;
+
+	pixelcolor = vec4(0.5, 0.5, 0.5, 1.0);
+
 	pixelcolor = outcolor;
 	if (isbloom)
 	{
