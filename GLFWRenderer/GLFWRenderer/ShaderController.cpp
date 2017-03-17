@@ -1,5 +1,5 @@
 #include "ShaderController.h"
-
+#include <fstream>
 void ShaderController::AddShader(GLenum shadertype, const char * shadertext)
 {
 	GLuint shader = glCreateShader(shadertype);

@@ -44,7 +44,7 @@ struct FboSetting
 
 struct FboStruct
 {
-	FboStruct() : FrameBufferObject(0), Setting(0, 0, 1, None), DepthComponent(0){}
+	FboStruct() : FrameBufferObject(0), Setting(0, 0, 1, DepthBufferT), DepthComponent(0){}
 	FboStruct(FboSetting setting);
 	void BindFrameBuffer() const;
 	void BindFrameBufferForDepth() const;

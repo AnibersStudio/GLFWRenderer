@@ -87,10 +87,10 @@ void DrawController::Draw(DrawContext & context)
 		RenderDepthSingleFace(hdrfboptr, context.W * context.V * context.P, nontransvertices.size());
 	}
 	hdrfboptr->BindFrameBuffer();
+	//screenfbo.BindFrameBuffer();
 	{//Prepare Foward render
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		flsc->Use();
-		flsc->SetSafeState();
 		flsc->SetMatrix(context.W, context.V, context.P);
 		flsc->SetEye(context.Eye);
 		flsc->SetBloom(context.Bloom != 0);
@@ -113,7 +113,6 @@ void DrawController::Draw(DrawContext & context)
 
 		forwardvaoptr->SetData(&vertvec[0], vertvec.size() * sizeof(Vertex));
 		glDrawArrays(GL_TRIANGLES, 0, vertvec.size());
-
 		/*unsigned int vertleft = vertvec.size();
 		unsigned int vertthispass = 0;
 		while (vertleft)
@@ -125,97 +124,86 @@ void DrawController::Draw(DrawContext & context)
 		}*/
 	}
 
-	glEnable(GL_BLEND);
-	glm::vec3 eye = context.Eye;
-	auto comparer = [eye](const PositionedArrayModel & lhs, const PositionedArrayModel & rhs) {return glm::length(eye - lhs.Position) > glm::length(eye - rhs.Position); };
-	std::priority_queue<PositionedArrayModel, std::vector<PositionedArrayModel>, std::reference_wrapper<decltype(comparer)>> transqueue(comparer);
-	for (auto & pmodel : trobjlist)
-	{
-		transqueue.push(pmodel);
-	}
-	while (transqueue.size())
-	{
-		auto pmodel = transqueue.top();//Transparent object not batched.
-		transqueue.pop();
-		for (auto & matvecpair : pmodel.GetMesh())
-		{
-			auto & material = matvecpair.first;
-			auto & vertvec = matvecpair.second;
-			flsc->SetTexMaterial(material);
+	//glEnable(GL_BLEND);
+	//glm::vec3 eye = context.Eye;
+	//auto comparer = [eye](const PositionedArrayModel & lhs, const PositionedArrayModel & rhs) {return glm::length(eye - lhs.Position) > glm::length(eye - rhs.Position); };
+	//std::priority_queue<PositionedArrayModel, std::vector<PositionedArrayModel>, std::reference_wrapper<decltype(comparer)>> transqueue(comparer);
+	//for (auto & pmodel : trobjlist)
+	//{
+	//	transqueue.push(pmodel);
+	//}
+	//while (transqueue.size())
+	//{
+	//	auto pmodel = transqueue.top();//Transparent object not batched.
+	//	transqueue.pop();
+	//	for (auto & matvecpair : pmodel.GetMesh())
+	//	{
+	//		auto & material = matvecpair.first;
+	//		auto & vertvec = matvecpair.second;
+	//		flsc->SetTexMaterial(material);
 
-			forwardvaoptr->SetData(&vertvec[0], vertvec.size() * sizeof(Vertex));
-			glDrawArrays(GL_TRIANGLES, 0, vertvec.size());
-			/*unsigned int vertleft = vertvec.size();
-			unsigned int vertthispass = 0;
-			while (vertleft)
-			{
-				vertthispass = vertleft > SIZE30M ? SIZE30M : vertleft;
-				forwardvaoptr->SetData(&vertvec[vertvec.size() - vertleft], vertthispass * sizeof(Vertex));
+	//		forwardvaoptr->SetData(&vertvec[0], vertvec.size() * sizeof(Vertex));
+	//		glDrawArrays(GL_TRIANGLES, 0, vertvec.size());
+	//		/*unsigned int vertleft = vertvec.size();
+	//		unsigned int vertthispass = 0;
+	//		while (vertleft)
+	//		{
+	//			vertthispass = vertleft > SIZE30M ? SIZE30M : vertleft;
+	//			forwardvaoptr->SetData(&vertvec[vertvec.size() - vertleft], vertthispass * sizeof(Vertex));
 
-				glDrawArrays(GL_TRIANGLES, 0, vertthispass);
-				vertleft -= vertthispass;
-			}*/
-		}
-	}
-	glDisable(GL_BLEND);
+	//			glDrawArrays(GL_TRIANGLES, 0, vertthispass);
+	//			vertleft -= vertthispass;
+	//		}*/
+	//	}
+	//}
+	//glDisable(GL_BLEND);
 
-	//Those codes are for just render a quad with texture. Debug use only.
-	//const Texture2D * tex = TextureLoader::Load2DTexture(std::string("1.png"), false);
-	//hdrsc->Use();
-	//tex->Bind(0);
-	//hdrsc->SetIsHDR(true);
-	//hdrsc->SetGamma(context.gamma);
-	//glBindVertexArray(quadvao);
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//glBindVertexArray(0);
+	//if (context.Bloom){//Bloom render to brightcolor 
+	//	bsc->Use();
+	//	bool firstpass = true;
+	//	quadvaoptr->BindVao();
+	//	for (int i = 0; i != context.Bloom; i++)
+	//	{
+	//		pingpongfboptr[i % 2].BindFrameBuffer();
+	//		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+	//		bsc->SetBlurDirection((bool)(i % 2));
 
-	if (context.Bloom){//Bloom render to brightcolor 
-		bsc->Use();
-		bool firstpass = true;
-		quadvaoptr->BindVao();
-		for (int i = 0; i != context.Bloom; i++)
-		{
-			pingpongfboptr[i % 2].BindFrameBuffer();
-			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-			bsc->SetBlurDirection((bool)(i % 2));
-
-			if (firstpass)
-			{
-				bsc->SetImageTexture(hdrfboptr->ColorBuffer[1]);
-				firstpass = false;
-			}
-			else
-			{
-				bsc->SetImageTexture(pingpongfboptr[!(i % 2)].ColorBuffer[0]);
-			}
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		}
-		glBindVertexArray(0);
-	}
+	//		if (firstpass)
+	//		{
+	//			bsc->SetImageTexture(hdrfboptr->ColorBuffer[1]);
+	//			firstpass = false;
+	//		}
+	//		else
+	//		{
+	//			bsc->SetImageTexture(pingpongfboptr[!(i % 2)].ColorBuffer[0]);
+	//		}
+	//		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//	}
+	//	glBindVertexArray(0);
+	//}
 
 
-	if (context.Bloom){//Mix brightcolor and color
-		mixfboptr->BindFrameBuffer();
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		quadvaoptr->BindVao();
-		msc->Use();
-		msc->SetBrightColorTexture(pingpongfboptr[(context.Bloom - 1) % 2].ColorBuffer[0]);
-		msc->SetColorTexture(hdrfboptr->ColorBuffer[0]);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glBindVertexArray(0);
-	}
+	//if (context.Bloom){//Mix brightcolor and color
+	//	mixfboptr->BindFrameBuffer();
+	//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	//	quadvaoptr->BindVao();
+	//	msc->Use();
+	//	msc->SetBrightColorTexture(pingpongfboptr[(context.Bloom - 1) % 2].ColorBuffer[0]);
+	//	msc->SetColorTexture(hdrfboptr->ColorBuffer[0]);
+	//	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//	glBindVertexArray(0);
+	//}
 
-	switch (context.isEyeAdapt)
-	{
-	case EyeAdaptReadback:
-		EyeAdaptMC();
-		break;
-	case EyeAdaptRenderToTex:
+	//switch (context.isEyeAdapt)
+	//{
+	//case EyeAdaptReadback:
+	//	EyeAdaptMC();
+	//	break;
+	//case EyeAdaptRenderToTex:
 
-		break;
-	}
+	//	break;
+	//}
 	screenfbo.BindFrameBuffer();
 	{//HDR reprocess
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -226,9 +214,9 @@ void DrawController::Draw(DrawContext & context)
 		}
 		else
 		{
-			hdrsc->SetScreenTexture(ddepthfboptr->DepthComponent);
+			//hdrsc->SetScreenTexture(ddepthfboptr->DepthComponent);
 
-			//hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
+			hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
 		}
 
 		hdrsc->SetIsHDR(context.isHDR);
@@ -641,6 +629,7 @@ void FboStruct::BindFrameBuffer() const
 		DrawBuffersPtr[i] = GL_COLOR_ATTACHMENT0_EXT + i;
 	}
 	glDrawBuffers(Setting.ColorBufferCount, DrawBuffersPtr);
+	
 }
 
 void FboStruct::BindFrameBufferForDepth() const

@@ -68,7 +68,7 @@ public:
 	void SetTextureEmissive(const Texture2D & e) const;
 	void SetTextureNormal(const Texture2D & n) const;
 	void SetTextureTrans(const Texture2D & t) const;
-
+	unsigned int GetShaderObj() { return shaderprogram; }
 	void SetSafeState();
 	void SetNoneTexture() const;
 protected:

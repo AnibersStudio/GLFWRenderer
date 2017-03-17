@@ -170,8 +170,9 @@ void main()
 		if (isdldepth)
 		{
 			shadowfactor = calculateshadow(normal, dl[0].direction, dldepthsampler, dlspacepos);
+			dlfactor += shadowfactor * vec4(CalDL(0U, normal, diffusecolor, specularcolor), 0.0);
+
 		}
-		dlfactor +=  shadowfactor * vec4(CalDL(0U, normal, diffusecolor, specularcolor), 0.0);
 	}
 	for (uint i = 1U; i < dlcount; i++)
 	{
@@ -184,8 +185,9 @@ void main()
 		if (ispldepth)
 		{
 			shadowfactor = calculateshadow(pl[0].position, pldepthsampler, fragposition, plfarplane);
+			plfactor += shadowfactor * vec4(CalPL(0U, normal, diffusecolor, specularcolor), 0.0);
+
 		}
-		plfactor += shadowfactor * vec4(CalPL(0U, normal, diffusecolor, specularcolor), 0.0);
 	}
 	for (uint i = 1U; i != 1U; i++ )
 	{
@@ -198,8 +200,9 @@ void main()
 		if (issldepth)
 		{
 			shadowfactor = calculateshadow(sl[0].direction, sldepthsampler, slspacepos, length(fragposition - sl[0].position));
+			slfactor += shadowfactor * vec4(CalSL(0U, normal, diffusecolor, specularcolor), 0.0);
+
 		}
-		slfactor += shadowfactor * vec4(CalSL(0U, normal, diffusecolor, specularcolor), 0.0);
 	}
 	for (uint i = 1U; i != 1U; i++)
 	{
@@ -208,7 +211,9 @@ void main()
 
 	vec4 outcolor = dlfactor + plfactor + slfactor + vec4(emissivecolor, 1.0) + vec4(ambientcolor, 1.0);
 	outcolor.a = trans;
+
 	pixelcolor = outcolor;
+
 	if (isbloom)
 	{
 		float brightness = dot(outcolor.xyz, vec3(0.299, 0.587, 0.144));//Perceived luminance

@@ -22,6 +22,7 @@ bool ForwardLightShaderController::LoadShaderPipeline()
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
 	LinkShader();
 
+	GetAllUniforms();
 	
 	return true;
 }
@@ -269,6 +270,7 @@ bool HDRShaderController::LoadShaderPipeline()
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
 	LinkShader();
 
+	GetAllUniforms();
 
 	return true;
 }
@@ -336,6 +338,8 @@ bool BloomShaderController::LoadShaderPipeline()
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
 	LinkShader();
 
+	GetAllUniforms();
+
 	return true;
 }
 
@@ -387,6 +391,8 @@ bool MixShaderController::LoadShaderPipeline()
 	AddShader(GL_VERTEX_SHADER, vers.c_str());
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
 	LinkShader();
+
+	GetAllUniforms();
 
 	return true;
 }
@@ -441,6 +447,8 @@ bool DepthShaderController::LoadShaderPipeline()
 	AddShader(GL_FRAGMENT_SHADER, fras.c_str());
 	LinkShader();
 
+	GetAllUniforms();
+
 	return true;
 }
 
@@ -452,6 +460,7 @@ void DepthShaderController::SetLightWVP(const mat4 & wvp)
 void DepthShaderController::Use()
 {
 	ShaderController::Use();
+	SetSafeState();
 }
 
 void DepthShaderController::GetAllUniforms()

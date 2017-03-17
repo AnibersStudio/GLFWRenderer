@@ -6,7 +6,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <boost/any.hpp>
-#include <fstream>
+
 /// <summary> A exception for shader compiling and linking </summary>
 struct ShaderErrorException : public std::exception
 {

@@ -15,8 +15,8 @@ void KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mod
 GLFWcontext::GLFWcontext(int w, int h, std::string t, bool isfullscr) : width(w), height(h), title(t), isfullscreen(isfullscr)
 {
 	glfwInit();						//GLFW initialize
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);	//Minimal GL version to run
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);	//Maximum GL version to run
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);//GL version 4.3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);	
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	//GLFW only uses GL's core functionalities
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	if (!isfullscr)
