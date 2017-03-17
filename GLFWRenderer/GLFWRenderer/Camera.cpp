@@ -1,7 +1,4 @@
 #include "Camera.h"
-Camera::Camera()
-{
-}
 
 Camera::Camera(const glm::vec3 & eye, float hor, float vet) : Eye(eye), horizonalangle(hor), verticalangle(vet)
 {

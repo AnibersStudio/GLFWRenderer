@@ -15,8 +15,9 @@ in vec3 fragnormal;
 in vec3 fragtangent;
 in float fragdepthinview;
 
-layout(location = 0) out mediump3 normalstorage;
-layout(location = 1) out lowp4 albedostorage;
+layout(location = 0) out mediump vec3 normalstorage;
+layout(location = 1) out lowp vec4 albedostorage;
+layout(location = 2) out lowp vec4 emmisivestorage;
 
 uniform Material material
 uniform bool isdiffuse;
@@ -38,7 +39,7 @@ void main()
 	//Calculate Color
 	//Encode Alpha
 	normalstorage.xy = normal;
-	normalstorage.z = shininess and alpha;
+	normalstorage.z = shininess;
 	albedostorage.xyz = albedo;
 	albedostorage.w = metalness;
 	
