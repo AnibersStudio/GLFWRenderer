@@ -74,6 +74,16 @@ DrawController::DrawController(unsigned int w, unsigned int h) : width(w), heigh
 
 void DrawController::Draw(DrawContext & context)
 {
+
+	typedef  struct {
+		uint  count;
+		uint  instanceCount;
+		uint  first;
+		uint  baseInstance;
+	} DrawArraysIndirectCommand;
+
+	DrawArraysIndirectCommand i;
+
 	glDisable(GL_BLEND);
 	ForwardLightData lightdata;
 	std::vector<vec3> nontransvertices;
@@ -82,7 +92,7 @@ void DrawController::Draw(DrawContext & context)
 		nontransvertices = GetNonTransObjList();
 		depthvaoptr->SetData(&nontransvertices[0], nontransvertices.size() * sizeof(vec3));
 	}
-	lightdata = RenderShadow(context.isShadow, depthtexwidth, depthtexheight, context.Eye, nontransvertices.size());
+	lightdata = RenderShadow(context.isShadow, depthtexwidth, depthtexheight, context.PlayerCamera->GetEye(), nontransvertices.size());
 	{//Render Depth only
 		RenderDepthSingleFace(hdrfboptr, context.W * context.V * context.P, nontransvertices.size());
 	}
@@ -92,7 +102,7 @@ void DrawController::Draw(DrawContext & context)
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		flsc->Use();
 		flsc->SetMatrix(context.W, context.V, context.P);
-		flsc->SetEye(context.Eye);
+		flsc->SetEye(context.PlayerCamera->GetEye());
 		flsc->SetBloom(context.Bloom != 0);
 
 		flsc->SetTextureDepth(lightdata.dlshadow ? ddepthfboptr->DepthComponent : 0, lightdata.plshadow ? pdepthfboptr->DepthComponent : 0, lightdata.slshadow ? sdepthfboptr->DepthComponent : 0);
@@ -112,16 +122,21 @@ void DrawController::Draw(DrawContext & context)
 		flsc->SetTexMaterial(material);
 
 		forwardvaoptr->SetData(&vertvec[0], vertvec.size() * sizeof(Vertex));
-		glDrawArrays(GL_TRIANGLES, 0, vertvec.size());
-		/*unsigned int vertleft = vertvec.size();
-		unsigned int vertthispass = 0;
-		while (vertleft)
-		{
-			vertthispass = vertleft > SIZE30M ? SIZE30M : vertleft;
-			forwardvaoptr->SetData(&vertvec[vertvec.size() - vertleft], vertthispass * sizeof(Vertex));
-			glDrawArrays(GL_TRIANGLES, 0, vertthispass);
-			vertleft -= vertthispass;
-		}*/
+
+		i.count = vertvec.size();
+		i.first = 0;
+		i.baseInstance = 0;
+		i.instanceCount = 1;
+
+		GLuint indirect;
+		glGenBuffers(1, &indirect);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect);
+		glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(i), &i, GL_STREAM_DRAW);
+		glMultiDrawArraysIndirectAMD(GL_TRIANGLES, 0, 1, 0);
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, i.count, 1);
+		//glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, i.count, 1, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, vertvec.size());
+
 	}
 
 	//glEnable(GL_BLEND);
@@ -195,15 +210,15 @@ void DrawController::Draw(DrawContext & context)
 	//	glBindVertexArray(0);
 	//}
 
-	//switch (context.isEyeAdapt)
-	//{
-	//case EyeAdaptReadback:
-	//	EyeAdaptMC();
-	//	break;
-	//case EyeAdaptRenderToTex:
+	switch (context.isEyeAdapt)
+	{
+	case EyeAdaptReadback:
+		EyeAdaptMC();
+		break;
+	case EyeAdaptRenderToTex:
 
-	//	break;
-	//}
+		break;
+	}
 	screenfbo.BindFrameBuffer();
 	{//HDR reprocess
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -219,7 +234,7 @@ void DrawController::Draw(DrawContext & context)
 			hdrsc->SetScreenTexture(hdrfboptr->ColorBuffer[0]);
 		}
 
-		hdrsc->SetIsHDR(context.isHDR);
+		hdrsc->SetIsHDR(context.ToneMapping);
 		hdrsc->SetGamma(context.gamma);
 		hdrsc->SetExposure(eadata.exposure);
 		quadvaoptr->BindVao();
@@ -229,25 +244,24 @@ void DrawController::Draw(DrawContext & context)
 	}
 }
 
-DrawController & DrawController::operator<<(const PositionedArrayModel & rhs)
+DrawController & DrawController::operator<<(const ArrayModel & rhs)
 {
-	PositionedArrayModel trpart;
-	for (auto & c : rhs.GetMesh())
+	bool istrans = false;
+	for (auto & pair : rhs.GetMesh())
 	{
-		if (c.first.transparency > 0.9999)//Opace
+		if (pair.first.transparency < 0.9999f)
 		{
-			Add(c.first, c.second);
-		}
-		else
-		{
-			trpart.Add(c.first, c.second);
+			istrans = true;
 		}
 	}
-	if (trpart.GetMesh().size())
+	if (istrans)
 	{
-		trobjlist.push_back(trpart);
+		trobjlist.push_back(rhs);
 	}
-
+	else
+	{
+		(*this).operator+=(rhs);
+	}
 	return *this;
 }
 
@@ -580,6 +594,9 @@ FboStruct::FboStruct(FboSetting setting) : Setting(setting)
 	case DepthTextureT:
 		glGenTextures(1, &DepthComponent);
 		glBindTexture(GL_TEXTURE_2D, DepthComponent);
+
+
+
 		glTexImage2D(GL_TEXTURE_2D, 0, setting.DepthFormat, setting.Width, setting.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setting.ColorTexFilter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setting.ColorTexFilter);

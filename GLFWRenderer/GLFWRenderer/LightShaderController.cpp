@@ -3,9 +3,6 @@
 #include <fstream>
 
 
-
-
-
 bool ForwardLightShaderController::LoadShaderPipeline()
 {
 	std::string vers, fras;
@@ -136,31 +133,36 @@ void ForwardLightShaderController::SetMaterial(const Material & m) const
 
 void ForwardLightShaderController::SetTextureDiffuse(const Texture2D & d)  const
 {
-	d.Bind(0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, d.GetObjectID());
 	glUniform1i(uniformgroup.isdiffuseloc, 1);
 }
 
 void ForwardLightShaderController::SetTextureSpecular(const Texture2D & s)  const
 {
-	s.Bind(1);
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, s.GetObjectID());
 	glUniform1i(uniformgroup.isspecularloc, 1);
 }
 
 void ForwardLightShaderController::SetTextureEmissive(const Texture2D & e)  const
 {
-	e.Bind(2);
+	glActiveTexture(GL_TEXTURE0 + 2);
+	glBindTexture(GL_TEXTURE_2D, e.GetObjectID());
 	glUniform1i(uniformgroup.isemissiveloc, 1);
 }
 
 void ForwardLightShaderController::SetTextureNormal(const Texture2D & n) const
 {
-	n.Bind(3);
+	glActiveTexture(GL_TEXTURE0 + 3);
+	glBindTexture(GL_TEXTURE_2D, n.GetObjectID());
 	glUniform1i(uniformgroup.isnormalloc, 1);
 }
 
 void ForwardLightShaderController::SetTextureTrans(const Texture2D & t) const
 {
-	t.Bind(4);
+	glActiveTexture(GL_TEXTURE0 + 4);
+	glBindTexture(GL_TEXTURE_2D, t.GetObjectID());
 	glUniform1i(uniformgroup.istransloc, 1);
 }
 

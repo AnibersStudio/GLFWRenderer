@@ -19,7 +19,7 @@ void ShaderController::AddShader(GLenum shadertype, const char * shadertext)
 		logadd = new GLchar[loglength + 1];
 		glGetShaderInfoLog(shader, loglength, &loglength, logadd);
 		{//编译出错，做善后处理
-			ShaderErrorException exp("UnknowFile", logadd);
+			DrawErrorException exp("ShaderController:UnknowFile", logadd);
 			delete[] logadd;
 			throw exp;
 		}
@@ -51,7 +51,7 @@ void ShaderController::LinkShader()
 		logadd = new GLchar[loglength + 1];
 		glGetProgramInfoLog(shaderprogram, loglength, &loglength, logadd);
 		{//渲染程序链接出错，做善后处理
-			ShaderErrorException exp("UnknowFile", logadd);
+			DrawErrorException exp("ShaderController:UnknowFile", logadd);
 			delete[] logadd;
 			throw exp;
 		}
@@ -62,7 +62,7 @@ GLuint ShaderController::GetUniformLocation(const std::string & uniformname) con
 {
 	GLuint uniformloc = glGetUniformLocation(shaderprogram, uniformname.c_str());
 	if (uniformloc == 0xFFFFFFFF)
-		throw ShaderErrorException{"ShaderProgram" + tostr(shaderprogram) + ":" + uniformname, "Error getting location of uniform. Maybe optimized out by compiler."};
+		throw DrawErrorException{"ShaderController:ShaderProgram" + tostr(shaderprogram) + ":" + uniformname, "Error getting location of uniform. Maybe optimized out by compiler."};
 	return uniformloc;
 }
 
@@ -136,18 +136,18 @@ void LightShaderController::Set(std::string name, boost::any value)
 			glBindTexture(varrecord.type, boost::any_cast<GLuint>(value));
 			break;
 		default:
-			throw ShaderErrorException("ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
+			throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
 			break;
 		}
 		varrecord.isset = true;
 	}
 	catch (std::out_of_range)
 	{
-		throw ShaderErrorException("ShaderProgram" + tostr(programid) + ":" + name, "Variable not exist in table. Add it in constructor.");
+		throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable not exist in table. Add it in constructor.");
 	}
 	catch (boost::bad_any_cast)
 	{
-		throw ShaderErrorException("ShaderProgram" + tostr(programid) + ":" + name, "Variable type incompatible with input value. Must be a value of exactly the GLenum.");
+		throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable type incompatible with input value. Must be a value of exactly the GLenum.");
 	}
 }
 
@@ -185,7 +185,7 @@ void LightShaderController::ConstructShader(std::vector<std::pair<std::string, G
 		try {
 			AddShader(shader.second, ReadFile(shader.first).c_str());
 		}
-		catch (ShaderErrorException & e)
+		catch (DrawErrorException & e)
 		{
 			e.path = shader.first;
 			throw e;
@@ -194,7 +194,7 @@ void LightShaderController::ConstructShader(std::vector<std::pair<std::string, G
 	try {
 		LinkShader();
 	}
-	catch (ShaderErrorException & e)
+	catch (DrawErrorException & e)
 	{
 		for (auto shader : shaderlist)
 		{

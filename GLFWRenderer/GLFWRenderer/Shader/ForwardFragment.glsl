@@ -120,6 +120,9 @@ void main()
 {
 	vec3 diffusecolor, ambientcolor, specularcolor, emissivecolor;
 
+
+	float i = gl_DepthRange.far;
+
 	if (isdiffuse)
 	{
 		diffusecolor = (texture(diffusesampler, texcoord)).xyz;
@@ -201,7 +204,6 @@ void main()
 		{
 			shadowfactor = calculateshadow(sl[0].direction, sldepthsampler, slspacepos, length(fragposition - sl[0].position));
 			slfactor += shadowfactor * vec4(CalSL(0U, normal, diffusecolor, specularcolor), 0.0);
-
 		}
 	}
 	for (uint i = 1U; i != 1U; i++)

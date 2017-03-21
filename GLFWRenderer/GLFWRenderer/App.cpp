@@ -4,16 +4,20 @@ App::App()
 	context = new GLFWcontext(settings.width, settings.height, "GLFWapp", settings.isfullscreen);
 	context->RegisterReceiver(this);
 
+	int i;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &i);
+
 	drawer = new DrawController(settings.width, settings.height);
 
-	IndexedModel t("Res/MC/Stein.obj", true);
+	IndexedModel t("Res/MC/Stein.obj");
 	ArrayModel am(t);
 	ArrayModel am5(t);
 	IndexedModel t2("Res/MC/Sand.obj");
 	ArrayModel am2(t2);
 	ArrayModel am3(t2);
+	ArrayModel am4(am3);
 	//ArrayModel am4(t2);
-
+	
 	am.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
 	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
 	//am5.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
@@ -37,14 +41,23 @@ App::App()
 	//drawer->GetDLight()[1] = dl[1];
 	//drawer->GetPLight()[0] = pl[0];
 	//drawer->GetSLight()[0] = sl[0];
-	drawstate.isHDR = false;
+	drawstate.ToneMapping = false;
 	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
 	drawstate.Bloom = 0;//Be awared: Bloom touching bandwith bottleneck. 
 	drawstate.isShadow = false;
-
+	drawstate.PlayerCamera = &maincamera;
 	init(moment.keys, false, 128);
 
-	*drawer << PositionedArrayModel(am2) << PositionedArrayModel(am3) << PositionedArrayModel(am) ;
+	*drawer << am2 << am3 << am ;
+
+	for (int i = 0; i != 10; i++)
+	{
+		for (int j = 0; j != 10; j++)
+		{
+			am4.Transform(glm::translate(mat4(1.0), vec3(1, 1, 0)));
+			*drawer << am4;
+		}
+	}
 
 }
 

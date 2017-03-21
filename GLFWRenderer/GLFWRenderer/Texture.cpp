@@ -2,92 +2,93 @@
 
 #include "Texture.h"
 #include <iostream>
-Texture2D::Texture2D(GLenum ttarget, std::string path, bool issRGB, bool magnifysmooth, bool mipmaped)
+Texture2D::Texture2D(std::string path, bool colortexture)
 {
-	textarget = ttarget;
-	auto image = FreeImage_Load(FreeImage_GetFileType(path.c_str(), 0), path.c_str(), 0);
+	auto filetype = FreeImage_GetFileType(path.c_str(), 0);
+	if (filetype == FIF_UNKNOWN)
+	{
+		throw DrawErrorException("FreeImage:" + path, "Doesn't exist or isn't an image file.");
+	}
+
+	auto image = FreeImage_Load(filetype, path.c_str(), 0);
 	auto blob = new BYTE[FreeImage_GetHeight(image) * FreeImage_GetPitch(image)];
 	FreeImage_ConvertToRawBits(blob, image, FreeImage_GetPitch(image), FreeImage_GetBPP(image), FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, true);
-	GLint internalformat;
-	GLint imageformat;
-	unsigned int bitwidth = FreeImage_GetBPP(image);
+	
+	bool isSRGB = colortexture;
+	bool issmooth = colortexture;//Assuming that smooth image has mipmap
+	bool hasalpha;
 	if (FreeImage_GetBPP(image) == 32)
 	{
-		if (issRGB)
-		{
-			internalformat = GL_SRGB_ALPHA;
-		}
-		else
-		{
-			internalformat = GL_RGBA;
-		}
-		imageformat = internalformat;
-#ifdef WIN32
-		imageformat = GL_BGRA;
-#endif
-#ifdef LINUX
-		imageformat = GL_BGRA;
-#endif
+		hasalpha = true;
 	}
 	else if (FreeImage_GetBPP(image) == 24)
 	{
-		if (issRGB)
-		{
-			internalformat = GL_SRGB;
-		}
-		else
-		{
-			internalformat = GL_RGB;
-		}
-		imageformat = internalformat;
-#ifdef WIN32
-		imageformat = GL_BGR;
-#endif
-#ifdef LINUX
-		imageformat = GL_BGR;
-#endif
+		hasalpha = false;
 	}
 	else
 	{
-		std::cerr << "Texture2D: Image bitwidth cannot be recognized." << std::endl;
 		FreeImage_Unload(image);
-		return;
+		throw DrawErrorException("FreeImage:" + path, "Image bitwidth isn't supported.");
 	}
-	glGenTextures(1, &texobj);
-	glBindTexture(textarget, texobj);
-	glTexImage2D(textarget, 0, internalformat, FreeImage_GetWidth(image), FreeImage_GetHeight(image), 0, imageformat, GL_UNSIGNED_BYTE, blob);
-	if (mipmaped)
-	{
-		glGenerateMipmap(textarget);
-	}
+	//os: win-0 linux-1 other-2
+	int os = 2;
+#ifdef WIN32
+	os = 0;
+#endif
+#ifdef LINUX
+	os = 1;
+#endif
 
+	//internalformat[isSRGB][hasalpha]
+	GLenum internalformats[2][2] =
+	{ { GL_RGB, GL_RGBA },
+	{GL_SRGB, GL_SRGB_ALPHA} };
+	//imageformats[os:win-0 linux-1 other-2][hasalpha]
+	GLenum imageformats[3][2] =
+	{ {GL_BGR, GL_BGRA},
+	{GL_BGR, GL_BGRA},
+	{GL_RGB, GL_RGBA} };
+	//determine image format
+	GLint internalformat = internalformats[isSRGB][hasalpha];
+	GLint imageformat = imageformats[os][hasalpha];
+
+	glGenTextures(1, &texobj);
+	glTextureImage2DEXT(texobj, textarget, 0, internalformat, FreeImage_GetWidth(image), FreeImage_GetHeight(image), 0, imageformat, GL_UNSIGNED_BYTE, blob);
+	if (issmooth)
+	{
+		glGenerateTextureMipmapEXT(texobj, textarget);
+	}
 	FreeImage_Unload(image);
-	glBindTexture(textarget, 0);
+
+	//determine filters
+	//filters[issmooth][min-0 mag-1]
+	GLenum filters[2][2] =
+	{ { GL_NEAREST, GL_NEAREST},
+	{ GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR} };
+	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MIN_FILTER, filters[issmooth][0]);
+	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MAG_FILTER, filters[issmooth][1]);
+
 	loaded = true;
 	texpath = path;
-	ismagnifysmooth = magnifysmooth;
-	havemipmap = mipmaped;
+	iscolortexture = colortexture;
 }
 
-bool Texture2D::Bind(unsigned int num) const
+TextureLoader & TextureLoader::GetInstance()
 {
-	if (loaded)
-	{
-		glActiveTexture(GL_TEXTURE0 + num);
-		glBindTexture(textarget, texobj);
-		if (havemipmap)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	static TextureLoader Instance;
+	return Instance;
+}
 
-		}
-		else
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);//solve the distant blink
-		}
-		if (ismagnifysmooth)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		else
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+const Texture2D * TextureLoader::Load2DTexture(std::string & path, bool iscolortexture)
+{
+	const Texture2D * tex = nullptr;
+	try
+	{
+		tex = texmap.at(std::tuple<std::string, bool>(path, iscolortexture));
 	}
-	return loaded;
+	catch (const std::out_of_range&)
+	{
+		texmap[std::tuple<std::string, bool>(path, iscolortexture)] = tex = new Texture2D(path, iscolortexture);
+	}
+	return tex;
 }

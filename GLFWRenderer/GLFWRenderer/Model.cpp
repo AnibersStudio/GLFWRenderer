@@ -3,7 +3,7 @@
 
 #include "Model.h"
 #include <assimp/cimport.h>
-IndexedModel::IndexedModel(const std::string & objpath, bool isantialias, bool isshapesmooth) : iscolorsmooth(isantialias), isnormalsmooth(isshapesmooth)
+IndexedModel::IndexedModel(const std::string & objpath)
 {
 	Assimp::Importer objimporter;
 	const aiScene * scene = objimporter.ReadFile(objpath, aiProcess_Triangulate );
@@ -57,12 +57,12 @@ void IndexedModel::ProcessMesh(const aiMesh * mesh, const aiScene * scene)
 	for (unsigned int i = 0; i != mesh->mNumVertices; i++)//Add vertices
 	{
 		Vertex vertex;
-		vertex.SetPosition(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
-		vertex.SetTexcoord(mesh->mTextureCoords[0] ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f));
-		vertex.SetNormal(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
+		vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+		vertex.texcoord = (mesh->mTextureCoords[0] ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f));
+		vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 		if (mesh->mTangents)
 		{
-			vertex.SetTangent(glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z));
+			vertex.tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
 		}
 		meshv.push_back(vertex);
 	}
@@ -104,27 +104,27 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 	if (material->GetTextureCount(aiTextureType_DIFFUSE))
 	{
 		material->GetTexture(aiTextureType_DIFFUSE, 0, &diffusename);
-		texmat.diffusetex = TextureLoader::Load2DTexture( path + "/" + std::string(diffusename.C_Str()), iscolorsmooth, true, true);//diffuse is sRGB created.
+		texmat.diffusetex = TextureLoader::GetInstance().Load2DTexture( path + "/" + std::string(diffusename.C_Str()));//diffuse is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_SPECULAR))
 	{
 		material->GetTexture(aiTextureType_SPECULAR, 0, &specularname);
-		texmat.speculartex = TextureLoader::Load2DTexture(path + "/" + std::string(specularname.C_Str()), iscolorsmooth);
+		texmat.speculartex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(specularname.C_Str()), false);
 	}
 	if (material->GetTextureCount(aiTextureType_EMISSIVE))
 	{
 		material->GetTexture(aiTextureType_EMISSIVE, 0, &emissivename);
-		texmat.emissivetex = TextureLoader::Load2DTexture(path + "/" + std::string(emissivename.C_Str()), iscolorsmooth, true, true);//emissive is sRGB created.
+		texmat.emissivetex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(emissivename.C_Str()));//emissive is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_HEIGHT))
 	{
 		material->GetTexture(aiTextureType_HEIGHT, 0, &normalname);
-		texmat.normaltex = TextureLoader::Load2DTexture(path + "/" + std::string(normalname.C_Str()), isnormalsmooth, false);
+		texmat.normaltex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(normalname.C_Str()), false);
 	}
 	if (material->GetTextureCount(aiTextureType_OPACITY))
 	{
 		material->GetTexture(aiTextureType_OPACITY, 0, &transname);
-		texmat.transtex = TextureLoader::Load2DTexture(path + "/" + std::string(transname.C_Str()), false, false, true);
+		texmat.transtex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(transname.C_Str()), false);
 	}
 	return texmat;
 }
@@ -185,17 +185,4 @@ ArrayModel & ArrayModel::operator+=(const ArrayModel & rhs)
 	return *this;
 }
 
-std::unordered_map <const std::tuple<std::string, bool, bool>, const Texture2D * > TextureLoader::texmap;
 
-const Texture2D * TextureLoader::Load2DTexture(std::string & path, bool issmooth, bool is_linear_to_distance, bool issRGB)
-{
-	try 
-	{
-		texmap.at(std::tuple<std::string, bool, bool>(path, issmooth, is_linear_to_distance));
-	}
-	catch (const std::out_of_range&)
-	{
-		texmap[std::tuple<std::string, bool, bool>(path, issmooth, is_linear_to_distance)] = new Texture2D(GL_TEXTURE_2D, path, issmooth, is_linear_to_distance, issRGB);
-	}
-	return texmap[std::tuple<std::string, bool, bool>(path, issmooth, is_linear_to_distance)];
-}

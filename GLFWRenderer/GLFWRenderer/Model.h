@@ -12,10 +12,6 @@
 
 struct Vertex
 {
-	void SetPosition(const glm::vec3 & pos) { position = pos; }
-	void SetTexcoord(const glm::vec2 & texpos) { texcoord = texpos; }
-	void SetNormal(const glm::vec3 & n) { normal = n; };
-	void SetTangent(const glm::vec3 & t) { tangent = t; }
 	glm::vec3 position;
 	glm::vec2 texcoord;
 	glm::vec3 normal;
@@ -24,13 +20,24 @@ struct Vertex
 
 struct TexturedMaterial : public Material
 {
+	/// <summary> Default constructor with default material parameters and none texture </summary>
 	TexturedMaterial() {}
+	/// <summary> Textured material with these parameters. Please assign textures directly </summary>
 	TexturedMaterial(const glm::vec3 & a, const glm::vec3 & d, const glm::vec3 & s, const glm::vec3 & e, GLfloat sh, GLfloat tr) : Material(a, d, s, e, sh, tr) {}
 
+	/// <summary> Albedo texture of the material. nullptr means none </summary>
 	const Texture2D * diffusetex = nullptr;
+	/// <summary> Mentalness texture of the material. nullptr means none 
+	/// <para> Only the red chanel of the texture is used. </para>
+	/// </summary>
 	const Texture2D * speculartex = nullptr;
+	/// <summary> Normal texture of the material. nullptr means none </summary>
 	const Texture2D * normaltex = nullptr;
+	/// <summary> Emissive texture of the material. nullptr means none </summary>
 	const Texture2D * emissivetex = nullptr;
+	/// <summary> Transparency texture of the material. nullptr means none 
+	/// <para> Only the alpha chanel is used. </para>
+	/// </summary>
 	const Texture2D * transtex = nullptr;
 
 	bool operator==(const TexturedMaterial & rhs) const
@@ -61,68 +68,84 @@ namespace std
 class IndexedModel
 {
 public:
+	/// <summary> All of the vertices of the mesh </summary>
 	typedef std::vector<Vertex> MeshVert;
+	/// <summary> Map from material to indices to MeshVert </summary>
 	typedef std::unordered_map<TexturedMaterial, std::vector<unsigned int>> MeshInd;
+	/// <summary> Create a empty IndexedModel </summary>
 	IndexedModel() = default;
-	IndexedModel(const std::string & objpath, bool isimportant = false, bool issurfacesmooth = false);
+	/// <summary> Load a mesh from file </summary>
+	IndexedModel(const std::string & objpath);
+	/// <summary> Apply a transform to the mesh </summary>
+
 	void Transform(const glm::mat4 & transformmatrix);
+	/// <summary> Mesh Vertices of the mesh </summary>
 	const MeshVert & GetMeshVert() const { return meshv; };
+	/// <summary> Mesh Indices map of the mesh </summary>
 	const MeshInd & GetMeshInd() const { return meshi; };
+	/// <summary> Path of the mesh file </summary>
 	const std::string & GetPath() const { return path; }
-protected:
+private:
 	void ProcessNode(const aiNode * node, const aiScene * scene);
 	void ProcessMesh(const aiMesh * mesh, const aiScene * scene);
 	TexturedMaterial ProcessMaterial(const aiMaterial * material);
 	std::string path;
-private:
 	MeshVert meshv;
 	MeshInd meshi;
-	bool iscolorsmooth;
-	bool isnormalsmooth;
 };
 
 class ArrayModel
 {
 public:
+	/// <summary> All of the ordered vertices of the mesh </summary>
 	typedef std::vector<Vertex> MeshVert;
+	/// <summary> Mesh is a map from material to MeshVert </summary>
 	typedef std::unordered_map<TexturedMaterial, MeshVert> Mesh;
+	/// <summary> Create a default ArrayModel </summary>
 	ArrayModel() = default;
+	/// <summary> Create a Mesh from a IndexedModel </summary>
 	ArrayModel(const IndexedModel & im);
+
+	/// <summary> Apply a transform to mesh </summary>
 	void Transform(const glm::mat4 & transformmatrix);
+	/// <summary> Vertex maps of the mesh </summary>
 	const Mesh & GetMesh() const;
+	/// <summary> Add a mesh to current mesh </summary>
 	void Add(const TexturedMaterial & material, const MeshVert & verlist);
+
 	ArrayModel & operator += (const ArrayModel & rhs);
+
+	glm::vec3 position;
 protected:
 	std::string path;
 	Mesh mesh;
 
 };
 
-class PositionedArrayModel : public ArrayModel
+class MeshLoader
 {
 public:
-	PositionedArrayModel() = default;
-	PositionedArrayModel(ArrayModel & model) : ArrayModel(model) {}
-	PositionedArrayModel(ArrayModel & model, glm::vec3 p) : ArrayModel(model) { Position = p; }
-	glm::vec3 Position;
-};
-
-class TextureLoader
-{
-private:
-	static std::unordered_map <const std::tuple<std::string, bool, bool>, const Texture2D * > texmap;
-public:
-	static const Texture2D * Load2DTexture(std::string& path, bool issmooth, bool islinear = true, bool issRGB = false);
-};
-
-namespace std
-{
-	template <>
-	struct hash <const std::tuple<std::string, bool, bool>>
+	static MeshLoader & GetInstance()
 	{
-		std::size_t operator()(const std::tuple<std::string, bool, bool> obj) const
-		{
-			return std::hash<std::string>()(std::get<0>(obj)) ^ std::hash<bool>()(std::get<1>(obj)) ^ std::hash<bool>()(std::get<2>(obj));
-		}
-	};
-}
+		static MeshLoader meshloader;
+		return meshloader;
+	}
+	/// <summary> Register mesh to open </summary>
+	void Register(std::string name, std::string path)
+	{
+		MeshMap[name] = ArrayModel(path);
+	}
+	ArrayModel& Get(std::string name)
+	{
+		return MeshMap[name];
+	}
+	ArrayModel Get(std::string name, glm::mat4 transform)
+	{
+		auto model = MeshMap[name];
+		model.Transform(transform);
+		return model;
+	}
+private:
+	MeshLoader() = default;
+	std::unordered_map<std::string, ArrayModel> MeshMap;
+};

@@ -3,19 +3,36 @@
 #include "LightShaderController.h"
 #include "Light.h"
 #include <random>
-
+#include "Camera.h"
 #define SIZE30M (30 * 1024 * 1024 / sizeof(Vertex) / 3 * 3 )
 
 enum EyeAdaptTech {EyeAdaptOff, EyeAdaptReadback, EyeAdaptRenderToTex};
 
 struct DrawContext
 {
+	/// <summary> Camera object </summary>
+	const Camera * PlayerCamera;
+	/// <summary> Objects farther than this will not be drawn </summary>
+	float ViewDistance = 192;
+	/// <summary> The Horizonal field of view value in degrees </summary>
+	float FieldOfView = 45;
+	/// <summary> The value of monitor gamma </summary>
+	float gamma = 2.2;
+	
+	/// <summary> How many light can have shadow </summary>
+	unsigned int ShadowLight = 1;
+
+	/// <summary> Adapt the illumination dynamiclly or not </summary>
+	bool EyeAdapt = true;
+	/// <summary> Let the light source bloom or not </summary>
+	bool isBloom = false;
+	/// <summary> Apply tone mapping or not </summary>
+	bool ToneMapping = true;
+
+
 	glm::mat4 W;
 	glm::mat4 V;
 	glm::mat4 P;
-	glm::vec3 Eye;
-	float gamma = 2.2f;
-	bool isHDR = false;
 	EyeAdaptTech isEyeAdapt = EyeAdaptOff;
 	unsigned int Bloom = 0;
 	bool isShadow = false;
@@ -122,8 +139,8 @@ class DrawController : public ArrayModel // Implemented Ordered trans render
 public:
 	DrawController(unsigned int w, unsigned int h);/*50M Vertex cost VRAM max*/
 	void Draw(DrawContext & context);
-	DrawController & operator << (const ArrayModel & rhs) { ArrayModel::operator+=(rhs); return *this; }
-	DrawController & operator << (const PositionedArrayModel & rhs);
+
+	DrawController & operator << (const ArrayModel & rhs);
 	bool Clear() { mesh.clear(); trobjlist.clear(); }
 	std::unordered_map<int, DirectionalLight> & GetDLight() { return dlist; }
 	const std::unordered_map<int, DirectionalLight> & GetDLight() const { return dlist; }
@@ -132,7 +149,7 @@ public:
 	std::unordered_map<int, SpotLight> & GetSLight() { return slist; }
 	const std::unordered_map<int, SpotLight> & GetSLight() const { return slist; }
 protected:
-	std::vector<PositionedArrayModel> trobjlist;
+	std::vector<ArrayModel> trobjlist;
 
 	std::unordered_map<int, DirectionalLight> dlist;
 	std::unordered_map<int, PointLight> plist;

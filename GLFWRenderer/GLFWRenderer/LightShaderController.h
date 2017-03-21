@@ -9,8 +9,6 @@
 #define MAXSPOTLIGHT 256
 #define MAXDIRECTIONALLIGHT 4
 
-
-
 struct LightUniformGroup
 {
 	GLuint isdiffuseloc;
