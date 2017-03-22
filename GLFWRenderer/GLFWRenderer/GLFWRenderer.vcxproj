@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="BufferObjectcpp.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonTools.cpp" />
     <ClCompile Include="DrawController.cpp" />
@@ -184,6 +185,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="BufferObject.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTools.h" />
     <ClInclude Include="DrawController.h" />
@@ -198,6 +200,7 @@
     <ClInclude Include="ShaderSubmiter.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TexturedMaterial.h" />
+    <ClInclude Include="TextureLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -92,6 +92,9 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BufferObjectcpp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -137,6 +140,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="LightShaderController.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferObject.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

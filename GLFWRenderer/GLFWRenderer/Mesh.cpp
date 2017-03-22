@@ -1,8 +1,8 @@
 #pragma comment(lib, "assimp-vc140-mt.lib")
-
-#include "Mesh.h"
 #include <assimp/cimport.h>
 
+#include "Mesh.h"
+#include "TextureLoader.h"
 IndexedModel::IndexedModel(const std::string & objpath)
 {
 	Assimp::Importer objimporter;

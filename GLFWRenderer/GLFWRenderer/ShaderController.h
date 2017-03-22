@@ -13,11 +13,15 @@ struct ShaderVarRec
 	std::string name;
 	/// <summary> Location of the variable in GPU.
 	/// <para> For texture, This isn't the location of the sampler, but the binding point. </para>
+	/// <para> For UBO, This isn't the location of the shader uniform, but the buffer object. </para>
 	/// </summary>
 	GLuint location;
 	/// <summary> Type of the variable. Borrows GL enums. </summary>
 	GLenum type;
-	/// <summary> The default value of the variable. An empty value means no need for default value </summary>
+	/// <summary> The default value of the variable. An empty value means no need for default value 
+	/// <para> For texture, this should be the texture object id </para>
+	/// <para> For UBO, this should be std::pair(void * data, unsigned int count) </para>
+	/// </summary>
 	boost::any safevalue;
 	/// <summary> The variable is set or not </summary>
 	bool isset;
