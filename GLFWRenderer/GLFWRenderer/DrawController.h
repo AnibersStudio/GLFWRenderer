@@ -22,13 +22,14 @@ struct DrawContext
 	/// <summary> How many light can have shadow </summary>
 	unsigned int ShadowLight = 1;
 
-	/// <summary> Adapt the illumination dynamiclly or not </summary>
+	/// <summary> Adapt the illumination dynamiclly or not. Fair cost </summary>
 	bool EyeAdapt = true;
-	/// <summary> Let the light source bloom or not </summary>
+	/// <summary> Let the light source bloom or not. Costly </summary>
 	bool isBloom = false;
 	/// <summary> Apply tone mapping or not </summary>
 	bool ToneMapping = true;
-
+	/// <summary> Apply Global Illumination. Costly </summary>
+	bool isGI = true;
 
 	glm::mat4 W;
 	glm::mat4 V;
