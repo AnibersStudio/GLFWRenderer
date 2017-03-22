@@ -74,16 +74,22 @@
     <ClCompile Include="LightShaderController.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="Program.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Program.cpp">
+    <ClCompile Include="Texture2D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSubmiter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ShaderController.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="Mesh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,16 +115,28 @@
     <ClInclude Include="Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LightShaderController.h">
+    <ClInclude Include="Texture2D.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="RenderController.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSubmiter.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ShaderController.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturedMaterial.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LightShaderController.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

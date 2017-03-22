@@ -1,5 +1,8 @@
 #pragma once
-#include "Model.h"
+
+/// All of this file is deprecated.
+
+#include "Mesh.h"
 #include "LightShaderController.h"
 #include "Light.h"
 #include <random>

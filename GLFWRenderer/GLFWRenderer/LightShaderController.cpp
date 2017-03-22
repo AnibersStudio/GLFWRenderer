@@ -2,7 +2,6 @@
 #include "CommonTools.h"
 #include <fstream>
 
-
 bool ForwardLightShaderController::LoadShaderPipeline()
 {
 	std::string vers, fras;
@@ -30,7 +29,7 @@ bool ForwardLightShaderController::LoadShaderPipeline()
 
 void ForwardLightShaderController::Use()
 {
-	ShaderController::Use();
+	ShaderSubmiter::Use();
 	SetSafeState();
 }
 
@@ -319,7 +318,7 @@ void HDRShaderController::SetExposure(float exposure)
 
 void HDRShaderController::Use()
 {
-	ShaderController::Use();
+	ShaderSubmiter::Use();
 	SetSafeState();
 }
 
@@ -374,7 +373,7 @@ void BloomShaderController::SetSafeState()
 
 void BloomShaderController::Use()
 {
-	ShaderController::Use();
+	ShaderSubmiter::Use();
 	SetSafeState();
 }
 
@@ -429,7 +428,7 @@ void MixShaderController::SetSafeState()
 
 void MixShaderController::Use()
 {
-	ShaderController::Use();
+	ShaderSubmiter::Use();
 	SetSafeState();
 }
 
@@ -465,7 +464,7 @@ void DepthShaderController::SetLightWVP(const mat4 & wvp)
 
 void DepthShaderController::Use()
 {
-	ShaderController::Use();
+	ShaderSubmiter::Use();
 	SetSafeState();
 }
 

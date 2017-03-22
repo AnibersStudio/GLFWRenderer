@@ -175,10 +175,12 @@
     <ClCompile Include="DrawController.cpp" />
     <ClCompile Include="GLFWcontext.cpp" />
     <ClCompile Include="LightShaderController.cpp" />
-    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Program.cpp" />
+    <ClCompile Include="RenderController.cpp" />
     <ClCompile Include="ShaderController.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="ShaderSubmiter.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
@@ -189,9 +191,13 @@
     <ClInclude Include="GLFWcontext.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightShaderController.h" />
-    <ClInclude Include="Model.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshLoader.h" />
+    <ClInclude Include="RenderController.h" />
     <ClInclude Include="ShaderController.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ShaderSubmiter.h" />
+    <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="TexturedMaterial.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

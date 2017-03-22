@@ -1,9 +1,11 @@
 #pragma once
 
-#include "ShaderController.h"
-#include "Texture.h"
+/// All of this file is deprecated.
+
+#include "ShaderSubmiter.h"
+#include "Texture2D.h"
 #include "Light.h"
-#include "Model.h"
+#include "Mesh.h"
 
 #define MAXPOINTLIGHT 512
 #define MAXSPOTLIGHT 256
@@ -44,7 +46,7 @@ struct LightUniformGroup
 	MaterialLocation materialloc;
 };
 
-class ForwardLightShaderController : public ShaderController
+class ForwardLightShaderController : public ShaderSubmiter
 {
 public:
 	ForwardLightShaderController(const std::string & v, const std::string & f) : vertexpath(v), fragmentpath(f) {}
@@ -90,7 +92,7 @@ struct HDRUniformGroup
 	GLuint exposureloc;
 };
 
-class HDRShaderController : public ShaderController
+class HDRShaderController : public ShaderSubmiter
 {
 public:
 	HDRShaderController(const std::string & v, const std::string & f) : vertexpath(v), fragmentpath(f) {}
@@ -115,7 +117,7 @@ struct BloomUniformGroup
 	GLuint imagesamplerloc;
 };
 
-class BloomShaderController : public ShaderController
+class BloomShaderController : public ShaderSubmiter
 {
 public:
 	BloomShaderController(const std::string & v, const std::string & f) : vertexpath(v), fragmentpath(f) {}
@@ -138,7 +140,7 @@ struct MixUniformGroup
 	GLuint brightsamplerloc;
 };
 
-class MixShaderController : public ShaderController
+class MixShaderController : public ShaderSubmiter
 {
 public:
 	MixShaderController(const std::string & v, const std::string & f) : vertexpath(v), fragmentpath(f) {}
@@ -163,7 +165,7 @@ struct DepthUniformGroup
 	GLuint farplaneloc;
 };
 
-class DepthShaderController : public ShaderController
+class DepthShaderController : public ShaderSubmiter
 {
 public:
 	DepthShaderController(const std::string & v, const std::string & f) : vertexpath(v), fragmentpath(f) {}

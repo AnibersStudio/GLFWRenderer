@@ -38,6 +38,22 @@ vec3 calculatenormal(vec3 n, vec3 tan, vec3 tn);
 
 void main()
 {
+	//Calculate and store Trans
+	float trans;
+	if (istrans)
+	{
+		trans = texture(transsampler, fragcoord).a;
+	}
+	else
+	{
+		trans = material.trans;
+	}
+	if (trans < 0.00001)
+	{
+		discard;
+	}
+	emissivestorage.a = trans;
+
 	//Calculate and Store Normal
 	vec3 normal = normalize(fragnormal);
 	if (isnormal)
@@ -75,14 +91,8 @@ void main()
 		emissivestorage.rgb = material.emissivecolor;
 	}
 	
-	if (istrans)
-	{
-		emissivestorage.a = texture(transsampler, fragcoord).a;
-	}
-	else
-	{
-		emissivestorage.a = material.trans;
-	}
+
+	
 
 	//linear depth
 	gl_FragDepth = fragdepthinview / farplane;

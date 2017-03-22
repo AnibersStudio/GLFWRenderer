@@ -1,7 +1,7 @@
 #pragma comment(lib, "Freeimage.lib")
 
-#include "Texture.h"
-#include <iostream>
+#include "Texture2D.h"
+
 Texture2D::Texture2D(std::string path, bool colortexture)
 {
 	auto filetype = FreeImage_GetFileType(path.c_str(), 0);

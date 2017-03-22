@@ -1,12 +1,12 @@
-//#pragma comment(lib, "zlibstatic.lib")
 #pragma comment(lib, "assimp-vc140-mt.lib")
 
-#include "Model.h"
+#include "Mesh.h"
 #include <assimp/cimport.h>
+
 IndexedModel::IndexedModel(const std::string & objpath)
 {
 	Assimp::Importer objimporter;
-	const aiScene * scene = objimporter.ReadFile(objpath, aiProcess_Triangulate );
+	const aiScene * scene = objimporter.ReadFile(objpath, aiProcess_Triangulate);
 	objimporter.ApplyPostProcessing(aiProcess_GenNormals | aiProcess_FlipUVs);
 	objimporter.ApplyPostProcessing(aiProcess_CalcTangentSpace);
 	objimporter.ApplyPostProcessing(aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
@@ -98,13 +98,13 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 		shininess = 1000.0;
 	if (material->Get(AI_MATKEY_OPACITY, transparency) != aiReturn_SUCCESS)
 		transparency = 1.0;
-	TexturedMaterial texmat(glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), 
+	TexturedMaterial texmat(glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b),
 		glm::vec3(specular.r, specular.g, specular.b), glm::vec3(emissive.r, emissive.g, emissive.b), shininess, transparency);
 	aiString diffusename, specularname, emissivename, normalname, transname;
 	if (material->GetTextureCount(aiTextureType_DIFFUSE))
 	{
 		material->GetTexture(aiTextureType_DIFFUSE, 0, &diffusename);
-		texmat.diffusetex = TextureLoader::GetInstance().Load2DTexture( path + "/" + std::string(diffusename.C_Str()));//diffuse is sRGB created.
+		texmat.diffusetex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(diffusename.C_Str()));//diffuse is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_SPECULAR))
 	{
@@ -129,7 +129,7 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 	return texmat;
 }
 
-ArrayModel::ArrayModel(const IndexedModel & im): path(im.GetPath())
+ArrayModel::ArrayModel(const IndexedModel & im) : path(im.GetPath())
 {
 	auto & matind = im.GetMeshInd();
 	auto & matvert = im.GetMeshVert();
@@ -158,7 +158,7 @@ void ArrayModel::Transform(const glm::mat4 & transformmatrix)
 			vertex.tangent = glm::normalize(glm::vec3(tangent));
 		}
 	}
-	
+
 }
 
 const ArrayModel::Mesh & ArrayModel::GetMesh() const

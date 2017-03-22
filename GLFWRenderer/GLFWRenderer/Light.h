@@ -17,6 +17,7 @@ struct DirectionalLight : public BaseLight
 	DirectionalLight() : BaseLight(0, glm::vec3(1.0), 1.0, 0.2) {}
 	DirectionalLight(float i, vec3 c, float d, float s, vec3 dir) : BaseLight(i, c, d, s), direction(glm::normalize(dir)) {}
 	glm::vec3 direction;
+	float not_used_for_alignment[1] = { 0.0f };
 };
 
 struct Attenuation
