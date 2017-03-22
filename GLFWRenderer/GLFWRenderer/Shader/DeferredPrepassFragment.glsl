@@ -1,12 +1,24 @@
 #version 430 core
+#define MAXMATERIAL 128
 
-struct Material
+struct TexturedMaterial
 {
 	vec3 albedocolor;
 	float metalness;
 	vec3 emissivecolor;
 	float shininess;
 	float trans;
+
+	bool isalbedo;
+	bool ismentalness;
+	bool isemissive;
+	bool isnormal;
+	bool istrans;
+	sampler2D albedosampler;
+	sampler2D mentalnesssampler;
+	sampler2D emissivesampler;
+	sampler2D normalsampler;
+	sampler2D transsampler;
 };
 
 in vec2 fragtexcoord;
@@ -19,17 +31,10 @@ layout(location = 0) out lowp vec4 albedostorage;
 layout(location = 1) out mediump vec3 normalstorage;
 layout(location = 2) out lowp vec4 emmisivestorage;
 
-uniform Material material
-uniform bool isalbedo;
-uniform sampler2D albedosampler;
-uniform bool ismetalness;
-uniform sampler2D mentalnesssampler;
-uniform bool isemissive;
-uniform sampler2D emissivesampler;
-uniform bool isnormal;
-uniform sampler2D normalsampler;
-uniform bool istrans;
-uniform sampler2D transsampler;
+layout (std140) uniform materialbuffer
+{
+	TexturedMaterial material[MAXMATERIAL];
+};
 
 uniform float farplane;
 
@@ -40,13 +45,13 @@ void main()
 {
 	//Calculate and store Trans
 	float trans;
-	if (istrans)
+	if (material[materialindex].istrans)
 	{
-		trans = texture(transsampler, fragcoord).a;
+		trans = texture(material[materialindex].transsampler, fragcoord).a;
 	}
 	else
 	{
-		trans = material.trans;
+		trans = material[materialindex].trans;
 	}
 	if (trans < 0.00001)
 	{
@@ -61,39 +66,36 @@ void main()
 		normal = calculatenormal(normal, normalize(fragtangent), texture(normalsampler, texcoord).xyz);
 	}
 	normalstorage.xy = encodenormal(fragnormal);
-	normalstorage.z = material.shininess;
+	normalstorage.z = material[materialindex].shininess;
 
 	//Calculate and Store Material
 	if (isalbedo)
 	{
-		albedostorage.rgb = texture(albedosampler, fragtexcoord).xyz;
+		albedostorage.rgb = texture(material[materialindex].albedosampler, fragtexcoord).xyz;
 	}
 	else
 	{
-		albedostorage.rgb = material.albedocolor;
+		albedostorage.rgb = material[materialindex].albedocolor;
 	}
 
 	if (ismentalness)
 	{
-		albedostorage.a = texture(mentalnesssampler, fragcoord).r;
+		albedostorage.a = texture(material[materialindex].mentalnesssampler, fragcoord).r;
 	}
 	else
 	{
-		albedostorage.a = material.mentalness;
+		albedostorage.a = material[materialindex].mentalness;
 	}
 
 	if (isemissive)
 	{
-		emissivestorage.rgb = texture(emissivesampler, fragcoord).rgb;
+		emissivestorage.rgb = texture(material[materialindex].emissivesampler, fragcoord).rgb;
 	}
 	else
 	{
-		emissivestorage.rgb = material.emissivecolor;
+		emissivestorage.rgb = material[materialindex].emissivecolor;
 	}
 	
-
-	
-
 	//linear depth
 	gl_FragDepth = fragdepthinview / farplane;
 }

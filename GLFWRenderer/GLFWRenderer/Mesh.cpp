@@ -124,7 +124,7 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 	if (material->GetTextureCount(aiTextureType_OPACITY))
 	{
 		material->GetTexture(aiTextureType_OPACITY, 0, &transname);
-		texmat.transtex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(transname.C_Str()), false);
+		texmat.transtex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(transname.C_Str()));
 	}
 	return texmat;
 }
