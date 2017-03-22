@@ -170,7 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="BufferObjectcpp.cpp" />
+    <ClCompile Include="BufferObjectSubmiter.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonTools.cpp" />
     <ClCompile Include="DrawController.cpp" />
@@ -182,10 +182,11 @@
     <ClCompile Include="ShaderController.cpp" />
     <ClCompile Include="ShaderSubmiter.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="BufferObject.h" />
+    <ClInclude Include="BufferObjectSubmiter.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTools.h" />
     <ClInclude Include="DrawController.h" />
@@ -196,11 +197,15 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="RenderController.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderController.h" />
     <ClInclude Include="ShaderSubmiter.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TexturedMaterial.h" />
     <ClInclude Include="TextureLoader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GLFWRenderer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

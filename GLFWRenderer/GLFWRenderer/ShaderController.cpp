@@ -1,7 +1,7 @@
 #include <fstream>
 #include "ShaderController.h"
-
-LightShaderController::LightShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist)
+#include "BufferObjectSubmiter.h"
+ShaderController::ShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist)
 {
 	std::vector<std::pair<std::string, GLenum>> shadervec(shaderlist);
 	ConstructShader(shadervec);
@@ -10,14 +10,14 @@ LightShaderController::LightShaderController(std::initializer_list<std::pair<std
 	GetAllUniformLocation();
 }
 
-LightShaderController::LightShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist)
+ShaderController::ShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist)
 {
 	ConstructShader(shaderlist);
 	ConstructVarMap(variablelist);
 	GetAllUniformLocation();
 }
 
-void LightShaderController::Clear()
+void ShaderController::Clear()
 {
 	for (auto & v : varmap)
 	{
@@ -28,7 +28,7 @@ void LightShaderController::Clear()
 	}
 }
 
-void LightShaderController::Set(std::string name, boost::any value)
+void ShaderController::Set(std::string name, boost::any value)
 {
 	try
 	{
@@ -70,6 +70,10 @@ void LightShaderController::Set(std::string name, boost::any value)
 			glActiveTexture(GL_TEXTURE0 + varrecord.location);
 			glBindTexture(varrecord.type, boost::any_cast<GLuint>(value));
 			break;
+		case GL_UNIFORM_BUFFER:
+			std::pair<const void *, unsigned int> data = boost::any_cast<std::pair<const void *, unsigned int>>(value);
+			BufferObjectSubmiter::GetInstance().SetData(varrecord.location, data.first, data.second);
+			break;
 		default:
 			throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
 			break;
@@ -86,7 +90,7 @@ void LightShaderController::Set(std::string name, boost::any value)
 	}
 }
 
-void LightShaderController::Safe()
+void ShaderController::Safe()
 {
 	for (auto & v : varmap)
 	{
@@ -97,7 +101,7 @@ void LightShaderController::Safe()
 	}
 }
 
-void LightShaderController::SetInOneShot(std::vector<std::pair<std::string, boost::any>> list)
+void ShaderController::SetInOneShot(std::vector<std::pair<std::string, boost::any>> list)
 {
 	Clear();
 	for (auto & p : list)
@@ -107,13 +111,13 @@ void LightShaderController::SetInOneShot(std::vector<std::pair<std::string, boos
 	Safe();
 }
 
-void LightShaderController::Draw()
+void ShaderController::Draw()
 {
 	Safe();
 	Use();
 }
 
-void LightShaderController::ConstructShader(std::vector<std::pair<std::string, GLenum>> shaderlist)
+void ShaderController::ConstructShader(std::vector<std::pair<std::string, GLenum>> shaderlist)
 {
 	for (auto shader : shaderlist)
 	{
@@ -140,8 +144,9 @@ void LightShaderController::ConstructShader(std::vector<std::pair<std::string, G
 	programid = shaderprogram;
 }
 
-void LightShaderController::ConstructVarMap(std::vector<ShaderVarRec> variablelist)
+void ShaderController::ConstructVarMap(std::vector<ShaderVarRec> variablelist)
 {
+	varmap.reserve(variablelist.size());
 	for (auto variable : variablelist)
 	{
 		variable.location = 0xFFFFFFFF;
@@ -149,7 +154,7 @@ void LightShaderController::ConstructVarMap(std::vector<ShaderVarRec> variableli
 	}
 }
 
-std::string LightShaderController::ReadFile(std::string path)
+std::string ShaderController::ReadFile(std::string path)
 {
 	std::string content;
 	std::ifstream in(path);
@@ -162,13 +167,10 @@ std::string LightShaderController::ReadFile(std::string path)
 	return content;
 }
 
-void LightShaderController::GetAllUniformLocation()
+void ShaderController::GetAllUniformLocation()
 {
-	for (auto & v : varmap)
-	{
-		v.second.location = GetUniformLocation(v.second.name);
-	}
-	unsigned int samplercounter = 0;
+	static unsigned int samplercounter;
+	static unsigned int uniformbuffercounter;
 	for (auto & v : varmap)
 	{
 		switch (v.second.type)
@@ -178,11 +180,20 @@ void LightShaderController::GetAllUniformLocation()
 		case GL_TEXTURE_3D:
 		case GL_TEXTURE_CUBE_MAP:
 		case GL_TEXTURE_DEPTH:
-			glUniform1i(v.second.location, samplercounter);
+			GLuint samplerlocation = GetUniformLocation(v.second.name);
+			glUniform1i(samplerlocation, samplercounter);
 			v.second.location = samplercounter;
 			samplercounter++;
 			break;
+		case GL_UNIFORM_BUFFER:
+			v.second.location = BufferObjectSubmiter::GetInstance().Generate();
+			GLuint uniformindex = glGetUniformBlockIndex(shaderprogram, "pointlight");
+			glBindBufferBase(GL_UNIFORM_BUFFER, uniformbuffercounter, v.second.location);
+			glUniformBlockBinding(shaderprogram, uniformindex, uniformbuffercounter);
+			uniformbuffercounter++;
+			break;
 		default:
+			v.second.location = GetUniformLocation(v.second.name);
 			break;
 		}
 	}

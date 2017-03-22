@@ -5,7 +5,6 @@
 #include "GLcommon.h"
 #include "ShaderSubmiter.h"
 
-
 /// <summary> A record of shader variable </summary>
 struct ShaderVarRec
 {
@@ -20,24 +19,24 @@ struct ShaderVarRec
 	GLenum type;
 	/// <summary> The default value of the variable. An empty value means no need for default value 
 	/// <para> For texture, this should be the texture object id </para>
-	/// <para> For UBO, this should be std::pair(void * data, unsigned int count) </para>
+	/// <para> For UBO, this should be std::pair(const void * data, unsigned int count) </para>
 	/// </summary>
 	boost::any safevalue;
 	/// <summary> The variable is set or not </summary>
 	bool isset;
 };
 
-class LightShaderController : public ShaderSubmiter
+class ShaderController : public ShaderSubmiter
 {
 public:
 	/// <summary> Input a list of shader file to compile. Throws DrawErrorException if compile fails or get fails </summary>
-	LightShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist);
+	ShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist);
 	/// <summary> Input a list of shader file to compile. Throws DrawErrorException if compile fails or get fails </summary>
-	LightShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist);
+	ShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist);
 	/// <summary> Clear state before a new round of uniform streaming. Must be called before Set()! </summary>
 	void Clear();
 	/// <summary> Set a uniform whose record was added in construction. Throws DrawErrorException if not added in construction.
-	/// <para> Must be called between Set() and Draw()! </para>
+	/// <para> Must be called between Clear() and Draw()! </para>
 	/// </summary>
 	void Set(std::string name, boost::any value);
 	/// <summary> Set safe value for uniforms who hasn't been set.
