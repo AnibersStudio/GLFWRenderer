@@ -1,7 +1,7 @@
 #include "RenderVao.h"
 #include <unordered_map>
 
-Vao::Vao(std::vector<VboRecord> attriblist, GLenum UsageHint)
+Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 {
 	usagehint = UsageHint;
 

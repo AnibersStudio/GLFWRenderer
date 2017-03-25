@@ -595,8 +595,6 @@ FboStruct::FboStruct(FboSetting setting) : Setting(setting)
 		glGenTextures(1, &DepthComponent);
 		glBindTexture(GL_TEXTURE_2D, DepthComponent);
 
-
-
 		glTexImage2D(GL_TEXTURE_2D, 0, setting.DepthFormat, setting.Width, setting.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setting.ColorTexFilter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setting.ColorTexFilter);
