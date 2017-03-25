@@ -1,15 +1,6 @@
 #include <fstream>
 #include "ShaderController.h"
 #include "BufferObjectSubmiter.h"
-ShaderController::ShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist)
-{
-	std::vector<std::pair<std::string, GLenum>> shadervec(shaderlist);
-	ConstructShader(shadervec);
-	std::vector<ShaderVarRec> variablevec(variablelist);
-	ConstructVarMap(variablevec);
-	GetAllUniformLocation();
-}
-
 ShaderController::ShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist)
 {
 	ConstructShader(shaderlist);
@@ -33,6 +24,9 @@ void ShaderController::Set(std::string name, boost::any value)
 	try
 	{
 		ShaderVarRec & varrecord = varmap.at(name);
+
+
+		std::pair<const void *, unsigned int> data;
 		switch (varrecord.type)
 		{
 		case GL_INT:
@@ -71,7 +65,7 @@ void ShaderController::Set(std::string name, boost::any value)
 			glBindTexture(varrecord.type, boost::any_cast<GLuint>(value));
 			break;
 		case GL_UNIFORM_BUFFER:
-			std::pair<const void *, unsigned int> data = boost::any_cast<std::pair<const void *, unsigned int>>(value);
+			data = boost::any_cast<std::pair<const void *, unsigned int>>(value);
 			BufferObjectSubmiter::GetInstance().SetData(varrecord.location, data.first, data.second);
 			break;
 		default:
@@ -101,7 +95,7 @@ void ShaderController::Safe()
 	}
 }
 
-void ShaderController::SetInOneShot(std::vector<std::pair<std::string, boost::any>> list)
+void ShaderController::SetInOneShot(const std::vector<std::pair<std::string, boost::any>> & list)
 {
 	Clear();
 	for (auto & p : list)
@@ -173,6 +167,8 @@ void ShaderController::GetAllUniformLocation()
 	static unsigned int uniformbuffercounter;
 	for (auto & v : varmap)
 	{
+		GLuint samplerlocation;
+		GLuint uniformindex;
 		switch (v.second.type)
 		{
 		case GL_TEXTURE_1D:
@@ -180,14 +176,14 @@ void ShaderController::GetAllUniformLocation()
 		case GL_TEXTURE_3D:
 		case GL_TEXTURE_CUBE_MAP:
 		case GL_TEXTURE_DEPTH:
-			GLuint samplerlocation = GetUniformLocation(v.second.name);
+			samplerlocation = GetUniformLocation(v.second.name);
 			glUniform1i(samplerlocation, samplercounter);
 			v.second.location = samplercounter;
 			samplercounter++;
 			break;
 		case GL_UNIFORM_BUFFER:
 			v.second.location = BufferObjectSubmiter::GetInstance().Generate();
-			GLuint uniformindex = glGetUniformBlockIndex(shaderprogram, "pointlight");
+			uniformindex = glGetUniformBlockIndex(shaderprogram, "pointlight");
 			glBindBufferBase(GL_UNIFORM_BUFFER, uniformbuffercounter, v.second.location);
 			glUniformBlockBinding(shaderprogram, uniformindex, uniformbuffercounter);
 			uniformbuffercounter++;

@@ -1,9 +1,12 @@
 #pragma once
+#include <string>
+#include <unordered_map>
+
 #include "GLCommon.h"
 #include "CommonTools.h"
-#include <string>
-#include <FreeImage.h>
-#include <unordered_map>
+
+#include "Dependencies/include/FreeImage.h"
+
 class Texture2D
 {
 public:

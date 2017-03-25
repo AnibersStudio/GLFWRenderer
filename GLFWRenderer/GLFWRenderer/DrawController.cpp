@@ -20,7 +20,7 @@ DrawController::DrawController(unsigned int w, unsigned int h) : width(w), heigh
 	}
 	{//Forward Render Passes
 		//Render source:
-		std::vector<VaoSetting> forwardvaosetting =
+		std::vector<VaoSetting> forwardvaosetting
 		{ { 3, GL_FLOAT, sizeof(float) }, {2, GL_FLOAT, sizeof(float) }, { 3, GL_FLOAT, sizeof(float)  },{ 3, GL_FLOAT, sizeof(float) } };
 		forwardvaoptr = new VaoStruct(forwardvaosetting, GL_STREAM_DRAW);
 		//Prepare Forward render shader
@@ -646,7 +646,6 @@ void FboStruct::BindFrameBuffer() const
 		DrawBuffersPtr[i] = GL_COLOR_ATTACHMENT0_EXT + i;
 	}
 	glDrawBuffers(Setting.ColorBufferCount, DrawBuffersPtr);
-	
 }
 
 void FboStruct::BindFrameBufferForDepth() const

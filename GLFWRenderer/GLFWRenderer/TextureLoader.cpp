@@ -5,7 +5,7 @@ TextureLoader & TextureLoader::GetInstance()
 	return Instance;
 }
 
-const Texture2D * TextureLoader::Load2DTexture(std::string & path, bool iscolortexture)
+const Texture2D * TextureLoader::Load2DTexture(std::string path, bool iscolortexture)
 {
 	const Texture2D * tex = nullptr;
 	try

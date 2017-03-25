@@ -7,9 +7,9 @@
 #include "TexturedMaterial.h"
 #include <string>
 #include <unordered_map>
-#include <assimp\Importer.hpp>
-#include <assimp\scene.h>
-#include <assimp\postprocess.h>
+#include "Dependencies/include/assimp/Importer.hpp"
+#include "Dependencies/include/assimp/scene.h"
+#include "Dependencies/include/assimp/postprocess.h"
 #include <tuple>
 
 struct Vertex

@@ -1,5 +1,6 @@
 #pragma once
-#include <gl/glew.h>
-#include <gl/glfw3.h>
-#include <gl/glm/glm.hpp>
-#include <gl/glm/gtc/matrix_transform.hpp>
+#include "Dependencies/include/glew.h"
+#include "Dependencies/include/glfw3.h"
+#include "Dependencies/include/glm/glm.hpp"
+#include "Dependencies/include/glm/gtc/matrix_transform.hpp"
+

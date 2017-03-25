@@ -30,7 +30,8 @@ class ShaderController : public ShaderSubmiter
 {
 public:
 	/// <summary> Input a list of shader file to compile. Throws DrawErrorException if compile fails or get fails </summary>
-	ShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist);
+	ShaderController(std::initializer_list<std::pair<std::string, GLenum>> shaderlist, std::initializer_list<ShaderVarRec> variablelist)
+		:ShaderController(std::vector<std::pair<std::string, GLenum>>(shaderlist), std::vector<ShaderVarRec>(variablelist)) {};
 	/// <summary> Input a list of shader file to compile. Throws DrawErrorException if compile fails or get fails </summary>
 	ShaderController(std::vector<std::pair<std::string, GLenum>> shaderlist, std::vector<ShaderVarRec> variablelist);
 	/// <summary> Clear state before a new round of uniform streaming. Must be called before Set()! </summary>
@@ -44,7 +45,7 @@ public:
 	///</summary>
 	void Safe();
 	/// <summary> Set a list of uniform. The list must contain all of values to set because this function override itself </summary>
-	void SetInOneShot(std::vector<std::pair<std::string, boost::any>> list);
+	void SetInOneShot(const std::vector<std::pair<std::string, boost::any>> & list);
 	/// <summary> Prepare to draw, enabling the shader program. Must be called after all necessary Set()! </summary>
 	void Draw();
 

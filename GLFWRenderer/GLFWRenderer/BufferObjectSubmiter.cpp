@@ -8,7 +8,7 @@ GLuint BufferObjectSubmiter::Generate()
 	return bufferID;
 }
 
-void BufferObjectSubmiter::SetData(GLuint bufferID, const void * data, size_t size, GLenum hint = GL_STREAM_DRAW)
+void BufferObjectSubmiter::SetData(GLuint bufferID, const void * data, size_t size, GLenum hint)
 {
 #ifdef _DEBUG
 	try {

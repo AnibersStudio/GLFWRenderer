@@ -98,6 +98,15 @@
     <ClCompile Include="BufferObjectSubmiter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="RenderVao.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderFbo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderStage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -151,7 +160,13 @@
     <ClInclude Include="BufferObjectSubmiter.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="RenderVao.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderFbo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderStage.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

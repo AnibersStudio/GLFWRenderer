@@ -1,5 +1,5 @@
 #pragma comment(lib, "assimp-vc140-mt.lib")
-#include <assimp/cimport.h>
+#include "Dependencies/include/assimp/cimport.h"
 
 #include "Mesh.h"
 #include "TextureLoader.h"
@@ -104,27 +104,27 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 	if (material->GetTextureCount(aiTextureType_DIFFUSE))
 	{
 		material->GetTexture(aiTextureType_DIFFUSE, 0, &diffusename);
-		texmat.diffusetex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(diffusename.C_Str()));//diffuse is sRGB created.
+		texmat.diffusetex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(diffusename.C_Str())));//diffuse is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_SPECULAR))
 	{
 		material->GetTexture(aiTextureType_SPECULAR, 0, &specularname);
-		texmat.speculartex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(specularname.C_Str()), false);
+		texmat.speculartex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(specularname.C_Str())), false);
 	}
 	if (material->GetTextureCount(aiTextureType_EMISSIVE))
 	{
 		material->GetTexture(aiTextureType_EMISSIVE, 0, &emissivename);
-		texmat.emissivetex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(emissivename.C_Str()));//emissive is sRGB created.
+		texmat.emissivetex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(emissivename.C_Str())));//emissive is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_HEIGHT))
 	{
 		material->GetTexture(aiTextureType_HEIGHT, 0, &normalname);
-		texmat.normaltex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(normalname.C_Str()), false);
+		texmat.normaltex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(normalname.C_Str())), false);
 	}
 	if (material->GetTextureCount(aiTextureType_OPACITY))
 	{
 		material->GetTexture(aiTextureType_OPACITY, 0, &transname);
-		texmat.transtex = TextureLoader::GetInstance().Load2DTexture(path + "/" + std::string(transname.C_Str()));
+		texmat.transtex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(transname.C_Str())));
 	}
 	return texmat;
 }
