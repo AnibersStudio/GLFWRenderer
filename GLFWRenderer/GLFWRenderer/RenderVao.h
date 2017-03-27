@@ -21,13 +21,13 @@ public:
 	/// <summary> Construct a vao whose attribute list is provided. Throws DrawErrorException if valuetype not supported <summary>
 	Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint = GL_STREAM_DRAW);
 	/// <summary> Set data of a vbo. Apply for more vram if size not enough <summary>
-	void SetData(const void * dataptr, size_t size);
+	void SetData(const void * dataptr, size_t size) const;
 	/// <summary> Bind vbo to be the source of draw <summary>
-	void Bind() { glBindVertexArray(vao); }
+	void Bind() const { glBindVertexArray(vao); }
 
-	GLuint GetVaoID() { return vao; }
-	GLuint GetVboID() { return vbo; }
-	size_t GetSize() { return buffersize; }
+	GLuint GetVaoID() const { return vao; }
+	GLuint GetVboID() const { return vbo; }
+	size_t GetSize() const { return buffersize; }
 private:
 	size_t GetSizeofType(GLenum type);
 	GLuint vao;

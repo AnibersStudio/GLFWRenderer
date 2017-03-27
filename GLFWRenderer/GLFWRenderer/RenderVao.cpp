@@ -21,7 +21,7 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	}
 }
 
-void Vao::SetData(const void * dataptr, size_t size)
+void Vao::SetData(const void * dataptr, size_t size) const
 {
 	if (size > buffersize)
 	{
