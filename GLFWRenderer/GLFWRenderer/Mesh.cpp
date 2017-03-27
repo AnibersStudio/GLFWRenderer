@@ -168,9 +168,11 @@ const ArrayModel::Mesh & ArrayModel::GetMesh() const
 
 void ArrayModel::Add(const TexturedMaterial & material, const MeshVert & verlist)
 {
+	auto & vertvec = mesh[material];
+	vertvec.reserve(vertvec.size() + verlist.size());
 	for (auto & vert : verlist)
 	{
-		mesh[material].push_back(vert);
+		vertvec.push_back(vert);
 	}
 }
 

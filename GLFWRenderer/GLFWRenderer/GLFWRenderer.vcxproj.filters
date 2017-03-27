@@ -107,6 +107,9 @@
     <ClCompile Include="RenderStage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DynamicMeshManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -167,6 +170,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="RenderStage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicMeshManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

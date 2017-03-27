@@ -184,6 +184,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonTools.cpp" />
     <ClCompile Include="DrawController.cpp" />
+    <ClCompile Include="DynamicMeshManager.cpp" />
     <ClCompile Include="GLFWcontext.cpp" />
     <ClCompile Include="LightShaderController.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -203,12 +204,14 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTools.h" />
     <ClInclude Include="DrawController.h" />
+    <ClInclude Include="DynamicMeshManager.h" />
     <ClInclude Include="GLCommon.h" />
     <ClInclude Include="GLFWcontext.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightShaderController.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLoader.h" />
+    <ClInclude Include="MeshManager.h" />
     <ClInclude Include="RenderController.h" />
     <ClInclude Include="RenderFbo.h" />
     <ClInclude Include="RenderStage.h" />
