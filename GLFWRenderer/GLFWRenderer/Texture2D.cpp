@@ -67,7 +67,9 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 	{ GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR} };
 	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MIN_FILTER, filters[issmooth][0]);
 	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MAG_FILTER, filters[issmooth][1]);
-
+	
+	texhandle = glGetTextureHandleARB(texobj);
+	glMakeTextureHandleResidentARB(texhandle);
 	loaded = true;
 	texpath = path;
 	iscolortexture = colortexture;
