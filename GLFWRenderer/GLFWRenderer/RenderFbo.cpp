@@ -1,6 +1,6 @@
 #include "RenderFbo.h"
 
-Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, GLenum textype = GL_TEXTURE_2D) : width(dimension[0]), height(dimension[1]), component(comp), texturetype(textype)
+Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, GLenum textype) : width(dimension[0]), height(dimension[1]), component(comp), texturetype(textype)
 {
 	if (texturetype == GL_TEXTURE_3D)
 	{
