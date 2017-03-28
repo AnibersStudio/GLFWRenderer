@@ -50,6 +50,7 @@ public:
 	const std::vector<GLuint> & GetColorID() const { return colorattachment; }
 	/// <summary> Returns 0xFFFFFFFF if not exist </summary>
 	GLuint GetDepthID() const { return depthattachment; }
+	GLuint64 GetDepthHandle() const { return depthhandle; }
 
 	unsigned int GetWidth() const { return width; }
 	unsigned int GetHeight() const { return height; }
@@ -63,6 +64,7 @@ private:
 	GLuint fbo;
 	std::vector<GLuint> colorattachment;
 	GLuint depthattachment = 0xFFFFFFFF;
+	GLuint64 depthhandle = 0xFFFFFFFF;
 
 	unsigned int width;
 	unsigned int height;

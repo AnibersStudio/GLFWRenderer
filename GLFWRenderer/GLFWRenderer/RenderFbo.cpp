@@ -38,15 +38,18 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 	{
 		if (c.attachment == GL_DEPTH_BUFFER)//Depth buffer
 		{
-			glGenRenderbuffersEXT(1, &depth);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth);
+			glGenRenderbuffersEXT(1, &depthattachment);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthattachment);
 			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, c.format, width, height);
-			glNamedFramebufferRenderbufferEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth);
+			glNamedFramebufferRenderbufferEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthattachment);
 		}
 		else if (c.attachment == GL_DEPTH_ATTACHMENT_EXT)//Depth texture
 		{
-			depth = GenerateTexture(c.internalformat, c.format, c.valuetype, c.paralist, c.bordercolor);
-			glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, depth, 0);
+			depthattachment = GenerateTexture(c.internalformat, c.format, c.valuetype, c.paralist, c.bordercolor);
+			glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, depthattachment, 0);
+			depthhandle = glGetTextureHandleARB(depthattachment);
+			glMakeTextureHandleResidentARB(depthhandle);
+			
 		}
 		else//Color texture
 		{
