@@ -1,6 +1,8 @@
 #pragma once
+
 #include "Light.h"
 #include "Texture2D.h"
+
 struct TexturedMaterial : public Material
 {
 	/// <summary> Default constructor with default material parameters and none texture </summary>

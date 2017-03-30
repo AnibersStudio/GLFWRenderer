@@ -25,7 +25,7 @@ std::vector<glm::vec3> DynamicMeshManager::GetPositionList(unsigned char meshopt
 	return positionlist;
 }
 
-void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> mat, std::vector<unsigned int> count, std::vector<Vertex> vertices) const
+void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const
 {
 	mat.reserve(mat.size() + ReserveMaterialSize(meshoption));
 	count.reserve(count.size() + ReserveMaterialSize(meshoption));
@@ -78,7 +78,7 @@ void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<Textur
 	}
 }
 
-void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> mat, std::vector<unsigned int> count, std::vector<Vertex> vertices) const
+void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const
 {
 	mat.reserve(mat.size() + ReserveMaterialSize(meshoption));
 	count.reserve(count.size() + ReserveMaterialSize(meshoption));
@@ -122,7 +122,7 @@ void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 e
 	}
 }
 
-void DynamicMeshManager::AppendPosition(unsigned char meshoption, std::vector<glm::vec3> positionlist) const
+void DynamicMeshManager::AppendPosition(unsigned char meshoption, std::vector<glm::vec3> & positionlist) const
 {
 	positionlist.reserve(positionlist.size() + ReserveVertexSize(meshoption));
 	if (meshoption & Opace)

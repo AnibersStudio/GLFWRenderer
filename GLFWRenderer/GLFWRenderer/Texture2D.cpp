@@ -1,7 +1,7 @@
 #pragma comment(lib, "Freeimage.lib")
 
 #include "Texture2D.h"
-#include "GLConstManager.h"
+
 Texture2D::Texture2D(std::string path, bool colortexture)
 {
 	auto filetype = FreeImage_GetFileType(path.c_str(), 0);
@@ -76,18 +76,11 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 	iscolortexture = colortexture;
 }
 
-void Texture2D::SetAF(bool isaf)
+void Texture2D::SetAF(unsigned int afscale)
 {
-	if (isaf != isanisotropic)
+	if (afscale != af)
 	{
-		isanisotropic = isaf;
-		if (isanisotropic)
-		{
-			glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, GLConstManager::GetInstance().GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)[0]);
-		}
-		else
-		{
-			glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
-		}
+		af = afscale;
+		glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, static_cast<float>(af));
 	}
 }

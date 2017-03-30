@@ -175,6 +175,8 @@
     <None Include="Shader\GussianBlurVertex.glsl" />
     <None Include="Shader\HDRFragment.glsl" />
     <None Include="Shader\HDRVertex.glsl" />
+    <None Include="Shader\LinearDepthFragment.glsl" />
+    <None Include="Shader\LinearDepthVertex.glsl" />
     <None Include="Shader\MixFragment.glsl" />
     <None Include="Shader\MixVertex.glsl" />
   </ItemGroup>

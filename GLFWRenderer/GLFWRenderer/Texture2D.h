@@ -2,10 +2,10 @@
 #include <string>
 #include <unordered_map>
 
+#include "Dependencies/include/FreeImage.h"
+
 #include "GLCommon.h"
 #include "CommonTools.h"
-
-#include "Dependencies/include/FreeImage.h"
 
 class Texture2D
 {
@@ -17,7 +17,8 @@ public:
 	/// </summary>
 	Texture2D(std::string path, bool colortexture);
 
-	void SetAF(bool isaf);
+	/// <summary> Set anisotropic filter scale. Must be greater than 1 which means off </summary>
+	void SetAF(unsigned int afscale);
 
 	const std::string & GetPath() const { return texpath; }
 	GLuint GetObjectID() const { return texobj; }
@@ -27,7 +28,6 @@ public:
 	bool operator != (const Texture2D & rhs) const { return !operator==(rhs); }
 	operator bool()const { return loaded; };
 
-
 private:
 	std::string texpath = "";
 	bool loaded = false;
@@ -36,7 +36,7 @@ private:
 	GLuint64 texhandle = 0xFFFFFFFF;
 	/// <summary> colortexture is min-and-mag smooth and has mipmap, but non-colortexture the opposite </summary>
 	bool iscolortexture;
-	bool isanisotropic = false;
+	unsigned int af;
 };
 
 namespace std

@@ -4,9 +4,6 @@ App::App()
 	context = new GLFWcontext(settings.width, settings.height, "GLFWapp", settings.isfullscreen);
 	context->RegisterReceiver(this);
 
-	int i;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &i);
-
 	drawer = new DrawController(settings.width, settings.height);
 
 	IndexedModel t("Res/MC/Stein.obj");
