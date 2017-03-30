@@ -17,4 +17,7 @@ private:
 
 	std::unordered_map<GLenum, std::vector<int>> inttable;
 	std::unordered_map<GLenum, std::vector<float>> floattable;
+
+	std::vector<GLenum> intconsts = {};
+	std::vector<GLenum> floatconsts = {GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT};
 };

@@ -70,6 +70,7 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 
 	texhandle = glGetTextureHandleARB(texobj);
 	glMakeTextureHandleResidentARB(texhandle);
+
 	loaded = true;
 	texpath = path;
 	iscolortexture = colortexture;

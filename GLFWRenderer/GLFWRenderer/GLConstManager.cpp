@@ -1,5 +1,17 @@
 #include "GLConstManager.h"
 
+GLConstManager::GLConstManager()
+{
+	for (auto & n : intconsts)
+	{
+		RegisterIntv(n, 1);
+	}
+	for (auto & n : floatconsts)
+	{
+		RegisterFloatv(n, 1);
+	}
+}
+
 GLConstManager & GLConstManager::GetInstance()
 {
 	static GLConstManager instance;
