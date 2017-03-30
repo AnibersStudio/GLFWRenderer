@@ -25,6 +25,8 @@ struct DrawContext
 	/// <summary> How many light can have shadow </summary>
 	unsigned int ShadowLight = 1;
 
+	/// <summary> Is anisotropic filter on or not </summary>
+	bool anisotropic = true;
 	/// <summary> Adapt the illumination dynamiclly or not. Fair cost </summary>
 	bool EyeAdapt = true;
 	/// <summary> Let the light source bloom or not. Costly </summary>

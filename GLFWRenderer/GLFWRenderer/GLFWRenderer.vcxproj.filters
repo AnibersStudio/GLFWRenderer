@@ -110,6 +110,9 @@
     <ClCompile Include="DynamicMeshManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GLConstManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -176,6 +179,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="DynamicMeshManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GLConstManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

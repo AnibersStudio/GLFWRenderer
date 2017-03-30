@@ -1,7 +1,7 @@
 #pragma comment(lib, "Freeimage.lib")
 
 #include "Texture2D.h"
-
+#include "GLConstManager.h"
 Texture2D::Texture2D(std::string path, bool colortexture)
 {
 	auto filetype = FreeImage_GetFileType(path.c_str(), 0);
@@ -51,7 +51,7 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 	//determine image format
 	GLint internalformat = internalformats[isSRGB][hasalpha];
 	GLint imageformat = imageformats[os][hasalpha];
-
+	
 	glGenTextures(1, &texobj);
 	glTextureImage2DEXT(texobj, textarget, 0, internalformat, FreeImage_GetWidth(image), FreeImage_GetHeight(image), 0, imageformat, GL_UNSIGNED_BYTE, blob);
 	if (issmooth)
@@ -64,13 +64,29 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 	//filters[issmooth][min-0 mag-1]
 	GLenum filters[2][2] =
 	{ { GL_NEAREST, GL_NEAREST},
-	{ GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR} };
+	{ GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR} };
 	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MIN_FILTER, filters[issmooth][0]);
 	glTextureParameteriEXT(texobj, textarget, GL_TEXTURE_MAG_FILTER, filters[issmooth][1]);
-	
+
 	texhandle = glGetTextureHandleARB(texobj);
 	glMakeTextureHandleResidentARB(texhandle);
 	loaded = true;
 	texpath = path;
 	iscolortexture = colortexture;
+}
+
+void Texture2D::SetAF(bool isaf)
+{
+	if (isaf != isanisotropic)
+	{
+		isanisotropic = isaf;
+		if (isanisotropic)
+		{
+			glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, GLConstManager::GetInstance().GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)[0]);
+		}
+		else
+		{
+			glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+		}
+	}
 }

@@ -185,6 +185,7 @@
     <ClCompile Include="CommonTools.cpp" />
     <ClCompile Include="DrawController.cpp" />
     <ClCompile Include="DynamicMeshManager.cpp" />
+    <ClCompile Include="GLConstManager.cpp" />
     <ClCompile Include="GLFWcontext.cpp" />
     <ClCompile Include="LightShaderController.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="DrawController.h" />
     <ClInclude Include="DynamicMeshManager.h" />
     <ClInclude Include="GLCommon.h" />
+    <ClInclude Include="GLConstManager.h" />
     <ClInclude Include="GLFWcontext.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightShaderController.h" />

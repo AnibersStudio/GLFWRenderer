@@ -17,6 +17,8 @@ public:
 	/// </summary>
 	Texture2D(std::string path, bool colortexture);
 
+	void SetAF(bool isaf);
+
 	const std::string & GetPath() const { return texpath; }
 	GLuint GetObjectID() const { return texobj; }
 	GLuint64 GetObjectHandle() const { return texhandle; }
@@ -24,6 +26,7 @@ public:
 	bool operator ==(const Texture2D & rhs) const { return texpath == rhs.texpath && loaded == rhs.loaded && textarget == rhs.textarget && texobj == rhs.texobj && iscolortexture == rhs.iscolortexture; };
 	bool operator != (const Texture2D & rhs) const { return !operator==(rhs); }
 	operator bool()const { return loaded; };
+
 
 private:
 	std::string texpath = "";
@@ -33,6 +36,7 @@ private:
 	GLuint64 texhandle = 0xFFFFFFFF;
 	/// <summary> colortexture is min-and-mag smooth and has mipmap, but non-colortexture the opposite </summary>
 	bool iscolortexture;
+	bool isanisotropic = false;
 };
 
 namespace std
