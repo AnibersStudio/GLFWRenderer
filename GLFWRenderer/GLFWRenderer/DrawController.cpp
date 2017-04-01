@@ -75,6 +75,9 @@ DrawController::DrawController(unsigned int w, unsigned int h) : width(w), heigh
 void DrawController::Draw(DrawContext & context)
 {
 
+	int ubosize;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &ubosize);
+
 	typedef  struct {
 		uint  count;
 		uint  instanceCount;

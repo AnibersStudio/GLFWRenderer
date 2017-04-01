@@ -25,8 +25,6 @@ void ShaderController::Set(std::string name, boost::any value)
 	{
 		ShaderVarRec & varrecord = varmap.at(name);
 
-
-		std::pair<const void *, unsigned int> data;
 		switch (varrecord.type)
 		{
 		case GL_INT:
@@ -65,8 +63,10 @@ void ShaderController::Set(std::string name, boost::any value)
 			glBindTexture(varrecord.type, boost::any_cast<GLuint>(value));
 			break;
 		case GL_UNIFORM_BUFFER:
-			data = boost::any_cast<std::pair<const void *, unsigned int>>(value);
-			BufferObjectSubmiter::GetInstance().SetData(varrecord.location, data.first, data.second);
+			glBindBufferBase(GL_UNIFORM_BUFFER,  varrecord.location, boost::any_cast<GLuint>(value));
+			break;
+		case GL_SHADER_STORAGE_BUFFER:
+			glBindBufferBase(GL_UNIFORM_BUFFER, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		default:
 			throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
@@ -168,7 +168,7 @@ void ShaderController::GetAllUniformLocation()
 	for (auto & v : varmap)
 	{
 		GLuint samplerlocation;
-		GLuint uniformindex;
+		GLuint blockindex;
 		switch (v.second.type)
 		{
 		case GL_TEXTURE_1D:
@@ -182,11 +182,12 @@ void ShaderController::GetAllUniformLocation()
 			samplercounter++;
 			break;
 		case GL_UNIFORM_BUFFER:
-			v.second.location = BufferObjectSubmiter::GetInstance().Generate();
-			uniformindex = glGetUniformBlockIndex(shaderprogram, "pointlight");
-			glBindBufferBase(GL_UNIFORM_BUFFER, uniformbuffercounter, v.second.location);
-			glUniformBlockBinding(shaderprogram, uniformindex, uniformbuffercounter);
+			blockindex = glGetUniformBlockIndex(shaderprogram, v.second.name.c_str());
+			glUniformBlockBinding(shaderprogram, blockindex, uniformbuffercounter);
+			v.second.location = blockindex;
 			uniformbuffercounter++;
+			break;
+		case GL_SHADER_STORAGE_BUFFER:
 			break;
 		default:
 			v.second.location = GetUniformLocation(v.second.name);

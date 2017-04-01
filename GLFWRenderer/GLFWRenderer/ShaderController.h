@@ -10,16 +10,17 @@ struct ShaderVarRec
 {
 	/// <summary> Name of the variable. Recommend to be the same as in glsl. </summary>
 	std::string name;
-	/// <summary> Location of the variable in GPU.
-	/// <para> For texture, This isn't the location of the sampler, but the binding point. </para>
-	/// <para> For UBO, This isn't the location of the shader uniform, but the buffer object. </para>
-	/// </summary>
-	GLuint location;
 	/// <summary> Type of the variable. Borrows GL enums. </summary>
 	GLenum type;
+	/// <summary> Location of the variable in GPU. Only SSBO's binding should be passed to ShaderController.
+	/// <para> For texture, This isn't the location of the sampler, but the binding point. </para>
+	/// <para> For UBO, This isn't the location of the shader uniform, but the binding point </para>
+	/// <para> For SSBO, This is the binding point of the buffer block set in GLSL. Must be set manully !</para>
+	/// </summary>
+	GLuint location;
 	/// <summary> The default value of the variable. An empty value means no need for default value 
 	/// <para> For texture, this should be the texture object id </para>
-	/// <para> For UBO, this should be std::pair(const void * data, unsigned int count) </para>
+	/// <para> For UBO, this should be the id of the buffer object </para>
 	/// </summary>
 	boost::any safevalue;
 	/// <summary> The variable is set or not </summary>
