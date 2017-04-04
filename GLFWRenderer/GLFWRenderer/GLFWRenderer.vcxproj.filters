@@ -119,6 +119,9 @@
     <ClCompile Include="GLConstManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="RenderStageImp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -188,6 +191,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="GLConstManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderStageImp.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

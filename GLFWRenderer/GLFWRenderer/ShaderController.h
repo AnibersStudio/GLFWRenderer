@@ -17,14 +17,14 @@ struct ShaderVarRec
 	/// <para> For UBO, This isn't the location of the shader uniform, but the binding point </para>
 	/// <para> For SSBO, This is the binding point of the buffer block set in GLSL. Must be set manully !</para>
 	/// </summary>
-	GLuint location;
+	GLuint location = 0;
 	/// <summary> The default value of the variable. An empty value means no need for default value 
 	/// <para> For texture, this should be the texture object id </para>
 	/// <para> For UBO, this should be the id of the buffer object </para>
 	/// </summary>
 	boost::any safevalue;
 	/// <summary> The variable is set or not </summary>
-	bool isset;
+	bool isset = false;
 };
 
 class ShaderController : public ShaderSubmiter

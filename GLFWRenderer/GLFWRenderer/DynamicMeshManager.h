@@ -8,12 +8,8 @@ class DynamicMeshManager : public MeshManager
 public:
 	typedef std::tuple<std::list<ArrayModel>::iterator, std::list<ArrayModel>::iterator, std::list<ArrayModel>::iterator> stub;
 
-	virtual std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>> GetMeshList(unsigned char meshoption) const override;
-	virtual std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>> GetOrderedMeshList(unsigned char meshoption, glm::vec3 eye) const override;
-	virtual std::vector<glm::vec3> GetPositionList(unsigned char meshoption) const override;
-
-	virtual void AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const override;
-	virtual void AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const override;
+	virtual void AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const override;
+	virtual void AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const override;
 	virtual void AppendPosition(unsigned char meshoption, std::vector<glm::vec3> & positionlist) const override;
 
 	/// <summary> Add a mesh to the scene </summary>

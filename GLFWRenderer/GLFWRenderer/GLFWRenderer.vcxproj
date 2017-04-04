@@ -195,6 +195,7 @@
     <ClCompile Include="RenderController.cpp" />
     <ClCompile Include="RenderFbo.cpp" />
     <ClCompile Include="RenderStage.cpp" />
+    <ClCompile Include="RenderStageImp.cpp" />
     <ClCompile Include="RenderVao.cpp" />
     <ClCompile Include="ShaderController.cpp" />
     <ClCompile Include="ShaderSubmiter.cpp" />
@@ -216,9 +217,11 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="MeshManager.h" />
+    <ClInclude Include="RenderContext.h" />
     <ClInclude Include="RenderController.h" />
     <ClInclude Include="RenderFbo.h" />
     <ClInclude Include="RenderStage.h" />
+    <ClInclude Include="RenderStageImp.h" />
     <ClInclude Include="RenderVao.h" />
     <ClInclude Include="ShaderController.h" />
     <ClInclude Include="ShaderSubmiter.h" />

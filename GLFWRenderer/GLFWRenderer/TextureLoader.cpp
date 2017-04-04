@@ -5,9 +5,9 @@ TextureLoader & TextureLoader::GetInstance()
 	return Instance;
 }
 
-const Texture2D * TextureLoader::Load2DTexture(std::string path, bool iscolortexture)
+Texture2D * TextureLoader::Load2DTexture(std::string path, bool iscolortexture)
 {
-	const Texture2D * tex = nullptr;
+	Texture2D * tex = nullptr;
 	try
 	{
 		tex = texmap.at(std::tuple<std::string, bool>(path, iscolortexture));

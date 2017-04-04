@@ -11,19 +11,19 @@ struct TexturedMaterial : public Material
 	TexturedMaterial(const glm::vec3 & a, const glm::vec3 & d, const glm::vec3 & s, const glm::vec3 & e, GLfloat sh, GLfloat tr) : Material(a, d, s, e, sh, tr) {}
 
 	/// <summary> Albedo texture of the material. nullptr means none </summary>
-	const Texture2D * diffusetex = nullptr;
+	Texture2D * diffusetex = nullptr;
 	/// <summary> Mentalness texture of the material. nullptr means none 
 	/// <para> Only the red chanel of the texture is used. </para>
 	/// </summary>
-	const Texture2D * speculartex = nullptr;
+	Texture2D * speculartex = nullptr;
 	/// <summary> Normal texture of the material. nullptr means none </summary>
-	const Texture2D * normaltex = nullptr;
+	Texture2D * normaltex = nullptr;
 	/// <summary> Emissive texture of the material. nullptr means none </summary>
-	const Texture2D * emissivetex = nullptr;
+	Texture2D * emissivetex = nullptr;
 	/// <summary> Transparency texture of the material. nullptr means none 
 	/// <para> Only the alpha chanel is used. </para>
 	/// </summary>
-	const Texture2D * transtex = nullptr;
+	Texture2D * transtex = nullptr;
 
 	bool operator==(const TexturedMaterial & rhs) const
 	{

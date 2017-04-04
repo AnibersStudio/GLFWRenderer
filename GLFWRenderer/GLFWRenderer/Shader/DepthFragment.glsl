@@ -11,7 +11,7 @@ void main()
 	{
 		float distance = length(fragpos - lightpos);
 		distance /= farplane;
-		gl_FragDepth = distance;
+		gl_FragDepth = gl_FragCoord.z / gl_FragCoord.w;
 	}
 	else
 	{

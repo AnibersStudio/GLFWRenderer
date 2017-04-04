@@ -1,43 +1,30 @@
 #include "DynamicMeshManager.h"
 
-std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>> DynamicMeshManager::GetMeshList(unsigned char meshoption) const
+void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const
 {
-	std::vector<TexturedMaterial> mat;
-	std::vector<unsigned int> count;
-	std::vector<Vertex> vertices;
-	AppendMesh(meshoption, mat, count, vertices);
-	return std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>>(mat, count, vertices);
-}
-
-std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>> DynamicMeshManager::GetOrderedMeshList(unsigned char meshoption, glm::vec3 eye) const
-{
-	std::vector<TexturedMaterial> mat;
-	std::vector<unsigned int> count;
-	std::vector<Vertex> vertices;
-	AppendOrderedMesh(meshoption, eye,  mat, count, vertices);
-	return std::tuple<std::vector<TexturedMaterial>, std::vector<unsigned int>, std::vector<Vertex>>(mat, count, vertices);
-}
-
-std::vector<glm::vec3> DynamicMeshManager::GetPositionList(unsigned char meshoption) const
-{
-	std::vector<glm::vec3> positionlist;
-	AppendPosition(meshoption, positionlist);
-	return positionlist;
-}
-
-void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const
-{
-	mat.reserve(mat.size() + ReserveMaterialSize(meshoption));
 	count.reserve(count.size() + ReserveMaterialSize(meshoption));
 	vertices.reserve(vertices.size() + ReserveVertexSize(meshoption));
+	materialindex.reserve(materialindex.size() + ReserveMaterialSize(meshoption));
 
+	std::unordered_map<TexturedMaterial, unsigned int> materialmap;
+	materialmap.reserve(ReserveMaterialSize(Opace) * 2);
+	unsigned int currentindex;
 	if (meshoption & Opace)
 	{
 		for (auto & m : opacelist)
 		{
 			for (auto & matvec : m.GetMesh())
 			{
-				mat.push_back(matvec.first);
+				auto matit = materialmap.find(matvec.first);
+				if (matit != materialmap.end())
+				{
+					currentindex = matit->second;
+				}
+				else
+				{
+					currentindex = materialmap.size();
+					materialmap[matvec.first] = currentindex;
+				}
 				count.push_back(matvec.second.size());
 				for (auto & v : matvec.second)
 				{
@@ -52,7 +39,16 @@ void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<Textur
 		{
 			for (auto & matvec : m.GetMesh())
 			{
-				mat.push_back(matvec.first);
+				auto matit = materialmap.find(matvec.first);
+				if (matit != materialmap.end())
+				{
+					currentindex = matit->second;
+				}
+				else
+				{
+					currentindex = materialmap.size();
+					materialmap[matvec.first] = currentindex;
+				}
 				count.push_back(matvec.second.size());
 				for (auto & v : matvec.second)
 				{
@@ -67,7 +63,16 @@ void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<Textur
 		{
 			for (auto & matvec : m.GetMesh())
 			{
-				mat.push_back(matvec.first);
+				auto matit = materialmap.find(matvec.first);
+				if (matit != materialmap.end())
+				{
+					currentindex = matit->second;
+				}
+				else
+				{
+					currentindex = materialmap.size();
+					materialmap[matvec.first] = currentindex;
+				}
 				count.push_back(matvec.second.size());
 				for (auto & v : matvec.second)
 				{
@@ -76,9 +81,16 @@ void DynamicMeshManager::AppendMesh(unsigned char meshoption, std::vector<Textur
 			}
 		}
 	}
+
+	unsigned int oldsize = mat.size();
+	mat.resize(mat.size() + materialmap.size());
+	for (auto & m : materialmap)
+	{
+		mat[oldsize + m.second] = std::move(m.first);
+	}
 }
 
-void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices) const
+void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const
 {
 	mat.reserve(mat.size() + ReserveMaterialSize(meshoption));
 	count.reserve(count.size() + ReserveMaterialSize(meshoption));
@@ -108,17 +120,36 @@ void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 e
 	}
 	meshlist.sort([eye](const ArrayModel & lhs, const ArrayModel & rhs) { return glm::length(lhs.position - eye) < glm::length(rhs.position - eye); });
 
+	std::unordered_map<TexturedMaterial, unsigned int> materialmap;
+	materialmap.reserve(ReserveMaterialSize(Opace) * 2);
+	unsigned int currentindex;
 	for (auto & m : meshlist)
 	{
 		for (auto & matvec : m.GetMesh())
 		{
-			mat.push_back(matvec.first);
+			auto matit = materialmap.find(matvec.first);
+			if (matit != materialmap.end())
+			{
+				currentindex = matit->second;
+			}
+			else
+			{
+				currentindex = materialmap.size();
+				materialmap[matvec.first] = currentindex;
+			}
 			count.push_back(matvec.second.size());
 			for (auto & v : matvec.second)
 			{
 				vertices.push_back(v);
 			}
 		}
+	}
+
+	unsigned int oldsize = mat.size();
+	mat.resize(mat.size() + materialmap.size());
+	for (auto & m : materialmap)
+	{
+		mat[oldsize + m.second] = std::move(m.first);
 	}
 }
 
