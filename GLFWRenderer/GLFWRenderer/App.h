@@ -8,7 +8,8 @@
 #include "Camera.h"
 #include "GLFWcontext.h"
 #include "DrawController.h"
-
+#include "RenderController.h"
+#include "DynamicMeshManager.h"
 #include <iostream>
 
 struct SettingInfo
@@ -45,11 +46,13 @@ public:
 protected:
 	void UserMove(double deltatime);
 private:
-	GLFWcontext * context;
-	Camera maincamera = Camera(glm::vec3(0.0f, 0.0f, 10.0f));
-	DrawController * drawer;
-	DrawContext drawstate;
 	SettingInfo settings;
 	PlayerInfo player;
 	MomentInfo moment;
+
+	GLFWcontext context{ settings.width, settings.height, "GLFWapp", settings.isfullscreen };
+	Camera maincamera = Camera(glm::vec3(0.0f, 0.0f, 10.0f));
+	RenderContext rendercontext;
+	DynamicMeshManager manager;
+	RenderController renderer{ manager, settings.width, settings.height };
 };

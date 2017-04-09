@@ -122,6 +122,9 @@
     <ClCompile Include="RenderStageImp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GLState.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -197,6 +200,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="RenderStageImp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GLState.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

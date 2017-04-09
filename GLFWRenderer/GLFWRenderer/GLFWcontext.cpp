@@ -44,13 +44,7 @@ GLFWcontext::GLFWcontext(int w, int h, std::string t, bool isfullscr) : width(w)
 	glfwGetFramebufferSize(winptr, &w, &h);//Get window size
 	glViewport(0, 0, w, h);				//Set window's left corner to (0,0) and screen coordinate
 
-	glEnable(GL_DEPTH_TEST);
-	
-	glFrontFace(GL_CCW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	defaultstate.ColdSet();
 }
 
 GLFWcontext::~GLFWcontext()

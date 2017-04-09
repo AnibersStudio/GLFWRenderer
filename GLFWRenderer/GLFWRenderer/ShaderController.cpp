@@ -116,7 +116,8 @@ void ShaderController::ConstructShader(std::vector<std::pair<std::string, GLenum
 	for (auto shader : shaderlist)
 	{
 		try {
-			AddShader(shader.second, ReadFile(shader.first).c_str());
+			std::string shadersource = ReadFile(shader.first);
+			AddShader(shader.second, shadersource.c_str());
 		}
 		catch (DrawErrorException & e)
 		{

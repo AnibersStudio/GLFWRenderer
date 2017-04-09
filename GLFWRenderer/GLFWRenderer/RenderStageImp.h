@@ -19,11 +19,11 @@ private:
 class DebugOutput
 {
 public:
-	DebugOutput();
-	void Init() {};
-	void Prepare() {};
+	DebugOutput(unsigned int w, unsigned int h);
 	void Draw(GLuint display);
 
 	Vao vao;
 	ShaderController displaycon;
+	unsigned int width;
+	unsigned int height;
 };

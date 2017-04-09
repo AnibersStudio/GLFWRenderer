@@ -1,10 +1,7 @@
 #include "App.h"
 App::App()
 {
-	context = new GLFWcontext(settings.width, settings.height, "GLFWapp", settings.isfullscreen);
-	context->RegisterReceiver(this);
-
-	drawer = new DrawController(settings.width, settings.height);
+	init(moment.keys, false, 128);
 
 	IndexedModel t("Res/MC/Stein.obj");
 	ArrayModel am(t);
@@ -13,15 +10,11 @@ App::App()
 	ArrayModel am2(t2);
 	ArrayModel am3(t2);
 	ArrayModel am4(am3);
-	//ArrayModel am4(t2);
 	
 	am.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
 	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
-	//am5.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
-	//am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
-	//am4.Transform(translate(glm::mat4(1.0), glm::vec3(-6.0, 0.0, 0.0)));
 	
 
 	DirectionalLight dl[] = { 
@@ -34,35 +27,17 @@ App::App()
 	SpotLight sl[] = {
 		SpotLight(2.0, glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.5 ,true, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 1.0, 0.0, 0.02, 0.9, 0.7)
 	};
-	drawer->GetDLight()[0] = dl[0];
-	//drawer->GetDLight()[1] = dl[1];
-	//drawer->GetPLight()[0] = pl[0];
-	//drawer->GetSLight()[0] = sl[0];
-	drawstate.ToneMapping = false;
-	drawstate.isEyeAdapt = EyeAdaptOff;//Be awared: eye adapt touching bandwith bottleneck.
-	drawstate.Bloom = 0;//Be awared: Bloom touching bandwith bottleneck. 
-	drawstate.isShadow = false;
-	drawstate.PlayerCamera = &maincamera;
-	init(moment.keys, false, 128);
-
-	*drawer << am2 << am3 << am ;
-
-	for (int i = 0; i != 10; i++)
-	{
-		for (int j = 0; j != 10; j++)
-		{
-			am4.Transform(glm::translate(mat4(1.0), vec3(1, 1, 0)));
-			*drawer << am4;
-		}
-	}
-
+	
+	manager.Add(am);
+	manager.Add(am2);
+	manager.Add(am3);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)
 {
 	if (action == GLFW_PRESS)
 	{
-		vec3& direction = drawer->GetDLight()[0].direction;
+		//vec3& direction = drawer->GetDLight()[0].direction;
 		vec4 curdir;
 		switch (key)
 		{
@@ -71,47 +46,11 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 			glfwSetWindowShouldClose(winptr, GL_TRUE);
 			break;
 		case GLFW_KEY_Z:
-			context->HideCursor();
+			context.HideCursor();
 			break;
 		case GLFW_KEY_X:
-			context->ShowCursor();
+			context.ShowCursor();
 			moment.firstmousemove = true;
-			break;
-		case GLFW_KEY_V:
-			curdir = (vec4(direction, 1.0) * glm::rotate(glm::mat4(1.0f), 10.0f, vec3(1.0, 0.0, 0.0)));
-			direction.x = curdir.x;
-			direction.y = curdir.y;
-			direction.z = curdir.z;
-			break;
-		case GLFW_KEY_B:
-			curdir = (vec4(direction, 1.0) * glm::rotate(glm::mat4(1.0f), -10.0f, vec3(1.0, 0.0, 0.0)));
-			direction.x = curdir.x;
-			direction.y = curdir.y;
-			direction.z = curdir.z;
-			break;
-		case GLFW_KEY_N:
-			curdir = (vec4(direction, 1.0) * glm::rotate(glm::mat4(1.0f), 10.0f, vec3(0.0, 0.0, 1.0)));
-			direction.x = curdir.x;
-			direction.y = curdir.y;
-			direction.z = curdir.z;
-			break;
-		case GLFW_KEY_M:
-			curdir = (vec4(direction, 1.0) * glm::rotate(glm::mat4(1.0f), -10.0f, vec3(0.0, 0.0, 1.0)));
-			direction.x = curdir.x;
-			direction.y = curdir.y;
-			direction.z = curdir.z;
-			break;
-		case GLFW_KEY_O:
-			std::cout << "SLight Y:" << ++drawer->GetSLight()[0].position.y << std::endl;
-			break;
-		case GLFW_KEY_P:
-			std::cout << "SLight Y:" << --drawer->GetSLight()[0].position.y << std::endl;
-			break;
-		case GLFW_KEY_U:
-			std::cout << "PLight Y:" << ++drawer->GetPLight()[0].position.y << std::endl;
-			break;
-		case GLFW_KEY_I:
-			std::cout << "PLight Y:" << --drawer->GetPLight()[0].position.y << std::endl;
 			break;
 		default:
 			moment.keys[key] = true;
@@ -121,15 +60,7 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 		moment.keys[key] = false;
 	if (action == GLFW_REPEAT)
 	{
-		switch (key)
-		{
-		case GLFW_KEY_T:
-			drawer->GetDLight()[1].intensity++;
-			break;
-		case GLFW_KEY_Y:
-			drawer->GetDLight()[1].intensity--;
-			break;
-		}
+
 	}
 	return false;
 }
@@ -152,9 +83,6 @@ bool App::CursorPosCallback(GLFWwindow * winptr, double x, double y)
 
 void App::Run()
 {
-	drawstate.W = glm::mat4(1.0);
-	drawstate.V = maincamera.GetLookat();
-	drawstate.P = glm::perspective(50.0f, (float)settings.width / settings.height, 0.1f, 100.0f);
 	double starttime = glfwGetTime();
 	double framestarttime = glfwGetTime();
 	int frames = 0;
@@ -163,10 +91,10 @@ void App::Run()
 
 		UserMove(glfwGetTime() - framestarttime);
 		framestarttime = glfwGetTime();
-		drawstate.W = glm::mat4(1.0);
-		drawstate.V = maincamera.GetLookat();
-		drawstate.P = glm::perspective(50.0f, (float)settings.width / settings.height, 0.1f, 100.0f);
-		drawer->Draw(drawstate);
+		rendercontext.eye = maincamera.GetEye();
+		rendercontext.target = maincamera.GetTarget();
+		rendercontext.up = maincamera.GetUp();
+		renderer.Draw(rendercontext);
 		if (glfwGetTime() - starttime > 1.0)
 		{
 			std::cout << "fps:" << frames << std::endl;
@@ -178,13 +106,11 @@ void App::Run()
 			frames++;
 		}
 
-	} while ((context->PollEvents()));
+	} while ((context.PollEvents()));
 }
 
 App::~App()
 {
-	delete context;
-	delete drawer;
 }
 
 
@@ -195,6 +121,5 @@ void App::UserMove(double deltatime)
 		float toward = (moment.keys[GLFW_KEY_W] - moment.keys[GLFW_KEY_S]) * deltatime * player.movespeed;
 		float right = (moment.keys[GLFW_KEY_D] - moment.keys[GLFW_KEY_A]) * deltatime * player.movespeed;
 		maincamera.Move(toward, right);
-		drawstate.V = maincamera.GetLookat();
 	}
 }

@@ -6,6 +6,7 @@ layout(location = 2) out float TMin;
 //gl_FragDepth is TMax
 
 uniform uint2 tilecount;
+uniform vec2 winSize;
 
 layout(std430, binding = 0) buffer DepthMinMax1
 {
@@ -21,7 +22,7 @@ float decodefloat(uint i);
 
 void main()
 {
-	uint2 tilecoord = (uint2)(gl_FragCoord.xy * 0.5 + 0.5) * tilecount;
+	uint2 tilecoord = (uint2)(gl_FragCoord.xy / winSize * 0.5 + 0.5) * tilecount;
 	uint index = tilecoord.x * tilecount.y + tilecoord.y;
 	
 	OMin = decodefloat(DepthBoundaryO[index].x);

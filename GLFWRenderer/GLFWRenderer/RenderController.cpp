@@ -1,5 +1,6 @@
 #include "RenderController.h"
 #include "GLConstManager.h"
+#include "RenderStageImp.h"
 RenderController::RenderController(MeshManager & mm, unsigned int w, unsigned int h) : meshmanager(mm), width(w), height(h)
 {
 	depthstage.Init();
@@ -18,13 +19,21 @@ void RenderController::Draw(RenderContext context)
 	{
 		OpaceVerticesCount += v;
 	}
+	///Calculate Trans Vertices Count
+	unsigned int TransVerticesCount = 0;
+	for (auto & v : framedata.FullTransCount)
+	{
+		TransVerticesCount += v;
+	}
+	for (auto & v : framedata.SemiTransCount)
+	{
+		TransVerticesCount += v;
+	}
 	
 	depthstage.Prepare(WVP);
 	
-	
-
-
-
+	static DebugOutput screendrawer{width, height};
+	screendrawer.Draw(framedata.Material[0].diffusetex->GetObjectID());
 
 	oldcontext = context;
 }

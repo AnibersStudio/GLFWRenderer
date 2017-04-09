@@ -1,6 +1,7 @@
 #version 430 core
 
 uniform uint2 tilecount;
+uniform vec2 winSize;
 
 layout(std430, binding = 1) buffer DepthMinMax
 {
@@ -12,7 +13,7 @@ uint encodefloat(float i);
 void main()
 {
 	float depthf = gl_FragCoord.z / gl_FragCoord.w;
-	uint2 tilecoord = (uint2)(gl_FragCoord.xy * 0.5 + 0.5) * tilecount;
+	uint2 tilecoord = (uint2)(gl_FragCoord.xy / winSize * 0.5 + 0.5) * tilecount;
 	uint index = tilecoord.x * tilecount.y + tilecoord.y;
 	uint depth = encodefloat(depthf);
 	atomicMin(DepthBoundary[index].x, depth);

@@ -1,5 +1,6 @@
-#include "GLCommon.h"
 #include <string>
+#include "GLCommon.h"
+#include "GLState.h"
 
 class Receiver
 {
@@ -24,4 +25,5 @@ private:
 	std::string title;
 	bool isfullscreen;
 	GLFWwindow * winptr;
+	GLState defaultstate;
 };

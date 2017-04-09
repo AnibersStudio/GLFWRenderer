@@ -356,6 +356,7 @@ void DrawController::RenderDepthCubeFace(FboStruct * target, const mat4 lightvie
 		glDrawArrays(GL_TRIANGLES, 0, vertsize);
 	}
 	dsc->SetSafeState();
+
 }
 
 
