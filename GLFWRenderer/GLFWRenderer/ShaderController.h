@@ -50,6 +50,8 @@ public:
 	/// <summary> Prepare to draw, enabling the shader program. Must be called after all necessary Set()! </summary>
 	void Draw();
 
+	GLuint GetID() { return programid; }
+
 protected:
 	GLuint programid;
 

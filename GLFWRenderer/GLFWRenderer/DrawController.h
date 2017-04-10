@@ -14,7 +14,7 @@ enum EyeAdaptTech {EyeAdaptOff, EyeAdaptReadback, EyeAdaptRenderToTex};
 struct DrawContext
 {
 	/// <summary> Camera object </summary>
-	const Camera * PlayerCamera;
+	Camera * PlayerCamera;
 	/// <summary> Objects farther than this will not be drawn </summary>
 	float ViewDistance = 192;
 	/// <summary> The Horizonal field of view value in degrees </summary>

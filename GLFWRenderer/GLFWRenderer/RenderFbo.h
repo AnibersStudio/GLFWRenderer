@@ -17,8 +17,8 @@ struct FboCompRecord
 	/// </summary>
 	GLenum format;
 	/// <summary> Internalformat, aka the bitwise of each component of color.
-	/// <para> For color, this is GL_R(G)(B)(A)[8,32] </para>
-	/// <para> For depth, this is GL_DEPTH_COMPONENT[8,32] </para>
+	/// <para> For color, this is GL_R(G)(B)(A)[8,32](F) </para>
+	/// <para> For depth, this is GL_DEPTH_COMPONENT[8,32](F) </para>
 	/// </summary>
 	GLenum internalformat;
 	/// <summary> Valuetype, ie. GL_FLOAT </summary>

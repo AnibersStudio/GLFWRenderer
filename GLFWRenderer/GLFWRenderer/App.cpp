@@ -2,6 +2,7 @@
 App::App()
 {
 	init(moment.keys, false, 128);
+	context.RegisterReceiver(this);
 
 	IndexedModel t("Res/MC/Stein.obj");
 	ArrayModel am(t);
@@ -37,11 +38,8 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 {
 	if (action == GLFW_PRESS)
 	{
-		//vec3& direction = drawer->GetDLight()[0].direction;
-		vec4 curdir;
 		switch (key)
 		{
-
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(winptr, GL_TRUE);
 			break;
@@ -58,10 +56,6 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 	}
 	if (action == GLFW_RELEASE)
 		moment.keys[key] = false;
-	if (action == GLFW_REPEAT)
-	{
-
-	}
 	return false;
 }
 
@@ -88,12 +82,14 @@ void App::Run()
 	int frames = 0;
 	do 
 	{
-
 		UserMove(glfwGetTime() - framestarttime);
 		framestarttime = glfwGetTime();
 		rendercontext.eye = maincamera.GetEye();
 		rendercontext.target = maincamera.GetTarget();
 		rendercontext.up = maincamera.GetUp();
+
+		assert(abs(rendercontext.target.z - 1.0) > 0.0001);
+
 		renderer.Draw(rendercontext);
 		if (glfwGetTime() - starttime > 1.0)
 		{

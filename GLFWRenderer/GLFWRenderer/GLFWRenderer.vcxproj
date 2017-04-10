@@ -104,7 +104,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <Profile>true</Profile>
+      <Profile>false</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -219,6 +219,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="MeshManager.h" />
+    <ClInclude Include="PerFrameData.h" />
     <ClInclude Include="RenderContext.h" />
     <ClInclude Include="RenderController.h" />
     <ClInclude Include="RenderFbo.h" />

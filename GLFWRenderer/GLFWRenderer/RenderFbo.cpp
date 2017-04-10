@@ -6,7 +6,7 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 	{
 		depth = dimension[2];
 	}
-	else if (texturetype != GL_TEXTURE_2D && texturetype != GL_TEXTURE_3D)
+	else if (texturetype != GL_TEXTURE_2D && texturetype != GL_TEXTURE_CUBE_MAP)
 	{
 		throw DrawErrorException("FBO", "Texture type " + tostr(texturetype) + " unsupported.");
 	}
@@ -49,7 +49,6 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 			glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, depthattachment, 0);
 			depthhandle = glGetTextureHandleARB(depthattachment);
 			glMakeTextureHandleResidentARB(depthhandle);
-			
 		}
 		else//Color texture
 		{
@@ -69,6 +68,32 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 		glFramebufferDrawBufferEXT(fbo, GL_NONE);
 		onlydrawdepth = true;
 	}
+
+	GLenum fbostatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	if (fbostatus == GL_FRAMEBUFFER_COMPLETE_EXT)
+	{
+		return;
+	}
+	std::string errormsg;
+	switch (fbostatus)
+	{
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+		errormsg = "Incomplete attachment.";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+		errormsg = "Incomplete dimension.";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		errormsg = "Missing attachment";
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		errormsg = "Unsupported.";
+		break;
+	default:
+		errormsg = "Unknown incomplete reason.";
+		break;
+	}
+	throw DrawErrorException("FBO" + tostr(fbo), errormsg);
 }
 
 void Fbo::Bind()
@@ -89,6 +114,7 @@ void Fbo::BindDepth()
 		onlydrawdepth = true;
 	}
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+
 }
 
 GLuint Fbo::GenerateTexture(GLenum internalformat, GLenum format, GLenum valuetype, std::vector<std::pair<GLenum, GLenum>> paralist, glm::vec4 bordercolor) const

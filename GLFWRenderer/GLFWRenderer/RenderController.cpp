@@ -1,9 +1,10 @@
 #include "RenderController.h"
 #include "GLConstManager.h"
 #include "RenderStageImp.h"
-RenderController::RenderController(MeshManager & mm, unsigned int w, unsigned int h) : meshmanager(mm), width(w), height(h)
+RenderController::RenderController(MeshManager & mm, unsigned int w, unsigned int h) : meshmanager(mm), width(w), height(h), forwardstage(ForwardStage{w, h})
 {
 	depthstage.Init();
+	forwardstage.Init();
 }
 
 void RenderController::Draw(RenderContext context)
@@ -31,9 +32,12 @@ void RenderController::Draw(RenderContext context)
 	}
 	
 	depthstage.Prepare(WVP);
+	forwardstage.Prepare(framedata);
 	
+	depthstage.Draw(forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
+
 	static DebugOutput screendrawer{width, height};
-	screendrawer.Draw(framedata.Material[0].diffusetex->GetObjectID());
+	screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;
 }

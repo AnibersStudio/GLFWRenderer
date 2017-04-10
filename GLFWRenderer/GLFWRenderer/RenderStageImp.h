@@ -4,6 +4,8 @@
 #include "RenderFbo.h"
 #include "ShaderController.h"
 #include "RenderContext.h"
+#include "PerFrameData.h"
+
 class PreDepthStage
 {
 public:
@@ -26,4 +28,19 @@ public:
 	ShaderController displaycon;
 	unsigned int width;
 	unsigned int height;
+};
+
+class ForwardStage
+{
+public:
+	ForwardStage(unsigned int w, unsigned int h);
+
+	void Init() {}
+	void Prepare(PerFrameData & framedata) { vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex)); }
+
+	Vao & GetVao() { return vao; }
+	Fbo & GetFbo() { return fbo; }
+
+	Vao vao;
+	Fbo fbo;
 };

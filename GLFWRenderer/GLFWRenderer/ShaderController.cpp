@@ -28,31 +28,31 @@ void ShaderController::Set(std::string name, boost::any value)
 		switch (varrecord.type)
 		{
 		case GL_INT:
-			glUniform1i(varrecord.location, boost::any_cast<GLint>(value));
+			glProgramUniform1i(shaderprogram, varrecord.location, boost::any_cast<GLint>(value));
 			break;
 		case GL_UNSIGNED_INT:
-			glUniform1ui(varrecord.location, boost::any_cast<GLuint>(value));
+			glProgramUniform1ui(shaderprogram, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		case GL_FLOAT:
-			glUniform1f(varrecord.location, boost::any_cast<GLfloat>(value));
+			glProgramUniform1f(shaderprogram, varrecord.location, boost::any_cast<GLfloat>(value));
 			break;
 		case GL_DOUBLE:
-			glUniform1d(varrecord.location, boost::any_cast<GLdouble>(value));
+			glProgramUniform1d(shaderprogram, varrecord.location, boost::any_cast<GLdouble>(value));
 			break;
 		case GL_FLOAT_VEC2:
-			glUniform2fv(varrecord.location, 1, &(boost::any_cast<glm::vec2>(value)[0]));
+			glProgramUniform2fv(shaderprogram, varrecord.location, 1, &(boost::any_cast<glm::vec2>(value)[0]));
 			break;
 		case GL_FLOAT_VEC3:
-			glUniform3fv(varrecord.location, 1, &(boost::any_cast<glm::vec3>(value)[0]));
+			glProgramUniform3fv(shaderprogram, varrecord.location, 1, &(boost::any_cast<glm::vec3>(value)[0]));
 			break;
 		case GL_FLOAT_VEC4:
-			glUniform4fv(varrecord.location, 1, &(boost::any_cast<glm::vec4>(value)[0]));
+			glProgramUniform4fv(shaderprogram, varrecord.location, 1, &(boost::any_cast<glm::vec4>(value)[0]));
 			break;
 		case GL_MATRIX3_ARB:
-			glUniformMatrix3fv(varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat3>(value)[0][0]));
+			glProgramUniformMatrix3fv(shaderprogram, varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat3>(value)[0][0]));
 			break;
 		case GL_MATRIX4_ARB:
-			glUniformMatrix4fv(varrecord.location, 1, GL_TRUE, &(boost::any_cast<glm::mat4>(value)[0][0]));
+			glProgramUniformMatrix4fv(shaderprogram, varrecord.location, 1, GL_TRUE, &(boost::any_cast<glm::mat4>(value)[0][0]));
 			break;
 		case GL_TEXTURE_1D:
 		case GL_TEXTURE_2D:
@@ -178,7 +178,7 @@ void ShaderController::GetAllUniformLocation()
 		case GL_TEXTURE_CUBE_MAP:
 		case GL_TEXTURE_DEPTH:
 			samplerlocation = GetUniformLocation(v.second.name);
-			glUniform1i(samplerlocation, samplercounter);
+			glProgramUniform1i(shaderprogram, samplerlocation, samplercounter);
 			v.second.location = samplercounter;
 			samplercounter++;
 			break;

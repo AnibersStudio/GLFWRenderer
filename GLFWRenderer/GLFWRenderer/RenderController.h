@@ -6,21 +6,7 @@
 #include "MeshManager.h"
 #include "RenderContext.h"
 #include "RenderStageImp.h"
-
-struct PerFrameData
-{
-	void Clear() { Material.clear(); MaterialIndex.clear(); Vertex.clear(); 
-	OpaceCount.clear(); FullTransCount.clear(); SemiTransCount.clear(); }
-
-	std::vector<TexturedMaterial> Material;
-	std::vector<unsigned int> MaterialIndex;
-	std::vector<Vertex> Vertex;
-	std::vector<unsigned int> OpaceCount;
-	std::vector<unsigned int> FullTransCount;
-	std::vector<unsigned int> SemiTransCount;
-};
-
-
+#include "PerFrameData.h"
 class RenderController
 {
 public:
@@ -35,4 +21,5 @@ private:
 	unsigned int width, height;
 
 	PreDepthStage depthstage;
+	ForwardStage forwardstage;
 };

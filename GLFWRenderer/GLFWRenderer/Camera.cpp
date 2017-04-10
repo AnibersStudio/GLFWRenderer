@@ -23,19 +23,21 @@ void Camera::Move(float toward, float right)
 	shouldupdate = true;
 }
 
-const glm::vec3 & Camera::GetEye() const
+const glm::vec3 & Camera::GetEye()
 {
+	if (shouldupdate) Update();
 	return Eye;
 }
 
-const glm::vec3 & Camera::GetTarget() const
+const glm::vec3 & Camera::GetTarget()
 {
-
+	if (shouldupdate) Update();
 	return Target;
 }
 
-const glm::vec3 & Camera::GetUp() const
+const glm::vec3 & Camera::GetUp()
 {
+	if (shouldupdate) Update();
 	return Up;
 }
 
@@ -45,8 +47,9 @@ glm::mat4 Camera::GetLookat()
 	return glm::lookAt(Eye, Target, Up);
 }
 
-const glm::vec3 & Camera::GetSight() const
+const glm::vec3 & Camera::GetSight()
 {
+	if (shouldupdate) Update();
 	return Sight;
 }
 

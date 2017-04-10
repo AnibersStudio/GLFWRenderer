@@ -15,13 +15,13 @@ public:
 	void Move(float toward, float right);
 
 	/// <summary> Get the eye position of camera </summary>
-	const glm::vec3 & GetEye() const;
+	const glm::vec3 & GetEye();
 	/// <summary> Get the target position of camera </summary>
-	const glm::vec3 & GetTarget() const;
+	const glm::vec3 & GetTarget();
 	/// <summary> Get the up vector of camera </summary>
-	const glm::vec3 & GetUp() const;
+	const glm::vec3 & GetUp();
 	/// <summary> Get the sight vector of camera pointing from eye to target </summary>
-	const glm::vec3 & GetSight() const;
+	const glm::vec3 & GetSight();
 	/// <summary> Get the view matrix </summary>
 	glm::mat4 GetLookat();
 private:
