@@ -33,6 +33,9 @@ void ShaderController::Set(std::string name, boost::any value)
 		case GL_UNSIGNED_INT:
 			glProgramUniform1ui(shaderprogram, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
+		case GL_UNSIGNED_INT64_ARB:
+			glProgramUniform1ui64ARB(shaderprogram, varrecord.location, boost::any_cast<GLuint64> (value));
+			break;
 		case GL_FLOAT:
 			glProgramUniform1f(shaderprogram, varrecord.location, boost::any_cast<GLfloat>(value));
 			break;

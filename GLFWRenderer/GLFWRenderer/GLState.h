@@ -9,6 +9,8 @@ struct GLState
 {
 	/// <summary> Enable depth test or not. Default is true(test) </summary>
 	bool depthtest = true;
+	/// <summary> The depth function of depth test. Default is GL_LESS(front drawn) </summary>
+	GLenum depthfunc = GL_LESS;
 	/// <summary> Blend or not. Default is false(opace) </summary>
 	bool blend = false;
 	/// <summary> The blend function of blending. Default is GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA </summary>

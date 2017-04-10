@@ -11,6 +11,7 @@ DebugOutput::DebugOutput(unsigned int w, unsigned int h)
 
 void DebugOutput::Draw(GLuint display)
 {
+	glstate.ColdSet();
 	displaycon.Clear();
 	displaycon.Set("display", boost::any(display));
 	displaycon.Set("winSize", boost::any(glm::vec2(width, height)));
@@ -35,8 +36,11 @@ void PreDepthStage::Prepare(glm::mat4 WVP)
 	depthcontroller.Set("WVP", boost::any(WVP));
 }
 
-void PreDepthStage::Draw(Vao & vao, Fbo & fbo, unsigned int vertcount)
+void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned int vertcount)
 {
+	glstate.HotSet(oldglstate);
+	oldglstate = glstate;
+
 	depthcontroller.Draw();
 
 	vao.Bind();
@@ -47,7 +51,7 @@ void PreDepthStage::Draw(Vao & vao, Fbo & fbo, unsigned int vertcount)
 
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
 fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 0.0, 0.0, 0.0) } } }),
-forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_TEXTURE_2D}, {"WVP", GL_MATRIX4_ARB}} }
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_MATRIX4_ARB}} }
 {
 }
 
@@ -59,9 +63,12 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP)
 	forwardcon.Set("WVP", boost::any(WVP));
 }
 
-void ForwardStage::Draw(unsigned int vertcount)
+void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount)
 {
-	GLuint diffuse = data->Material[0].diffusetex->GetObjectID();
+	glstate.HotSet(oldglstate);
+	oldglstate = glstate;
+
+	auto diffuse = data->Material[0].diffusetex->GetObjectHandle();
 	forwardcon.Set("diffuse", boost::any(diffuse));
 	forwardcon.Draw();
 

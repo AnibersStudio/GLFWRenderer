@@ -34,8 +34,8 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Prepare(WVP);
 	forwardstage.Prepare(framedata, WVP);
 	
-	depthstage.Draw(forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
-	forwardstage.Draw(OpaceVerticesCount);
+	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
+	forwardstage.Draw(glstate, OpaceVerticesCount);
 
 	static DebugOutput screendrawer{width, height};
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());

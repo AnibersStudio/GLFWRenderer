@@ -47,8 +47,6 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 		{
 			depthattachment = GenerateTexture(c.internalformat, c.format, c.valuetype, c.paralist, c.bordercolor);
 			glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT_EXT, depthattachment, 0);
-			depthhandle = glGetTextureHandleARB(depthattachment);
-			glMakeTextureHandleResidentARB(depthhandle);
 		}
 		else//Color texture
 		{
@@ -115,6 +113,26 @@ void Fbo::BindDepth()
 	}
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
+}
+
+GLuint64 Fbo::GetDepthHandle()
+{
+	if (depthhandle == 0xFFFFFFFFFFFFFFFF)
+	{
+		depthhandle = glGetTextureHandleARB(depthattachment);
+		glMakeTextureHandleResidentARB(depthhandle);
+	}
+	return depthhandle;
+}
+
+GLuint64 Fbo::GetDepthImageHanle()
+{
+	if (depthimagehandle == 0xFFFFFFFFFFFFFFFF)
+	{
+		depthimagehandle = glGetImageHandleARB(depthattachment, 0, false, 0, GL_R32UI);
+		glMakeImageHandleNonResidentARB(depthimagehandle);
+	}
+	return depthimagehandle;
 }
 
 GLuint Fbo::GenerateTexture(GLenum internalformat, GLenum format, GLenum valuetype, std::vector<std::pair<GLenum, GLenum>> paralist, glm::vec4 bordercolor) const

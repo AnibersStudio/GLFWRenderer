@@ -10,6 +10,7 @@ void GLState::ColdSet()
 	{
 		glDisable(GL_DEPTH_TEST);
 	}
+	glDepthFunc(depthfunc);
 
 	if (blend)
 	{
@@ -37,6 +38,10 @@ void GLState::HotSet(GLState & oldstate)
 		{
 			glDisable(GL_DEPTH_TEST);
 		}
+	}
+	if (depthfunc != oldstate.depthfunc)
+	{
+		glDepthFunc(depthfunc);
 	}
 
 	if (blend != oldstate.blend)
