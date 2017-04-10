@@ -68,7 +68,7 @@ bool App::CursorPosCallback(GLFWwindow * winptr, double x, double y)
 		moment.firstmousemove = false;
 	}
 
-	maincamera.Rotate(-(x - moment.lastx) * settings.horsense, -(y - moment.lasty) * settings.vertsense);
+	maincamera.Rotate((x - moment.lastx) * settings.horsense, (y - moment.lasty) * settings.vertsense);
 
 	moment.lastx = x;
 	moment.lasty = y;
@@ -87,8 +87,6 @@ void App::Run()
 		rendercontext.eye = maincamera.GetEye();
 		rendercontext.target = maincamera.GetTarget();
 		rendercontext.up = maincamera.GetUp();
-
-		assert(abs(rendercontext.target.z - 1.0) > 0.0001);
 
 		renderer.Draw(rendercontext);
 		if (glfwGetTime() - starttime > 1.0)

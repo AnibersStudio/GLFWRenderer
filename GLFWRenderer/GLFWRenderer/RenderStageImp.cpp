@@ -46,6 +46,26 @@ void DebugOutput::Draw(GLuint display)
 }
 
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
-fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 0.0, 0.0, 0.0) } } })
+fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 0.0, 0.0, 0.0) } } }),
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_TEXTURE_2D}, {"WVP", GL_MATRIX4_ARB}} }
 {
+}
+
+void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP)
+{
+	vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex)); data = &framedata;
+	forwardcon.Clear();
+	forwardcon.Set("WVP", boost::any(WVP));
+}
+
+void ForwardStage::Draw(GLuint diffuse, unsigned int vertcount)
+{
+	forwardcon.Set("diffuse", boost::any(diffuse));
+	forwardcon.Draw();
+
+	vao.Bind();
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDrawArrays(GL_TRIANGLES, 0, vertcount);
 }

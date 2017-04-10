@@ -4,13 +4,14 @@
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3dll.lib")
 
+#include <iostream>
 #include "GLCommon.h"
 #include "Camera.h"
 #include "GLFWcontext.h"
 #include "DrawController.h"
 #include "RenderController.h"
 #include "DynamicMeshManager.h"
-#include <iostream>
+
 
 struct SettingInfo
 {

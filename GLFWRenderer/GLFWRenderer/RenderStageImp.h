@@ -36,11 +36,14 @@ public:
 	ForwardStage(unsigned int w, unsigned int h);
 
 	void Init() {}
-	void Prepare(PerFrameData & framedata) { vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex)); }
+	void Prepare(PerFrameData & framedata, glm::mat4 WVP);
+	void Draw(GLuint diffuse, unsigned int vertcount);
 
 	Vao & GetVao() { return vao; }
 	Fbo & GetFbo() { return fbo; }
 
 	Vao vao;
 	Fbo fbo;
+	PerFrameData * data;
+	ShaderController forwardcon;
 };

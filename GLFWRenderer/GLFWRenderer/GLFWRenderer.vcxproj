@@ -165,22 +165,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Shader\DeferredPrepassFragment.glsl" />
-    <None Include="Shader\DeferredPrepassVertex.glsl" />
-    <None Include="Shader\DepthFragment.glsl" />
-    <None Include="Shader\DepthVertex.glsl" />
-    <None Include="Shader\ForwardFragment.glsl" />
-    <None Include="Shader\ForwardVertex.glsl" />
-    <None Include="Shader\GussianBlurFragment.glsl" />
-    <None Include="Shader\GussianBlurVertex.glsl" />
-    <None Include="Shader\HDRFragment.glsl" />
-    <None Include="Shader\HDRVertex.glsl" />
-    <None Include="Shader\LinearDepthFragment.glsl" />
-    <None Include="Shader\LinearDepthVertex.glsl" />
-    <None Include="Shader\MixFragment.glsl" />
-    <None Include="Shader\MixVertex.glsl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="BufferObjectSubmiter.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -234,6 +218,22 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GLFWRenderer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\Debug\QuadDisplayFragment.glsl" />
+    <None Include="Shader\Debug\QuadDisplayVertex.glsl" />
+    <None Include="Shader\Depth\LinearDepthFragment.glsl" />
+    <None Include="Shader\Depth\LinearDepthVertex.glsl" />
+    <None Include="Shader\Depth\NativeDepthFragment.glsl" />
+    <None Include="Shader\Depth\NativeDepthVertex.glsl" />
+    <None Include="Shader\Forward\ForwardFragment.glsl" />
+    <None Include="Shader\Forward\ForwardVertex.glsl" />
+    <None Include="Shader\LightCulling\DepthToSSBOFragment.glsl" />
+    <None Include="Shader\LightCulling\DepthToSSBOVertex.glsl" />
+    <None Include="Shader\LightCulling\RasterToSSBOFragment.glsl" />
+    <None Include="Shader\LightCulling\RasterToSSBOVertex.glsl" />
+    <None Include="Shader\LightCulling\SSBOToDepthTextureFragment.glsl" />
+    <None Include="Shader\LightCulling\SSBOToDepthTextureVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

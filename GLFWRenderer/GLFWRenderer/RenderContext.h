@@ -1,5 +1,6 @@
 #pragma once
 #include "GLCommon.h"
+#include "Camera.h"
 struct RenderContext
 {
 	/// <summary> Camera position </summary>
@@ -12,7 +13,7 @@ struct RenderContext
 	/// <summary> Objects farther than this will not be drawn </summary>
 	float ViewDistance = 192;
 	/// <summary> The Horizonal field of view value in degrees </summary>
-	float FieldOfView = 45;
+	float FieldOfView = 60;
 	/// <summary> The value of monitor gamma </summary>
 	float gamma = 2.2;
 

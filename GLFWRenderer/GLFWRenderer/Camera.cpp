@@ -25,7 +25,6 @@ void Camera::Move(float toward, float right)
 
 const glm::vec3 & Camera::GetEye()
 {
-	if (shouldupdate) Update();
 	return Eye;
 }
 
