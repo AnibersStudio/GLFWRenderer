@@ -68,7 +68,7 @@ bool App::CursorPosCallback(GLFWwindow * winptr, double x, double y)
 		moment.firstmousemove = false;
 	}
 
-	maincamera.Rotate((x - moment.lastx) * settings.horsense, (y - moment.lasty) * settings.vertsense);
+	maincamera.Rotate(-(x - moment.lastx) * settings.horsense, -(y - moment.lasty) * settings.vertsense);
 
 	moment.lastx = x;
 	moment.lasty = y;

@@ -6,18 +6,6 @@
 #include "RenderContext.h"
 #include "PerFrameData.h"
 
-class PreDepthStage
-{
-public:
-	PreDepthStage();
-	void Init() {}
-	void Prepare(glm::mat4 WVP);
-	void Draw(Vao & vao, Fbo & fbo, unsigned int vertcount);
-
-private:
-	ShaderController depthcontroller;
-};
-
 class DebugOutput
 {
 public:
@@ -30,6 +18,18 @@ public:
 	unsigned int height;
 };
 
+class PreDepthStage
+{
+public:
+	PreDepthStage();
+	void Init() {}
+	void Prepare(glm::mat4 WVP);
+	void Draw(Vao & vao, Fbo & fbo, unsigned int vertcount);
+
+private:
+	ShaderController depthcontroller;
+};
+
 class ForwardStage
 {
 public:
@@ -37,7 +37,7 @@ public:
 
 	void Init() {}
 	void Prepare(PerFrameData & framedata, glm::mat4 WVP);
-	void Draw(GLuint diffuse, unsigned int vertcount);
+	void Draw(unsigned int vertcount);
 
 	Vao & GetVao() { return vao; }
 	Fbo & GetFbo() { return fbo; }

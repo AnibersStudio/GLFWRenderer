@@ -52,7 +52,7 @@ void ShaderController::Set(std::string name, boost::any value)
 			glProgramUniformMatrix3fv(shaderprogram, varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat3>(value)[0][0]));
 			break;
 		case GL_MATRIX4_ARB:
-			glProgramUniformMatrix4fv(shaderprogram, varrecord.location, 1, GL_TRUE, &(boost::any_cast<glm::mat4>(value)[0][0]));
+			glProgramUniformMatrix4fv(shaderprogram, varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat4>(value)[0][0]));
 			break;
 		case GL_TEXTURE_1D:
 		case GL_TEXTURE_2D:

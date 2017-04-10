@@ -12,7 +12,6 @@ void RenderController::Draw(RenderContext context)
 	RenderPrepare(context);
 	///Calculate WVPs
 	glm::mat4 V = glm::lookAt(context.eye, context.target, context.up);
-	V = glm::lookAt(vec3(0.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 P = glm::perspective(context.FieldOfView / width * height, (float)width / (float)height, 0.2f, context.ViewDistance);
 	glm::mat4 WVP = P * V;
 	///Calculate Opace Vertices Count
@@ -35,10 +34,10 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Prepare(WVP);
 	forwardstage.Prepare(framedata, WVP);
 	
-	//depthstage.Draw(forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
-	forwardstage.Draw(framedata.Material[0].diffusetex->GetObjectID(), OpaceVerticesCount);
+	depthstage.Draw(forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
+	forwardstage.Draw(OpaceVerticesCount);
 
-	//static DebugOutput screendrawer{width, height};
+	static DebugOutput screendrawer{width, height};
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;

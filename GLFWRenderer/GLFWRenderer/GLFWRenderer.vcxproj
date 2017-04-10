@@ -222,8 +222,6 @@
   <ItemGroup>
     <None Include="Shader\Debug\QuadDisplayFragment.glsl" />
     <None Include="Shader\Debug\QuadDisplayVertex.glsl" />
-    <None Include="Shader\Depth\LinearDepthFragment.glsl" />
-    <None Include="Shader\Depth\LinearDepthVertex.glsl" />
     <None Include="Shader\Depth\NativeDepthFragment.glsl" />
     <None Include="Shader\Depth\NativeDepthVertex.glsl" />
     <None Include="Shader\Forward\ForwardFragment.glsl" />

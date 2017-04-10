@@ -177,12 +177,6 @@
     <None Include="Shader\Debug\QuadDisplayVertex.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\Depth\LinearDepthFragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\Depth\LinearDepthVertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\Depth\NativeDepthFragment.glsl">
       <Filter>Shader</Filter>
     </None>
