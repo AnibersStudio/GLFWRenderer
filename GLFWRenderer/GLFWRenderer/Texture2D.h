@@ -33,7 +33,7 @@ private:
 	bool loaded = false;
 	GLenum textarget = GL_TEXTURE_2D;
 	GLuint texobj = 0xFFFFFFFF;
-	GLuint64 texhandle = 0xFFFFFFFF;
+	GLuint64 texhandle = 0xFFFFFFFFFFFFFFFF;
 	/// <summary> colortexture is min-and-mag smooth and has mipmap, but non-colortexture the opposite </summary>
 	bool iscolortexture;
 	unsigned int af;

@@ -3,9 +3,9 @@
 layout (location = 0) out vec4 Color;
 
 uniform sampler2D display;
-uniform vec2 winSize;
+uniform uvec2 winSize;
 
 void main()
 {
-	Color = texture(display, gl_FragCoord.xy / winSize * 0.5 + 0.5);
+	Color = texture(display, gl_FragCoord.xy / vec2(winSize.x, winSize.y) * 0.5 + 0.5);
 }

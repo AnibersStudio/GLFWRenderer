@@ -2,7 +2,7 @@
 
 DebugOutput::DebugOutput(unsigned int w, unsigned int h)
 	: vao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
-	displaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D },{ "winSize",GL_FLOAT_VEC2 } })),
+	displaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D },{ "winSize",GL_UNSIGNED_INT_VEC2 } })),
 	width(w), height(h)
 {
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
@@ -14,7 +14,7 @@ void DebugOutput::Draw(GLuint display)
 	glstate.ColdSet();
 	displaycon.Clear();
 	displaycon.Set("display", boost::any(display));
-	displaycon.Set("winSize", boost::any(glm::vec2(width, height)));
+	displaycon.Set("winSize", boost::any(glm::uvec2(width, height)));
 	displaycon.Draw();
 
 	vao.Bind();

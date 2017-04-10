@@ -226,12 +226,8 @@
     <None Include="Shader\Depth\NativeDepthVertex.glsl" />
     <None Include="Shader\Forward\ForwardFragment.glsl" />
     <None Include="Shader\Forward\ForwardVertex.glsl" />
-    <None Include="Shader\LightCulling\DepthToSSBOFragment.glsl" />
-    <None Include="Shader\LightCulling\DepthToSSBOVertex.glsl" />
-    <None Include="Shader\LightCulling\RasterToSSBOFragment.glsl" />
-    <None Include="Shader\LightCulling\RasterToSSBOVertex.glsl" />
-    <None Include="Shader\LightCulling\SSBOToDepthTextureFragment.glsl" />
-    <None Include="Shader\LightCulling\SSBOToDepthTextureVertex.glsl" />
+    <None Include="Shader\LightCulling\DepthDownscaleFragment.glsl" />
+    <None Include="Shader\LightCulling\DepthDownscaleVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

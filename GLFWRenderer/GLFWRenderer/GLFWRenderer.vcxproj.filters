@@ -189,22 +189,10 @@
     <None Include="Shader\Forward\ForwardVertex.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthToSSBOFragment.glsl">
+    <None Include="Shader\LightCulling\DepthDownscaleFragment.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthToSSBOVertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\LightCulling\RasterToSSBOFragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\LightCulling\RasterToSSBOVertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\LightCulling\SSBOToDepthTextureFragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\LightCulling\SSBOToDepthTextureVertex.glsl">
+    <None Include="Shader\LightCulling\DepthDownscaleVertex.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
