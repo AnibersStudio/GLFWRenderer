@@ -18,7 +18,7 @@ public:
 	Texture2D(std::string path, bool colortexture);
 
 	/// <summary> Set anisotropic filter scale. Must be greater than 1 which means off </summary>
-	void SetAF(unsigned int afscale);
+	void SetAF(float afscale);
 
 	const std::string & GetPath() const { return texpath; }
 	GLuint GetObjectID() const { return texobj; }
@@ -36,7 +36,7 @@ private:
 	GLuint64 texhandle = 0xFFFFFFFFFFFFFFFF;
 	/// <summary> colortexture is min-and-mag smooth and has mipmap, but non-colortexture the opposite </summary>
 	bool iscolortexture;
-	unsigned int af;
+	unsigned int af = 0;
 };
 
 namespace std

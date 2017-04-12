@@ -1,9 +1,12 @@
 #include "RenderController.h"
 #include "GLConstManager.h"
 #include "RenderStageImp.h"
-RenderController::RenderController(MeshManager & mm, unsigned int w, unsigned int h) : meshmanager(mm), width(w), height(h), forwardstage(ForwardStage{w, h})
+RenderController::RenderController(MeshManager & mm, unsigned int w, unsigned int h) : meshmanager(mm), width(w), height(h), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{w, h})
 {
 	depthstage.Init();
+
+	lightcullingstage.Init(forwardstage.GetFbo());
+
 	forwardstage.Init();
 }
 
@@ -30,16 +33,18 @@ void RenderController::Draw(RenderContext context)
 	{
 		TransVerticesCount += v;
 	}
-	
+
 	depthstage.Prepare(WVP);
+	lightcullingstage.Prepare(WVP);
 	forwardstage.Prepare(framedata, WVP);
-	
+
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
+	lightcullingstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount, TransVerticesCount);
 	forwardstage.Draw(glstate, OpaceVerticesCount);
 
-
-
 	static DebugOutput screendrawer{width, height};
+	screendrawer.Draw(lightcullingstage.GetMinDepth().GetDepthID());
+	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;
 }
@@ -50,8 +55,10 @@ void RenderController::RenderPrepare(RenderContext context)
 	meshmanager.AppendMesh(MeshManager::Opace, framedata.Material, framedata.OpaceCount, framedata.Vertex, framedata.MaterialIndex);
 	meshmanager.AppendOrderedMesh(MeshManager::FullTrans, context.eye, framedata.Material, framedata.FullTransCount, framedata.Vertex, framedata.MaterialIndex);
 	meshmanager.AppendOrderedMesh(MeshManager::SemiTrans, context.eye, framedata.Material, framedata.SemiTransCount, framedata.Vertex, framedata.MaterialIndex);
+
 	for (auto & m : framedata.Material)
 	{
 		m.diffusetex->SetAF(GLConstManager::GetInstance().GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)[0]);
 	}
+	
 }

@@ -43,10 +43,41 @@ public:
 
 	Vao & GetVao() { return vao; }
 	Fbo & GetFbo() { return fbo; }
-
+private:
 	Vao vao;
 	Fbo fbo;
 	PerFrameData * data;
 	ShaderController forwardcon;
 	GLState glstate;
+};
+
+class LightCullingStage
+{
+public:
+	LightCullingStage(unsigned int w, unsigned int h);
+	void Init(Fbo & forawrdfbo);
+	void Prepare(glm::mat4 WVP);
+	void Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertcount, unsigned int transvertcount);
+
+	Fbo & GetMinDepth() { return mindepth; }
+	Fbo & GetMaxDepth() { return maxdepth; }
+private:
+	const glm::uvec2 tilesize{ 32, 32 };
+	glm::uvec2 tilecount;
+
+	Vao depthrangevao;
+
+	Fbo mindepth;
+	Fbo maxdepth;
+	Fbo * forwardfbo;
+
+	GLState depthatomicstate;
+	GLState depthrangestate;
+
+	GLuint depthminmaxbuffer;
+
+	ShaderController depthatomicrenderer;
+	ShaderController depthdownscaler;
+	ShaderController depthinitializer;
+	ShaderController depthrangerenderer;
 };

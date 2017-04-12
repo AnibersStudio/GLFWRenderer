@@ -7,5 +7,6 @@ uniform uvec2 winSize;
 
 void main()
 {
-	Color = texture(display, gl_FragCoord.xy / vec2(winSize.x, winSize.y) * 0.5 + 0.5);
+	vec4 color = texture(display, gl_FragCoord.xy / vec2(winSize.x, winSize.y) * 0.5 + 0.5);
+	Color = color;
 }

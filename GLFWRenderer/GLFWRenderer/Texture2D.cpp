@@ -75,11 +75,11 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 	iscolortexture = colortexture;
 }
 
-void Texture2D::SetAF(unsigned int afscale)
+void Texture2D::SetAF(float afscale)
 {
 	if (afscale != af)
 	{
 		af = afscale;
-		glTextureParameterf(texobj, GL_TEXTURE_MAX_ANISOTROPY_EXT, static_cast<float>(af));
+		glTextureParameterfEXT(texobj, textarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, afscale);
 	}
 }

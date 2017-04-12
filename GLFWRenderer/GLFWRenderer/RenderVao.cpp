@@ -17,6 +17,12 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	{
 		glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
 		glEnableVertexArrayAttribEXT(vao, i);
+		
+		if (attriblist[i].instanced)
+		{
+			glVertexArrayVertexAttribDivisorEXT(vao, i, 1);
+		}
+
 		stride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
 	}
 }

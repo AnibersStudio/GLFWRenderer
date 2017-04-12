@@ -1,10 +1,14 @@
 #include "BufferObjectSubmiter.h"
 #include "CommonTools.h"
-GLuint BufferObjectSubmiter::Generate()
+GLuint BufferObjectSubmiter::Generate(size_t size)
 {
 	GLuint bufferID;
 	glGenBuffers(1, &bufferID);
-	buffersize[bufferID] = 0;
+	buffersize[bufferID] = size;
+	if (size)
+	{
+		glNamedBufferDataEXT(bufferID, size, NULL, GL_STREAM_DRAW);
+	}
 	return bufferID;
 }
 

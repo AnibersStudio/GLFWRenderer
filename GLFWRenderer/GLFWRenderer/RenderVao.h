@@ -11,6 +11,8 @@ struct VaoRecord
 	unsigned int valuecount;
 	/// <summary> The value type of values specified by valuecount in vbo </summary>
 	GLenum valuetype;
+	/// <summary> The attribute is instanced or not. </summary>
+	bool instanced = false;
 };
 
 class Vao

@@ -118,7 +118,7 @@ void DynamicMeshManager::AppendOrderedMesh(unsigned char meshoption, glm::vec3 e
 			meshlist.push_back(m);
 		}
 	}
-	meshlist.sort([eye](const ArrayModel & lhs, const ArrayModel & rhs) { return glm::length(lhs.position - eye) < glm::length(rhs.position - eye); });
+	meshlist.sort([eye](const ArrayModel & lhs, const ArrayModel & rhs) { return glm::length(lhs.position - eye) >= glm::length(rhs.position - eye); });
 
 	std::unordered_map<TexturedMaterial, unsigned int> materialmap;
 	materialmap.reserve(ReserveMaterialSize(Opace) * 2);

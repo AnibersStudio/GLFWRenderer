@@ -22,6 +22,7 @@ private:
 
 	PreDepthStage depthstage;
 	ForwardStage forwardstage;
+	LightCullingStage lightcullingstage;
 
 	GLState glstate;
 };

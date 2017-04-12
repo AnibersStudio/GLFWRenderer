@@ -33,8 +33,8 @@ void ShaderController::Set(std::string name, boost::any value)
 		case GL_UNSIGNED_INT:
 			glProgramUniform1ui(shaderprogram, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
-		case GL_UNSIGNED_INT64_ARB:
-			glProgramUniform1ui64ARB(shaderprogram, varrecord.location, boost::any_cast<GLuint64> (value));
+		case GL_UNSIGNED_INT64_NV:
+			glProgramUniformHandleui64ARB(shaderprogram, varrecord.location, boost::any_cast<GLuint64>(value));
 			break;
 		case GL_UNSIGNED_INT_VEC2:
 			glProgramUniform2uiv(shaderprogram, varrecord.location, 1, &(boost::any_cast<glm::uvec2>(value)[0]));
@@ -78,7 +78,7 @@ void ShaderController::Set(std::string name, boost::any value)
 			glBindBufferBase(GL_UNIFORM_BUFFER,  varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		case GL_SHADER_STORAGE_BUFFER:
-			glBindBufferBase(GL_UNIFORM_BUFFER, varrecord.location, boost::any_cast<GLuint>(value));
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		default:
 			throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
@@ -129,6 +129,7 @@ void ShaderController::ConstructShader(std::vector<std::pair<std::string, GLenum
 	{
 		try {
 			std::string shadersource = ReadFile(shader.first);
+			if (!shadersource.size()) throw DrawErrorException("", "Cannot read shader file. Wrong path?");
 			AddShader(shader.second, shadersource.c_str());
 		}
 		catch (DrawErrorException & e)
@@ -156,7 +157,6 @@ void ShaderController::ConstructVarMap(std::vector<ShaderVarRec> variablelist)
 	varmap.reserve(variablelist.size());
 	for (auto variable : variablelist)
 	{
-		variable.location = 0xFFFFFFFF;
 		varmap[variable.name] = variable;
 	}
 }

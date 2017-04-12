@@ -189,10 +189,28 @@
     <None Include="Shader\Forward\ForwardVertex.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthDownscaleFragment.glsl">
+    <None Include="Shader\LightCulling\DepthAtomicFragment.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthDownscaleVertex.glsl">
+    <None Include="Shader\LightCulling\DepthAtomicVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\DepthDownscaleCompute.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\DepthInitializeCompute.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\DepthRangeFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\DepthRangeVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\ProxyFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\ProxyVertex.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

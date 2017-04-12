@@ -125,16 +125,6 @@ GLuint64 Fbo::GetDepthHandle()
 	return depthhandle;
 }
 
-GLuint64 Fbo::GetDepthImageHanle()
-{
-	if (depthimagehandle == 0xFFFFFFFFFFFFFFFF)
-	{
-		depthimagehandle = glGetImageHandleARB(depthattachment, 0, false, 0, GL_R32UI);
-		glMakeImageHandleNonResidentARB(depthimagehandle);
-	}
-	return depthimagehandle;
-}
-
 GLuint Fbo::GenerateTexture(GLenum internalformat, GLenum format, GLenum valuetype, std::vector<std::pair<GLenum, GLenum>> paralist, glm::vec4 bordercolor) const
 {
 	GLuint textureid;

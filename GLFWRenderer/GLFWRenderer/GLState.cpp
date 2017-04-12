@@ -11,7 +11,7 @@ void GLState::ColdSet()
 		glDisable(GL_DEPTH_TEST);
 	}
 	glDepthFunc(depthfunc);
-
+	glDepthMask(depthmask);
 	if (blend)
 	{
 		glEnable(GL_BLEND);
@@ -43,7 +43,10 @@ void GLState::HotSet(GLState & oldstate)
 	{
 		glDepthFunc(depthfunc);
 	}
-
+	if (depthmask != oldstate.depthmask)
+	{
+		glDepthMask(depthmask);
+	}
 	if (blend != oldstate.blend)
 	{
 		if (blend)
@@ -70,4 +73,5 @@ void GLState::HotSet(GLState & oldstate)
 	{
 		glFrontFace(frontface);
 	}
+	oldstate = *this;
 }
