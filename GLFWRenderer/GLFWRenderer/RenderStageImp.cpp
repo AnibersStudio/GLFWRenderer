@@ -139,12 +139,12 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 	// Trans depth draw to image. And force the depth render to complete
 	if (transvertcount)
 	{
-		//depthatomicstate.HotSet(oldglstate);
-		//depthatomicrenderer.Draw();
-		//vao.Bind();
-		//forwardfbo->BindDepth();
-		//glDrawArrays(GL_TRIANGLES, opacevertcount, transvertcount);
-		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		depthatomicstate.HotSet(oldglstate);
+		depthatomicrenderer.Draw();
+		vao.Bind();
+		forwardfbo->BindDepth();
+		glDrawArrays(GL_TRIANGLES, opacevertcount, transvertcount);
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
 	// Downscale opace depth
 	if (opacevertcount)

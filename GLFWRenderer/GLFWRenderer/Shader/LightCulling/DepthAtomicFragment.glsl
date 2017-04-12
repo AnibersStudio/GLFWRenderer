@@ -18,8 +18,8 @@ void main()
 	float depthf = gl_FragCoord.z;
 	uint depth = encodefloat(depthf);
 	memoryBarrierBuffer();
-	atomicMax(value[tileindex].x, depth);
-	atomicMin(value[tileindex].y, depth);
+	atomicMin(value[tileindex].x, depth);
+	atomicMax(value[tileindex].y, depth);
 }
 
 uint encodefloat(float invalue)

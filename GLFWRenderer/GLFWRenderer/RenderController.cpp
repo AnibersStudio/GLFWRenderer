@@ -40,7 +40,7 @@ void RenderController::Draw(RenderContext context)
 
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
 	lightcullingstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount, TransVerticesCount);
-	forwardstage.Draw(glstate, OpaceVerticesCount);
+	//forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount);
 
 	static DebugOutput screendrawer{width, height};
 	screendrawer.Draw(lightcullingstage.GetMinDepth().GetDepthID());

@@ -6,17 +6,17 @@ App::App()
 
 	IndexedModel t("Res/MC/Stein.obj");
 	ArrayModel am(t);
-	ArrayModel am5(t);
 	IndexedModel t2("Res/MC/Sand.obj");
 	ArrayModel am2(t2);
 	ArrayModel am3(t2);
-	ArrayModel am4(am3);
-	
+	IndexedModel t3("Res/MC/Diamond.obj");
+	ArrayModel am5(t3);
+
 	am.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
 	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
-	
+	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
 
 	DirectionalLight dl[] = { 
 		DirectionalLight(1.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2, glm::vec3(0.0f, -1.0f, 0.0f)),
@@ -32,6 +32,7 @@ App::App()
 	manager.Add(am);
 	manager.Add(am2);
 	manager.Add(am3);
+	manager.Add(am5);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)
