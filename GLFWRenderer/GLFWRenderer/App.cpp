@@ -1,6 +1,7 @@
 #include "App.h"
 App::App()
 {
+	using namespace glm;
 	init(moment.keys, false, 128);
 	context.RegisterReceiver(this);
 
@@ -17,17 +18,6 @@ App::App()
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
 	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
-
-	DirectionalLight dl[] = { 
-		DirectionalLight(1.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2, glm::vec3(0.0f, -1.0f, 0.0f)),
-		DirectionalLight(0.0f,  glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.2,  glm::vec3(0.0f, 0.0f, -1.0f))
-	};
-	PointLight pl[] = {
-		PointLight(2.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.5f, true, glm::vec3(0.0f, 3.0f, 2.0f), 1.0f, 0.0f, 0.02f)
-	};
-	SpotLight sl[] = {
-		SpotLight(2.0, glm::vec3(1.0f, 1.0f, 1.0f), 1.0, 0.5 ,true, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 1.0, 0.0, 0.02, 0.9, 0.7)
-	};
 	
 	manager.Add(am);
 	manager.Add(am2);

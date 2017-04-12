@@ -27,13 +27,7 @@
     <ClCompile Include="CommonTools.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DrawController.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="GLFWcontext.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="LightShaderController.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Program.cpp">
@@ -92,16 +86,10 @@
     <ClInclude Include="CommonTools.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DrawController.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="GLCommon.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="GLFWcontext.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Texture2D.h">
@@ -123,9 +111,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TexturedMaterial.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="LightShaderController.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TextureLoader.h">

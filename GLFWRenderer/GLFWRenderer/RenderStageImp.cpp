@@ -90,12 +90,12 @@ maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH
 	depthatomicstate.depthmask = GL_FALSE;
 	depthrangestate.depthfunc = GL_ALWAYS;
 
-	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(uvec2) * tilecount.x * tilecount.y);
+	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
 	depthinitializer.Set("ssbo", boost::any(depthminmaxbuffer));
 
 	depthdownscaler.Set("depthrange", boost::any(depthminmaxbuffer));
-	depthdownscaler.Set("resolution", boost::any(uvec2(w, h)));
+	depthdownscaler.Set("resolution", boost::any(glm::uvec2(w, h)));
 
 	depthatomicrenderer.Set("depthrange", boost::any(depthminmaxbuffer));
 	depthatomicrenderer.Set("tilesize", boost::any(tilesize));

@@ -9,7 +9,7 @@ struct BaseLight
 	float intensity;
 	float diffuse;
 	float specular;
-	float not_used_for_alignment[2] = { 0.0f, 0.0f };
+	GLuint64 sampler;
 };
 
 struct DirectionalLight : public BaseLight
@@ -39,9 +39,9 @@ struct PointLight
 		atten.hasshadow = castshadow;
 	}
 	BaseLight bl;
+	Attenuation atten;
 	glm::vec3 position;
 	float not_used_for_alignment = 0.0;
-	Attenuation atten;
 	float IntenAt(vec3 spot) const
 	{
 		float x = length(spot - position);

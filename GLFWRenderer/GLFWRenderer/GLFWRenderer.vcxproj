@@ -169,12 +169,10 @@
     <ClCompile Include="BufferObjectSubmiter.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonTools.cpp" />
-    <ClCompile Include="DrawController.cpp" />
     <ClCompile Include="DynamicMeshManager.cpp" />
     <ClCompile Include="GLConstManager.cpp" />
     <ClCompile Include="GLFWcontext.cpp" />
     <ClCompile Include="GLState.cpp" />
-    <ClCompile Include="LightShaderController.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderController.cpp" />
@@ -192,14 +190,11 @@
     <ClInclude Include="BufferObjectSubmiter.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTools.h" />
-    <ClInclude Include="DrawController.h" />
     <ClInclude Include="DynamicMeshManager.h" />
     <ClInclude Include="GLCommon.h" />
     <ClInclude Include="GLConstManager.h" />
     <ClInclude Include="GLFWcontext.h" />
     <ClInclude Include="GLState.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="LightShaderController.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="MeshManager.h" />

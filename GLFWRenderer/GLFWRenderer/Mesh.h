@@ -2,7 +2,6 @@
 #pragma once
 
 #include "GLCommon.h"
-#include "Light.h"
 #include "Texture2D.h"
 #include "TexturedMaterial.h"
 #include <string>
