@@ -7,6 +7,7 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &instancevbo);
 	size_t sizepervertex = 0;
 	for (auto & attrib : attriblist)
 	{
@@ -15,28 +16,48 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	size_t stride = 0;
 	for (int i = 0; i != attriblist.size(); i++)
 	{
-		glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
-		glEnableVertexArrayAttribEXT(vao, i);
-		
 		if (attriblist[i].instanced)
 		{
+			glVertexArrayVertexAttribOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
+			glEnableVertexArrayAttribEXT(vao, i);
 			glVertexArrayVertexAttribDivisorEXT(vao, i, 1);
+		}
+		else
+		{
+			glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
+			glEnableVertexArrayAttribEXT(vao, i);
 		}
 
 		stride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
 	}
 }
 
-void Vao::SetData(const void * dataptr, size_t size) const
+void Vao::SetData(const void * dataptr, size_t size)
 {
 	if (size > buffersize)
 	{
 		glNamedBufferDataEXT(vbo, size, dataptr, usagehint);
+		buffersize = size;
 	}
 	else
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferSubData(vbo, 0, size, dataptr);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, dataptr);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+}
+
+void Vao::SetInstanceData(const void * dataptr, size_t size)
+{
+	if (size > instancesize)
+	{
+		glNamedBufferDataEXT(instancevbo, size, dataptr, usagehint);
+		instancesize = size;
+	}
+	else
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, dataptr);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }

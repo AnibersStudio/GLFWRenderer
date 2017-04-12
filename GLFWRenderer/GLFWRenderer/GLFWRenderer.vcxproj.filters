@@ -198,9 +198,6 @@
     <None Include="Shader\LightCulling\DepthDownscaleCompute.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthInitializeCompute.glsl">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\LightCulling\DepthRangeFragment.glsl">
       <Filter>Shader</Filter>
     </None>
@@ -211,6 +208,12 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\LightCulling\ProxyVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\DoubleSSBOInitializeCompute.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

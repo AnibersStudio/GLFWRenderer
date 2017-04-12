@@ -79,7 +79,7 @@ void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount)
 
 LightCullingStage::LightCullingStage(unsigned int w, unsigned int h) : 
 tilecount(static_cast<unsigned int>(glm::ceil(w / static_cast<float>(tilesize.x))), static_cast<unsigned int>(glm::ceil(h / static_cast<float>(tilesize.y)))),
-depthinitializer{ { { "Shader/LightCulling/DepthInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "depthrange", GL_SHADER_STORAGE_BUFFER, 0 } } },
+depthinitializer{ { { "Shader/LightCulling/SSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "ssbo", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUTE_SHADER }}, {{"resolution", GL_UNSIGNED_INT_VEC2}, {"depthsampler", GL_UNSIGNED_INT64_NV}, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_MATRIX4_ARB}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthrangerenderer{ { {"Shader/LightCulling/DepthRangeVertex.glsl", GL_VERTEX_SHADER}, { "Shader/LightCulling/DepthRangeFragment.glsl", GL_FRAGMENT_SHADER }}, {{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"minormax", GL_UNSIGNED_INT},{ "depthrange", GL_SHADER_STORAGE_BUFFER, 0 } } },
@@ -92,7 +92,7 @@ maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH
 
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(uvec2) * tilecount.x * tilecount.y);
 
-	depthinitializer.Set("depthrange", boost::any(depthminmaxbuffer));
+	depthinitializer.Set("ssbo", boost::any(depthminmaxbuffer));
 
 	depthdownscaler.Set("depthrange", boost::any(depthminmaxbuffer));
 	depthdownscaler.Set("resolution", boost::any(uvec2(w, h)));

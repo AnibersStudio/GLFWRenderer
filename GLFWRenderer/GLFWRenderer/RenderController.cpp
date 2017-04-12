@@ -43,7 +43,7 @@ void RenderController::Draw(RenderContext context)
 	//forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount);
 
 	static DebugOutput screendrawer{width, height};
-	screendrawer.Draw(lightcullingstage.GetMinDepth().GetDepthID());
+	screendrawer.Draw(lightcullingstage.GetMaxDepth().GetDepthID());
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;
