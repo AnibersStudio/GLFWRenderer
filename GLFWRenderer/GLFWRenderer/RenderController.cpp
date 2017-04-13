@@ -47,6 +47,14 @@ void RenderController::Draw(RenderContext context)
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;
+
+
+	glm::vec3 a[3]{ glm::vec3{ 0.52573f, 0.00000f, 0.85065f },   glm::vec3{ 0.00000f, 0.85065f, 0.52573f },   glm::vec3{ -0.52573f, 0.00000f, 0.85065f }, };
+	glm::vec3 b = a[0] - a[1];
+	glm::vec3 c = a[0] - a[2];
+	glm::vec3 nor = glm::normalize(glm::cross(c, b));
+	glm::vec3 ar = a[0] - glm::vec3(0.0f);
+	float dis = glm::dot(ar , nor);
 }
 
 void RenderController::RenderPrepare(RenderContext context)

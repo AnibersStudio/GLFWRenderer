@@ -29,11 +29,13 @@ struct PointLight
 	float intensity;
 	float diffuse;
 	float specular;
-	GLuint64 samplerCubemap;
+	GLuint64 samplerCubemap = 0xFFFFFFFFFFFFFFFF;
 
 	Attenuation atten;
 	glm::vec3 position;
 	unsigned int hasshadow = false;
+
+	float IntenAt(glm::vec3 pos) { float distance = length(pos - position); return intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance); }
 
 	static float GetRange(float intensity, Attenuation atten, float threshold);
 };
@@ -44,18 +46,21 @@ struct SpotLight
 	float intensity;
 	float diffuse;
 	float specular;
-	GLuint64 sampler2D;
+	GLuint64 sampler2D = 0xFFFFFFFFFFFFFFFF;
 
 	Attenuation atten;
 	glm::vec3 position;
-	float not_used[1]{};
+	float not_used1[1]{};
 
+	//Must be normalized!
 	glm::vec3 direction;
 	GLfloat fullcos;
 
 	GLfloat zerocos;
 	unsigned int hasshadow = false;
-	float not_used[2]{};
+	float not_used2[2]{};
+
+	float IntenAt(glm::vec3 pos);
 
 	static float GetRange(float intensity, Attenuation atten, float threshold) { return PointLight::GetRange(intensity, atten, threshold); };
 };

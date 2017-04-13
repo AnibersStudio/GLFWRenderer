@@ -14,3 +14,26 @@ float PointLight::GetRange(float intensity, Attenuation atten, float threshold)
 	}
 	return range;
 }
+
+float SpotLight::IntenAt(glm::vec3 pos)
+{
+	float inten;
+	float cosine = glm::dot(glm::normalize(pos - this->position), direction);
+	float distance = length(pos - position);
+	float decay = intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance);
+	if (decay < 0.00001 || cosine > zerocos)
+	{
+		return 0.0f;
+	}
+
+	float cosinefactor;
+	if (cosine < fullcos)
+	{
+		cosinefactor = 1.0f;
+	}
+	else
+	{
+		cosinefactor = (cosine - fullcos) / (zerocos - fullcos);
+	}
+	return cosinefactor * decay;
+}

@@ -169,3 +169,4 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 	CheckGLError();
 	CheckGLError();
 }
+
