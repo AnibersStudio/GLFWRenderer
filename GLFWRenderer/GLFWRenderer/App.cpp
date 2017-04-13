@@ -19,10 +19,10 @@ App::App()
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
 	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
 	
-	manager.Add(am);
-	manager.Add(am2);
-	manager.Add(am3);
-	manager.Add(am5);
+	meshmanager.Add(am);
+	meshmanager.Add(am2);
+	meshmanager.Add(am3);
+	meshmanager.Add(am5);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)

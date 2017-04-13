@@ -35,9 +35,9 @@ struct PointLight
 	glm::vec3 position;
 	unsigned int hasshadow = false;
 
-	float IntenAt(glm::vec3 pos) { float distance = length(pos - position); return intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance); }
+	float IntenAt(glm::vec3 pos) const { float distance = length(pos - position); return intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance); }
 
-	static float GetRange(float intensity, Attenuation atten, float threshold);
+	float GetRange(float threshold) const;
 };
 
 struct SpotLight
@@ -60,7 +60,7 @@ struct SpotLight
 	unsigned int hasshadow = false;
 	float not_used2[2]{};
 
-	float IntenAt(glm::vec3 pos);
+	float IntenAt(glm::vec3 pos) const;
 
-	static float GetRange(float intensity, Attenuation atten, float threshold) { return PointLight::GetRange(intensity, atten, threshold); };
+	float GetRange(float threshold) const;
 };

@@ -169,6 +169,7 @@
     <ClCompile Include="BufferObjectSubmiter.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonTools.cpp" />
+    <ClCompile Include="DynamicLightManager.cpp" />
     <ClCompile Include="DynamicMeshManager.cpp" />
     <ClCompile Include="GLConstManager.cpp" />
     <ClCompile Include="GLFWcontext.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="BufferObjectSubmiter.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTools.h" />
+    <ClInclude Include="DynamicLightManager.h" />
     <ClInclude Include="DynamicMeshManager.h" />
     <ClInclude Include="GLCommon.h" />
     <ClInclude Include="GLConstManager.h" />

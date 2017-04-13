@@ -166,6 +166,10 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 		maxdepth.BindDepth();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
+	// Initialize 2 Light index/linked
+	{
+
+	}
 	CheckGLError();
 	CheckGLError();
 }

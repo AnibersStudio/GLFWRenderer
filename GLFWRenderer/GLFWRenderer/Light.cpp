@@ -1,6 +1,6 @@
 #include "Light.h"
 
-float PointLight::GetRange(float intensity, Attenuation atten, float threshold)
+float PointLight::GetRange(float threshold) const
 {
 	float range;
 	if (atten.exp > 0.00001)
@@ -15,7 +15,7 @@ float PointLight::GetRange(float intensity, Attenuation atten, float threshold)
 	return range;
 }
 
-float SpotLight::IntenAt(glm::vec3 pos)
+float SpotLight::IntenAt(glm::vec3 pos) const
 {
 	float inten;
 	float cosine = glm::dot(glm::normalize(pos - this->position), direction);
@@ -36,4 +36,19 @@ float SpotLight::IntenAt(glm::vec3 pos)
 		cosinefactor = (cosine - fullcos) / (zerocos - fullcos);
 	}
 	return cosinefactor * decay;
+}
+
+float SpotLight::GetRange(float threshold) const
+{
+	float range;
+	if (atten.exp > 0.00001)
+	{
+		float lambda = atten.linear * atten.linear - 4 * atten.exp * (atten.constant - 1 / threshold * intensity);
+		range = (pow(lambda, 0.5f) - atten.linear) / (2 * atten.exp);
+	}
+	else
+	{
+		range = (1 / threshold * intensity - atten.constant) / atten.linear;
+	}
+	return range;
 }
