@@ -61,6 +61,7 @@ public:
 
 	Fbo & GetMinDepth() { return mindepth; }
 	Fbo & GetMaxDepth() { return maxdepth; }
+	glm::uvec2 GetTileCount() {}
 private:
 	const glm::uvec2 tilesize{ 32, 32 };
 	glm::uvec2 tilecount;

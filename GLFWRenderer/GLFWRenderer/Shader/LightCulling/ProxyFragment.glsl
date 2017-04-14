@@ -30,9 +30,9 @@ void main()
 	uint nexttail = atomicCounterIncrement(listcounter);
 	if (!tiletail)
 	{
-		lightindex[tileindex].x = nexttail;
+		atomicExchange(lightindex[tileindex].x, nexttail);
 	}
-	lightindex[tileindex].y = nexttail;
+	atomicExchange(lightindex[tileindex].y, nexttail);
 
 	if (tiletail)
 	{
