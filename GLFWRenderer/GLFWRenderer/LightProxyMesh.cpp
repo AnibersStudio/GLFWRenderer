@@ -54,7 +54,7 @@ glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range
 	else
 	{
 		axis = glm::cross(glm::vec3(0.0f, 0.0f, -1.0f), dir);
-		float dotproduct = glm::dot(glm::vec3(0.0f, 0.0f, -1.0f), dir);
+		double dotproduct = glm::dot(glm::vec3(0.0f, 0.0f, -1.0f), dir);
 		degrees = glm::degrees(glm::acos(dotproduct));
 	}
 	transform = glm::rotate(transform, degrees, axis);

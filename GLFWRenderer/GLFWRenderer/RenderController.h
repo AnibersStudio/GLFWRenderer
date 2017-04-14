@@ -15,12 +15,13 @@ public:
 	RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h);
 	void Draw(RenderContext context);
 private:
-	void RenderPrepare(RenderContext context);
+	void RenderPrepare(RenderContext context, float pixelsize);
 	MeshManager & meshmanager;
 	LightManager & lightmanager;
 	RenderContext oldcontext;
 	PerFrameData framedata;
-
+	
+	const float  nearplane= 0.2f;
 	unsigned int width, height;
 
 	PreDepthStage depthstage;

@@ -10,10 +10,16 @@ RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned
 
 void RenderController::Draw(RenderContext context)
 {
-	RenderPrepare(context);
+	///Calculate Pixel world coord size
+	float tileworldsize;
+	{
+		double pixelworldsize = 2 * glm::tan(context.FieldOfView / 2) * nearplane / lightcullingstage.GetTileCount.y;
+		tileworldsize = glm::max(pixelworldsize / lightcullingstage.GetTileDismatchScale().x, pixelworldsize / lightcullingstage.GetTileDismatchScale().y);
+	}
+	RenderPrepare(context, tileworldsize);
 	///Calculate WVPs
 	glm::mat4 V = glm::lookAt(context.eye, context.target, context.up);
-	glm::mat4 P = glm::perspective(context.FieldOfView / width * height, (float)width / (float)height, 0.2f, context.ViewDistance);
+	glm::mat4 P = glm::perspective(context.FieldOfView / width * height, (float)width / (float)height, nearplane, context.ViewDistance);
 	glm::mat4 WVP = P * V;
 	///Calculate Opace Vertices Count
 	unsigned int OpaceVerticesCount = 0;
@@ -47,7 +53,7 @@ void RenderController::Draw(RenderContext context)
 	oldcontext = context;
 }
 
-void RenderController::RenderPrepare(RenderContext context)
+void RenderController::RenderPrepare(RenderContext context, float pixelsize)
 {
 	framedata.Clear();
 	meshmanager.AppendMesh(MeshManager::Opace, framedata.Material, framedata.OpaceCount, framedata.Vertex, framedata.MaterialIndex);
@@ -59,4 +65,7 @@ void RenderController::RenderPrepare(RenderContext context)
 		m.diffusetex->SetAF(GLConstManager::GetInstance().GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)[0]);
 	}
 	
+	framedata.dlist = lightmanager.GetDirectionalLight();
+	framedata.pinercount = lightmanager.AppendPointLight(context.eye, framedata.plist, framedata.lightinstancemat, pixelsize);
+	framedata.sinercount = lightmanager.AppendSpotLight(context.eye, framedata.slist, framedata.lightinstancemat, pixelsize);
 }
