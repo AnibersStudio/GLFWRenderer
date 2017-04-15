@@ -50,15 +50,14 @@ struct SpotLight
 
 	Attenuation atten;
 	glm::vec3 position;
-	float not_used1[1]{};
+	unsigned int hasshadow = false;
 
 	//Must be normalized!
 	glm::vec3 direction;
 	GLfloat fullcos;
 
 	GLfloat zerocos;
-	unsigned int hasshadow = false;
-	float not_used2[2]{};
+	float not_used[3]{};
 
 	float IntenAt(glm::vec3 pos) const;
 

@@ -180,7 +180,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 		fbo.BindDepth();
 		glDrawArrays(GL_TRIANGLES, opacevertcount, transvertcount);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
 	}
 	// Downscale opace depth
 	if (opacevertcount)
@@ -200,10 +199,11 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 
 		mindepth.BindDepth();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		
+
 		depthrangerenderer.Set("minormax", boost::any(0u));
 		maxdepth.BindDepth();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
 	}
 	// Initialize 2 Light index/linked
 	{
@@ -230,6 +230,7 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 		unsigned int vertexcount[4]{ ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount(), ProxyPyramid::GetVertexCount(), ProxyPyramid::GetVertexCount() };
 		unsigned int vertexorigin[4]{0, 0, ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount()};
 		unsigned int instancestride = 0;
+
 		for (unsigned int i = 0; i != 2; i++) //point and spot light
 		{
 			proxyrenderer.Set("lightindexlist", lightindexobject[i]);

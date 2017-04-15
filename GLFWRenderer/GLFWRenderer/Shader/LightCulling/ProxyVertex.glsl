@@ -9,6 +9,7 @@ uniform vec2 tiledismatchscale;
 uniform bool inerclamp;
 
 out flat uint lightid;
+out float depth;
 
 void main()
 {
@@ -19,11 +20,11 @@ void main()
 	clipspace.xy = (ndc - 0.5f) * 2.0f;
 	if (inerclamp)
 	{
-		clipspace.z = max(clipspace.z, 1.0f);
+		clipspace.z = min(clipspace.z, 1.0f);
 	}
 	else
 	{
-		clipspace.z = min(clipspace.z, -1.0f);
+		clipspace.z = max(clipspace.z, -1.0f);
 	}
 	gl_Position = vec4(clipspace, 1.0f);
 	lightid = instanceoffset + gl_InstanceID;

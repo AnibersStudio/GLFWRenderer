@@ -14,7 +14,7 @@ const std::vector<float>& ProxyPyramid::GetVertices()
 
 bool ProxyPyramid::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, float range, glm::vec3 dir, float coszero, float pixelsize)
 {
-	float distance = glm::length(eye - center);
+	float distance = glm::max(glm::length(eye - center), 1.0f);
 	float additionalsize = distance * pixelsize * 0.5;
 	float tanzeroangle = glm::sqrt(1 - coszero * coszero);
 	float xoyscale = tanzeroangle * range * 2;
@@ -37,8 +37,9 @@ bool ProxyPyramid::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, floa
 
 glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range, glm::vec3 & dir, float coszero, float pixelsize)
 {
-	float additionalsize = glm::length(eye - center) * pixelsize * 0.5;
-	float tanzeroangle = glm::sqrt(1 - coszero * coszero);
+	float distance = glm::max(glm::length(eye - center), 1.0f);
+	float additionalsize = distance * pixelsize * 0.5;
+	float tanzeroangle = glm::sqrt((1 - coszero * coszero) / (coszero * coszero));
 	float xoyscale = tanzeroangle * range * 2;
 	float additionalscale = glm::max((xoyscale + additionalsize) / xoyscale, (range + additionalsize) / range);
 	glm::vec3 scalevector = glm::vec3(xoyscale * additionalscale, xoyscale * additionalscale, range * additionalscale);
@@ -46,7 +47,7 @@ glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range
 
 	glm::vec3 axis;
 	float degrees;
-	if (dir.x < 0.00001 && dir.y < 0.00001)
+	if (glm::abs(dir.x) < 0.00001 && glm::abs(dir.y) < 0.00001)
 	{
 		axis = glm::vec3(0.0, 1.0, 0.0);
 		degrees = dir.z * 90.0f + 90.0f;
@@ -91,7 +92,7 @@ const std::vector<float>& ProxyIcosahedron::GetVertices()
 
 bool ProxyIcosahedron::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, float range, float pixelsize)
 {
-	float distance = glm::length(eye - center);
+	float distance = glm::max(glm::length(eye - center), 1.0f);
 	float additionalsize = distance * 0.5 * pixelsize;
 	float circumrange = range + 1.2 + additionalsize;
 	return distance <= circumrange;
@@ -99,7 +100,8 @@ bool ProxyIcosahedron::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, 
 
 glm::mat4 ProxyIcosahedron::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range, float pixelsize)
 {
-	float additionalsize = glm::length(eye - center) * pixelsize * 0.5;
+	float distance = glm::max(glm::length(eye - center), 1.0f);
+	float additionalsize = distance * pixelsize * 0.5;
 	glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(range + additionalsize + 1.2/*1.2 is from innerscribe to circumscribe*/));
 	return glm::translate(scale, glm::vec3(center));
 }
