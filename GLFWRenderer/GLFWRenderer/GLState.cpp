@@ -22,6 +22,14 @@ void GLState::ColdSet()
 	}
 	glBlendFunc(blendfunc.first, blendfunc.second);
 	
+	if (facetest)
+	{
+		glEnable(GL_CULL_FACE);
+	}
+	else
+	{
+		glDisable(GL_CULL_FACE);
+	}
 	glCullFace(cullface);
 	glFrontFace(frontface);
 }
@@ -64,6 +72,17 @@ void GLState::HotSet(GLState & oldstate)
 		glBlendFunc(blendfunc.first, blendfunc.second);
 	}
 	
+	if (facetest != oldstate.facetest)
+	{
+		if (facetest)
+		{
+			glEnable(GL_CULL_FACE);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
+	}
 	if (cullface != oldstate.cullface)
 	{
 		glCullFace(cullface);

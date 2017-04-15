@@ -1,6 +1,6 @@
 #version 430 core
 
-in uint lightid;
+in flat uint lightid;
 
 uniform uvec2 tilecount;
 
@@ -9,16 +9,16 @@ layout (std430, binding = 0) coherent buffer lightindexlist
 	uvec2 lightindex[];
 	//.x means start
 	//.y means tail
-}
+};
 
 layout (std430, binding = 1) buffer lightlinkedlist
 {
 	uvec2 lightlinked[];// lightlinked[0]/[0xFFFFFFFF] is left empty on purpose
 	//.x means light id
 	//.y means next node
-}
+};
 
-layout (std430, binding = 2) atomic_counter listcounter;//Initial value: 1
+layout (binding = 2) uniform atomic_uint listcounter;//Initial value: 1
 
 void main() 
 {
@@ -28,13 +28,13 @@ void main()
 	memoryBarrierBuffer();
 	uint tiletail = lightindex[tileindex].y;
 	uint nexttail = atomicCounterIncrement(listcounter);
-	if (!tiletail)
+	if (tiletail == 0)
 	{
 		atomicExchange(lightindex[tileindex].x, nexttail);
 	}
 	atomicExchange(lightindex[tileindex].y, nexttail);
 
-	if (tiletail)
+	if (tiletail > 0)
 	{
 		lightlinked[tiletail].y = nexttail;
 	}

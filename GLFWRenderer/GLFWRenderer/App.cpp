@@ -23,6 +23,9 @@ App::App()
 	meshmanager.Add(am2);
 	meshmanager.Add(am3);
 	meshmanager.Add(am5);
+
+	PointLight point{ glm::vec3(1.0), 1.0, 1.0, 1.0, 1, {}, vec3(0.0) };
+	lightmanager.Add(point);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)

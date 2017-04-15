@@ -4,7 +4,7 @@
 RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
 {
 	depthstage.Init();
-	lightcullingstage.Init(forwardstage.GetFbo());
+	lightcullingstage.Init();
 	forwardstage.Init();
 }
 
@@ -13,7 +13,7 @@ void RenderController::Draw(RenderContext context)
 	///Calculate Pixel world coord size
 	float tileworldsize;
 	{
-		double pixelworldsize = 2 * glm::tan(context.FieldOfView / 2) * nearplane / lightcullingstage.GetTileCount.y;
+		double pixelworldsize = 2 * glm::tan(glm::radians(context.FieldOfView / 2)) * nearplane / lightcullingstage.GetTileCount().y;
 		tileworldsize = glm::max(pixelworldsize / lightcullingstage.GetTileDismatchScale().x, pixelworldsize / lightcullingstage.GetTileDismatchScale().y);
 	}
 	RenderPrepare(context, tileworldsize);
@@ -39,15 +39,15 @@ void RenderController::Draw(RenderContext context)
 	}
 
 	depthstage.Prepare(WVP);
-	lightcullingstage.Prepare(WVP);
+	lightcullingstage.Prepare(WVP, framedata);
 	forwardstage.Prepare(framedata, WVP);
-
+	
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
-	lightcullingstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount, TransVerticesCount);
-	//forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount);
+	lightcullingstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount, TransVerticesCount);
+	forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount);
 
 	static DebugOutput screendrawer{width, height};
-	screendrawer.Draw(lightcullingstage.GetMaxDepth().GetDepthID());
+	//screendrawer.Draw(lightcullingstage.GetMaxDepth().GetDepthID(), glstate);
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 
 	oldcontext = context;

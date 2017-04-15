@@ -9,9 +9,9 @@ DebugOutput::DebugOutput(unsigned int w, unsigned int h)
 	vao.SetData(quad, sizeof(quad));
 }
 
-void DebugOutput::Draw(GLuint display)
+void DebugOutput::Draw(GLuint display, GLState& oldglstate)
 {
-	glstate.ColdSet();
+	glstate.HotSet(oldglstate);
 	displaycon.Clear();
 	displaycon.Set("display", boost::any(display));
 	displaycon.Set("winSize", boost::any(glm::uvec2(width, height)));
@@ -57,7 +57,10 @@ forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/F
 void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP)
 {
 	data = &framedata;
-	vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex));
+	if (framedata.Vertex.size())
+	{
+		vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex));
+	}
 	forwardcon.Clear();
 	forwardcon.Set("WVP", boost::any(WVP));
 }
@@ -77,7 +80,7 @@ void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount)
 	glDrawArrays(GL_TRIANGLES, 0, vertcount);
 }
 
-LightCullingStage::LightCullingStage(unsigned int w, unsigned int h) : 
+LightCullingStage::LightCullingStage(unsigned int w, unsigned int h) : width(w), height(h),
 tilecount(static_cast<unsigned int>(glm::ceil(w / static_cast<float>(tilesize.x))), static_cast<unsigned int>(glm::ceil(h / static_cast<float>(tilesize.y)))),
 tiledismatchscale(glm::vec2(w, h) / glm::vec2(tilecount * tilesize)),
 depthinitializer{ { { "Shader/LightCulling/SSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "ssbo", GL_SHADER_STORAGE_BUFFER, 0 } } },
@@ -87,8 +90,8 @@ depthrangerenderer{ { {"Shader/LightCulling/DepthRangeVertex.glsl", GL_VERTEX_SH
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
 mindepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
-lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitialize.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
-proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_MATRIX4_ARB}, {"instanceoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
+lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
+proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_MATRIX4_ARB}, {"instanceoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"inerclamp", GL_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
 proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
@@ -102,17 +105,12 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
-	depthinitializer.Set("ssbo", boost::any(depthminmaxbuffer));
-
-	depthdownscaler.Set("depthrange", boost::any(depthminmaxbuffer));
 	depthdownscaler.Set("resolution", boost::any(glm::uvec2(w, h)));
 
-	depthatomicrenderer.Set("depthrange", boost::any(depthminmaxbuffer));
 	depthatomicrenderer.Set("tilesize", boost::any(tilesize));
 	depthatomicrenderer.Set("tilecount", boost::any(tilecount));
 
 	depthrangerenderer.Set("tilecount", boost::any(tilecount));
-	depthrangerenderer.Set("depthrange", boost::any(depthminmaxbuffer));
 
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
 	depthrangevao.SetData(quad, sizeof(quad));
@@ -134,13 +132,6 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 	proxyrenderer.Set("tiledismatchscale", boost::any(tiledismatchscale));
 }
 
-void LightCullingStage::Init(Fbo & forwardstagefbo)
-{
-	forwardfbo = &forwardstagefbo;
-
-	depthdownscaler.Set("depthsampler", boost::any(forwardstagefbo.GetDepthHandle()));
-}
-
 void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
 {
 	depthatomicrenderer.Clear();
@@ -158,7 +149,10 @@ void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
 	inerpointlightcount = framedata.pinercount;
 	inerspotlightcount = framedata.sinercount;
 
-	proxyvao.SetInstanceData(&framedata.lightinstancemat[0][0][0], framedata.lightinstancemat.size() * sizeof(glm::mat4));
+	if (framedata.lightinstancemat.size())
+	{
+		proxyvao.SetInstanceData(&framedata.lightinstancemat[0][0][0], framedata.lightinstancemat.size() * sizeof(glm::mat4));
+	}
 	unsigned int countorigin = 1;
 	BufferObjectSubmiter::GetInstance().SetData(lightlinkedlistcounter, &countorigin, sizeof(unsigned int));
 
@@ -167,10 +161,11 @@ void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
 	proxyrenderer.Set("WVP", boost::any(WVP));
 }
 
-void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertcount, unsigned int transvertcount)
+void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned int opacevertcount, unsigned int transvertcount)
 {
 	// Initialize SSBO
 	{
+		depthinitializer.Set("ssbo", boost::any(depthminmaxbuffer));
 		depthinitializer.Draw();
 		glDispatchCompute(tilecount.x, tilecount.y, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -179,15 +174,19 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 	if (transvertcount)
 	{
 		depthatomicstate.HotSet(oldglstate);
+		depthatomicrenderer.Set("depthrange", boost::any(depthminmaxbuffer));
 		depthatomicrenderer.Draw();
 		vao.Bind();
-		forwardfbo->BindDepth();
+		fbo.BindDepth();
 		glDrawArrays(GL_TRIANGLES, opacevertcount, transvertcount);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	}
 	// Downscale opace depth
 	if (opacevertcount)
 	{
+		depthdownscaler.Set("depthsampler", boost::any(fbo.GetDepthHandle()));
+		depthdownscaler.Set("depthrange", boost::any(depthminmaxbuffer));
 		depthdownscaler.Draw();
 		glDispatchCompute(tilecount.x, tilecount.y, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -195,6 +194,7 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 	// Draw from SSBO to depth
 	{
 		depthrangestate.HotSet(oldglstate);
+		depthrangerenderer.Set("depthrange", boost::any(depthminmaxbuffer));
 		depthrangerenderer.Draw();
 		depthrangevao.Bind();
 
@@ -219,12 +219,13 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 		proxyrenderer.Set("listcounter", boost::any(lightlinkedlistcounter));
 		proxyrenderer.Draw();
 		proxyvao.Bind();
+		glViewport(0, 0, tilecount.x, tilecount.y);
 
-		unsigned int instanceoffset[4] {0, inerpointlightcount, 0, inerspotlightcount};
 		GLuint lightindexobject[2] { pointlightindex, spotlightindex };
 		unsigned int instancecount[4] {inerpointlightcount, pointlightcount - inerpointlightcount, inerspotlightcount, spotlightcount - inerspotlightcount};
 		GLState glstates[4] { inerproxystate, outerproxystate, inerproxystate, outerproxystate };
-		Fbo * fbo[4] { &mindepth, &maxdepth, &mindepth, &maxdepth };
+		Fbo * depthfbo[4] { &mindepth, &maxdepth, &mindepth, &maxdepth };
+		int inerclamp[4]{ true, false, true, false };
 
 		unsigned int vertexcount[4]{ ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount(), ProxyPyramid::GetVertexCount(), ProxyPyramid::GetVertexCount() };
 		unsigned int vertexorigin[4]{0, 0, ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount()};
@@ -235,15 +236,33 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opace
 			for (unsigned int j = 0; j != 2; j++) //iner and outer
 			{
 				unsigned int drawid = i * 2 + j;
-				glstates[drawid].HotSet(oldglstate);
-				fbo[drawid]->BindDepth();
+				if (instancecount[drawid])
+				{
+					glstates[drawid].HotSet(oldglstate);
+					proxyrenderer.Set("inerclamp", boost::any(inerclamp[drawid]));
+					depthfbo[drawid]->BindDepth();
 
-				glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertexorigin[drawid], vertexcount[drawid], instancecount[drawid], instancestride);
-				glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+					glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertexorigin[drawid], vertexcount[drawid], instancecount[drawid], instancestride);
+					glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+				}
 				instancestride += instancecount[drawid];
 			}
 		}
+		glViewport(0, 0, width, height);
 	}
+
+	GLuint datap[2 * 43 * 24];
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, pointlightindex);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datap);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	GLuint datas[2 * 43 * 24];
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, spotlightindex);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datas);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);	
+	GLuint datal[2 * 43 * 24];
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightlinkedlist);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datal);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	CheckGLError();
 	CheckGLError();
 }

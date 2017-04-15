@@ -91,7 +91,6 @@ const std::vector<float>& ProxyIcosahedron::GetVertices()
 
 bool ProxyIcosahedron::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, float range, float pixelsize)
 {
-
 	float distance = glm::length(eye - center);
 	float additionalsize = distance * 0.5 * pixelsize;
 	float circumrange = range + 1.2 + additionalsize;

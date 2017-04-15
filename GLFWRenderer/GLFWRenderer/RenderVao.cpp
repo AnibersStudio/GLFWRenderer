@@ -8,27 +8,35 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &instancevbo);
-	size_t sizepervertex = 0;
+	size_t sizepervertex = 0, sizeperinstance = 0;
 	for (auto & attrib : attriblist)
 	{
-		sizepervertex += GetSizeofType(attrib.valuetype) * attrib.valuecount;
-	}
-	size_t stride = 0;
-	for (int i = 0; i != attriblist.size(); i++)
-	{
-		if (attriblist[i].instanced)
+		if (!attrib.instanced)
 		{
-			glVertexArrayVertexAttribOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
-			glEnableVertexArrayAttribEXT(vao, i);
-			glVertexArrayVertexAttribDivisorEXT(vao, i, 1);
+			sizepervertex += GetSizeofType(attrib.valuetype) * attrib.valuecount;
 		}
 		else
 		{
-			glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, stride);
+			sizeperinstance += GetSizeofType(attrib.valuetype) * attrib.valuecount;
+		}
+	}
+	size_t vertexstride = 0, instancestride = 0;
+	for (int i = 0; i != attriblist.size(); i++)
+	{
+		if (!attriblist[i].instanced)
+		{
+			glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, vertexstride);
 			glEnableVertexArrayAttribEXT(vao, i);
+			vertexstride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
+		}
+		else
+		{
+			glVertexArrayVertexAttribOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizeperinstance, instancestride);
+			glEnableVertexArrayAttribEXT(vao, i);
+			glVertexArrayVertexAttribDivisorEXT(vao, i, 1);
+			instancestride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
 		}
 
-		stride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
 	}
 }
 

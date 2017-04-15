@@ -75,10 +75,13 @@ void ShaderController::Set(std::string name, boost::any value)
 			glBindTexture(varrecord.type, boost::any_cast<GLuint>(value));
 			break;
 		case GL_UNIFORM_BUFFER:
-			glBindBufferBase(GL_UNIFORM_BUFFER,  varrecord.location, boost::any_cast<GLuint>(value));
+			glBindBufferBase(GL_UNIFORM_BUFFER, varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		case GL_SHADER_STORAGE_BUFFER:
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, varrecord.location, boost::any_cast<GLuint>(value));
+			break;
+		case GL_ATOMIC_COUNTER_BUFFER:
+			glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,  varrecord.location, boost::any_cast<GLuint>(value));
 			break;
 		default:
 			throw DrawErrorException("LightShaderController:ShaderProgram" + tostr(programid) + ":" + name, "Variable Type not supported.");
@@ -201,6 +204,8 @@ void ShaderController::GetAllUniformLocation()
 			uniformbuffercounter++;
 			break;
 		case GL_SHADER_STORAGE_BUFFER:
+			break;
+		case GL_ATOMIC_COUNTER_BUFFER:
 			break;
 		default:
 			v.second.location = GetUniformLocation(v.second.name);
