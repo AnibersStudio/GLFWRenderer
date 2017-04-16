@@ -67,7 +67,7 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 		onlydrawdepth = true;
 	}
 
-	GLenum fbostatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	GLenum fbostatus = glCheckNamedFramebufferStatusEXT(fbo, GL_FRAMEBUFFER_EXT);
 	if (fbostatus == GL_FRAMEBUFFER_COMPLETE_EXT)
 	{
 		return;
@@ -112,8 +112,75 @@ void Fbo::BindDepth()
 		onlydrawdepth = true;
 	}
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-
 }
+
+std::vector<Fbo> Fbo::GetCubeMapSubFbo()
+{
+	std::vector<Fbo> subFbo;
+	Fbo asubFbo;
+	for (unsigned int i = 0; i != 6; i++)
+	{
+		subFbo.push_back(asubFbo);
+	}
+	for (unsigned int i = 0; i != 6; i++)
+	{
+		subFbo[i].width = width, subFbo[i].height = height, subFbo[i].depth = 0, subFbo[i].component = component, subFbo[i].texturetype = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+		subFbo[i].drawbuffers = drawbuffers;
+		glGenFramebuffers(1, &subFbo[i].fbo);
+		for (auto c : component)
+		{
+			if (c.attachment == GL_DEPTH_ATTACHMENT_EXT)//Depth texture
+			{
+				subFbo[i].depthattachment = depthattachment;
+				glNamedFramebufferTexture2DEXT(subFbo[i].fbo,  c.attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + i, subFbo[i].depthattachment, 0);
+			}
+			else if (c.attachment >= GL_COLOR_ATTACHMENT0_EXT && c.attachment <= GL_COLOR_ATTACHMENT15_EXT)//Color texture
+			{
+				subFbo[i].colorattachment.push_back(colorattachment[i]);
+				glNamedFramebufferTexture2DEXT(subFbo[i].fbo,  c.attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + i, subFbo[i].colorattachment[i], 0);
+			}
+		}
+
+		if (subFbo[i].drawbuffers.size())
+		{
+			glFramebufferDrawBuffersEXT(subFbo[i].fbo, subFbo[i].drawbuffers.size(), &subFbo[i].drawbuffers[0]);
+			subFbo[i].onlydrawdepth = false;
+		}
+		else
+		{
+			glFramebufferDrawBufferEXT(subFbo[i].fbo, GL_NONE);
+			subFbo[i].onlydrawdepth = true;
+		}
+
+		GLenum fbostatus = glCheckNamedFramebufferStatusEXT(subFbo[i].fbo, GL_FRAMEBUFFER_EXT);
+		if (fbostatus == GL_FRAMEBUFFER_COMPLETE_EXT)
+		{
+			return subFbo;
+		}
+		std::string errormsg;
+		switch (fbostatus)
+		{
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+			errormsg = "Incomplete attachment.";
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+			errormsg = "Incomplete dimension.";
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			errormsg = "Missing attachment";
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			errormsg = "Unsupported.";
+			break;
+		default:
+			errormsg = "Unknown incomplete reason.";
+			break;
+		}
+		throw DrawErrorException("FBO" + tostr(fbo) + "SubFbo" + tostr(i), errormsg);
+	}
+	return std::vector<Fbo>{};
+}
+
 
 GLuint64 Fbo::GetDepthHandle()
 {

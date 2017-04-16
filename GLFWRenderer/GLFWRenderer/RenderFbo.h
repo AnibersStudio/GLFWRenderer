@@ -44,7 +44,8 @@ public:
 	void Bind();
 	/// <summary> Bind FBO as a render target, only write to depth attachment </summary>
 	void BindDepth();
-
+	/// <summary> Construct 6 sub_FBOs if textype = GL_TEXTURE_2D </summary>
+	std::vector<Fbo> GetCubeMapSubFbo();
 
 	GLuint GetFboID() const { return fbo; }
 	const std::vector<GLuint> & GetColorID() const { return colorattachment; }
@@ -59,6 +60,8 @@ public:
 	GLenum GetTexType() const { return texturetype; }
 
 private:
+	Fbo() {};
+
 	GLuint Fbo::GenerateTexture(GLenum internalformat, GLenum format, GLenum valuetype, std::vector<std::pair<GLenum, GLenum>> paralist, glm::vec4 bordercolor) const;
 
 	GLuint fbo;

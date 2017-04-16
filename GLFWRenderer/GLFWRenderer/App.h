@@ -31,8 +31,8 @@ struct MomentInfo
 {
 	bool firstmousemove = true;
 	bool keys[128];
-	int lastx;
-	int lasty;
+	double lastx;
+	double lasty;
 };
 
 class App : Receiver

@@ -17,7 +17,6 @@ float PointLight::GetRange(float threshold) const
 
 float SpotLight::IntenAt(glm::vec3 pos) const
 {
-	float inten;
 	float cosine = glm::dot(glm::normalize(pos - this->position), direction);
 	float distance = length(pos - position);
 	float decay = intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance);
