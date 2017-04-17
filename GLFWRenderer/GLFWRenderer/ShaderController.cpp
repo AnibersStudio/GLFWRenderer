@@ -60,10 +60,10 @@ void ShaderController::Set(std::string name, boost::any value)
 		case GL_FLOAT_VEC4:
 			glProgramUniform4fv(shaderprogram, varrecord.location, 1, &(boost::any_cast<glm::vec4>(value)[0]));
 			break;
-		case GL_MATRIX3_ARB:
+		case GL_FLOAT_MAT3:
 			glProgramUniformMatrix3fv(shaderprogram, varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat3>(value)[0][0]));
 			break;
-		case GL_MATRIX4_ARB:
+		case GL_FLOAT_MAT4:
 			glProgramUniformMatrix4fv(shaderprogram, varrecord.location, 1, GL_FALSE, &(boost::any_cast<glm::mat4>(value)[0][0]));
 			break;
 		case GL_TEXTURE_1D:

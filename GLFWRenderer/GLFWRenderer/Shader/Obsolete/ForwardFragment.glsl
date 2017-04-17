@@ -120,7 +120,6 @@ void main()
 {
 	vec3 diffusecolor, ambientcolor, specularcolor, emissivecolor;
 
-
 	float i = gl_DepthRange.far;
 
 	if (isdiffuse)

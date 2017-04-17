@@ -222,5 +222,17 @@
     <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\Shadow\ShadowLinearFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Shadow\ShadowLinearVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Shadow\ShadowBlurFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Shadow\ShadowBlurVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

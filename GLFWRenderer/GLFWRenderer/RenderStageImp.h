@@ -99,3 +99,50 @@ private:
 	ShaderController proxyrenderer;
 	ShaderController lightindexinitializer;
 };
+
+class ShadowRenderer
+{
+public:
+	ShadowRenderer();
+
+	void Init();
+	void Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye);
+	void Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertcount);
+
+	std::tuple<unsigned int, unsigned int, unsigned int> GetShadowCount() { return shadowcount; };
+	std::vector<LightTransform> & GetTransfromList() { return transformlist; };
+private:
+	/// <summary> Option = 0: lowp 1: highp 2: reset </summary>
+	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
+	void SetShadowedLight(PerFrameData & framedata);
+	void CalculateVP(PerFrameData & framedata, glm::vec3 eye);
+	unsigned int dmaxshadow;
+	unsigned int pmaxshadow;
+	unsigned int smaxshadow;
+	
+	std::vector<LightTransform> pointvplist;
+	std::vector<LightTransform> transformlist;
+
+	std::vector<Fbo> directionalfbo;
+	std::vector<std::vector<Fbo>> pointfbo;
+	std::vector<Fbo> spotfbo;
+	std::tuple<unsigned int, unsigned int, unsigned int> shadowcount;
+	const unsigned int batchcount = 8;
+
+	GLState glstate;
+	ShaderController lineardepthcon;
+	ShaderController logspaceblurcon;
+
+	Vao & quadvao;
+
+	std::vector<Fbo> highpmiddlefbo;
+	std::vector<Fbo> highpsinglebluredfbo;
+	std::vector<Fbo> middlefbo;
+	std::vector<Fbo> singlebluredfbo;
+	unsigned int highindex = 0;
+	unsigned int index = 0;
+
+	const float maxdrange;
+	const float maxprange;
+	const float maxsrange;
+};

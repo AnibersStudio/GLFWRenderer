@@ -85,6 +85,7 @@ unsigned int DynamicLightManager::AppendSpotLight(glm::vec3 eye, std::vector<Spo
 
 DynamicLightManager::stub DynamicLightManager::Add(DirectionalLight light)
 {
+	light.direction = glm::normalize(light.direction);
 	dl.push_back(light);
 	dindex.push_back(dl.size() - 1);
 	return stub(*(dindex.end() - 1), plist.end(), slist.end());
@@ -99,6 +100,7 @@ DynamicLightManager::stub DynamicLightManager::Add(PointLight light)
 
 DynamicLightManager::stub DynamicLightManager::Add(SpotLight light)
 {
+	light.direction = glm::normalize(light.direction);
 	static unsigned int invaliddindex = 0xFFFFFFFF;
 	slist.push_front(light);
 	return stub(invaliddindex, plist.end(), slist.begin());

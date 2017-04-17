@@ -17,8 +17,10 @@ struct RenderContext
 	/// <summary> The value of monitor gamma </summary>
 	float gamma = 2.2;
 
-	/// <summary> How many light can have shadow </summary>
-	unsigned int ShadowLight = 1;
+	/// <summary> How many point light can have shadow </summary>
+	unsigned int ShadowPoint = 1;
+	/// <summary> How many spot light can have shadow </summary>
+	unsigned int ShadowSpot = 1;
 
 	/// <summary> Is anisotropic filter on or not </summary>
 	bool anisotropic = false;

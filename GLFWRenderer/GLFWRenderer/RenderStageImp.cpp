@@ -27,7 +27,7 @@ void DebugOutput::Draw(GLuint display, GLState& oldglstate)
 PreDepthStage::PreDepthStage() 
 	: depthcontroller (ShaderController({ { "Shader/Depth/NativeDepthVertex.glsl", GL_VERTEX_SHADER },
 	{ "Shader/Depth/NativeDepthFragment.glsl", GL_FRAGMENT_SHADER } }, 
-	{ { "WVP", GL_MATRIX4_ARB } }))
+	{ { "WVP", GL_FLOAT_MAT4 } }))
 {}
 
 void PreDepthStage::Prepare(glm::mat4 WVP)
@@ -50,7 +50,7 @@ void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned in
 
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
 fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
-forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_MATRIX4_ARB}} }
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}} }
 {
 }
 
@@ -85,13 +85,13 @@ tilecount(static_cast<unsigned int>(glm::ceil(w / static_cast<float>(tilesize.x)
 tiledismatchscale(glm::vec2(w, h) / glm::vec2(tilecount * tilesize)),
 depthinitializer{ { { "Shader/LightCulling/SSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "ssbo", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUTE_SHADER }}, {{"resolution", GL_UNSIGNED_INT_VEC2}, {"depthsampler", GL_UNSIGNED_INT64_NV}, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
-depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_MATRIX4_ARB}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
+depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthrangerenderer{ { {"Shader/LightCulling/DepthRangeVertex.glsl", GL_VERTEX_SHADER}, { "Shader/LightCulling/DepthRangeFragment.glsl", GL_FRAGMENT_SHADER }}, {{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"minormax", GL_UNSIGNED_INT},{ "depthrange", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
 mindepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
-proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_MATRIX4_ARB}, {"instanceoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"inerclamp", GL_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
+proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"instanceoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"inerclamp", GL_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
 proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
@@ -268,3 +268,365 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 	CheckGLError();
 }
 
+ShadowRenderer::ShadowRenderer() : maxdrange(96.0f), maxprange(96.0f), maxsrange(96.0f),
+quadvao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
+lineardepthcon{ {{"Shader/Shadow/ShadowLinearVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowLinearFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"planes", GL_FLOAT_VEC2}} },
+logspaceblurcon{ {{"Shader/Shadow/ShadowBlurVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowBlurFragment.glsl", GL_FRAGMENT_SHADER}}, {{"shadowsampler", GL_UNSIGNED_INT64_NV}, {"bluraxis", GL_UNSIGNED_INT}} }
+{
+	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
+	quadvao.SetData(quad, sizeof(quad));
+}
+
+void ShadowRenderer::Init()
+{
+}
+
+void ShadowRenderer::Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye)
+{
+	dmaxshadow = 4;
+	smaxshadow = glm::min(pointshadow, 32u);
+	pmaxshadow = glm::min(spotshadow, 32u);
+	SetShadowedLight(framedata);
+	CalculateVP(framedata, eye);
+}
+
+void ShadowRenderer::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertscount)
+{
+	unsigned int dcount = std::get<0>(shadowcount);
+	unsigned int pcount = std::get<1>(shadowcount);
+	unsigned int scount = std::get<2>(shadowcount);
+
+	glstate.HotSet(oldglstate);
+	vao.Bind();
+	lineardepthcon.Draw();
+	for (unsigned int i = 0; i != dcount; i++)
+	{
+		lineardepthcon.Set("WVP", boost::any(transformlist[i].VP));
+		lineardepthcon.Set("plane", boost::any(transformlist[i].plane));
+		GetMiddleFbo(1).first.BindDepth();
+		glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
+
+		if (highindex % batchcount == 0 || i == dcount - 1)
+		{	
+			quadvao.Bind();
+			logspaceblurcon.Draw();
+
+			GetMiddleFbo(2);
+			logspaceblurcon.Set("bluraxis", boost::any(0u));
+			for (unsigned int j = 0; j != highindex; j++)
+			{
+				auto sourcemiddle = GetMiddleFbo(1);
+				Fbo & dest = directionalfbo[i - highindex + j];
+
+				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+
+				sourcemiddle.second.BindDepth();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			}
+			GetMiddleFbo(2);
+			logspaceblurcon.Set("bluraxis", boost::any(1u));
+			for (unsigned int j = 0; j != highindex; j++)
+			{
+				auto sourcemiddle = GetMiddleFbo(1);
+				Fbo & dest = directionalfbo[i - highindex + j];
+
+				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
+
+				dest.BindDepth();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			}
+
+			vao.Bind();
+			lineardepthcon.Draw();
+			GetMiddleFbo(2);
+		}
+	}
+
+	for (unsigned int i = 0; i != scount; i++)
+	{
+		lineardepthcon.Set("WVP", boost::any(transformlist[i + dcount].VP));
+		lineardepthcon.Set("plane", boost::any(transformlist[i + dcount].plane));
+		GetMiddleFbo(0).first.BindDepth();
+		glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
+
+		if (index % batchcount == 0 || i == scount - 1)
+		{
+			quadvao.Bind();
+			logspaceblurcon.Draw();
+
+			GetMiddleFbo(2);
+			logspaceblurcon.Set("bluraxis", boost::any(0u));
+			for (unsigned int j = 0; j != index; j++)
+			{
+				auto sourcemiddle = GetMiddleFbo(0);
+				Fbo & dest = spotfbo[i - index + j];
+
+				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+
+				sourcemiddle.second.BindDepth();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			}
+			GetMiddleFbo(2);
+			logspaceblurcon.Set("bluraxis", boost::any(1u));
+			for (unsigned int j = 0; j != index; j++)
+			{
+				auto sourcemiddle = GetMiddleFbo(0);
+				Fbo & dest = spotfbo[i - index + j];
+
+				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
+
+				dest.BindDepth();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			}
+
+			vao.Bind();
+			lineardepthcon.Draw();
+			GetMiddleFbo(2);
+		}
+	}
+
+	for (unsigned int point = 0; point != pcount; point++)
+	{
+		for (unsigned int subface = 0; subface != 6; subface++)
+		{
+			unsigned int i = point * 6 + subface;
+			lineardepthcon.Set("WVP", boost::any(pointvplist[i + dcount].VP));
+			lineardepthcon.Set("plane", boost::any(pointvplist[i + dcount].plane));
+			GetMiddleFbo(0).first.BindDepth();
+			glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
+
+			if (index % batchcount == 0 || i == pcount * 6)
+			{
+				quadvao.Bind();
+				logspaceblurcon.Draw();
+
+				GetMiddleFbo(2);
+				logspaceblurcon.Set("bluraxis", boost::any(0u));
+				for (unsigned int j = 0; j != index; j++)
+				{
+					auto sourcemiddle = GetMiddleFbo(0);
+					Fbo & dest = pointfbo[(i - index + j) / 6u][(i - index + j) % 6u];
+
+					logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+
+					sourcemiddle.second.BindDepth();
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+				}
+				GetMiddleFbo(2);
+				logspaceblurcon.Set("bluraxis", boost::any(1u));
+				for (unsigned int j = 0; j != index; j++)
+				{
+					auto sourcemiddle = GetMiddleFbo(0);
+					Fbo & dest = pointfbo[(i - index + j) / 6u][(i - index + j) % 6u];
+
+					logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
+
+					dest.BindDepth();
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+				}
+
+				vao.Bind();
+				lineardepthcon.Draw();
+				GetMiddleFbo(2);
+			}
+		}
+	}
+
+
+	
+}
+
+std::pair<Fbo&, Fbo&> ShadowRenderer::GetMiddleFbo(int option)
+{
+	switch (option)
+	{
+	case 2:
+		highindex = 0;
+		index = 0;
+		break;
+	case 0:
+		index++;
+		if (index > middlefbo.size())
+		{
+			middlefbo.push_back(Fbo{ { 1024, 1024 }, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+			singlebluredfbo.push_back(Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+		}
+		return std::pair<Fbo&, Fbo&>(middlefbo[index - 1], singlebluredfbo[index - 1]);
+		break;
+	case 1:
+		highindex++;
+		if (highindex > highpmiddlefbo.size())
+		{
+			highpmiddlefbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+			highpsinglebluredfbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+		}
+		return std::pair<Fbo&, Fbo&>(highpmiddlefbo[highindex - 1], highpsinglebluredfbo[highindex - 1]);
+		break;
+	default:
+		throw DrawErrorException("ShadowStage::GetMiddleFbo", "Option" + tostr(option) + "cannot be recognized.");
+	}
+	return std::pair<Fbo&, Fbo&>(middlefbo[0], singlebluredfbo[0]);
+}
+
+void ShadowRenderer::SetShadowedLight(PerFrameData & framedata)
+{
+	unsigned int pcount = 0, scount = 0, dcount = 0;
+	for (auto & l : framedata.dlist)
+	{
+		if (l.hasshadow)
+		{
+			if (dcount != dmaxshadow)
+			{
+				dcount++;
+			}
+			else
+			{
+				l.hasshadow = false;
+			}
+		}
+	}
+	for (auto & l : framedata.plist)
+	{
+		if (l.hasshadow)
+		{
+			if (pcount != pmaxshadow)
+			{
+				pcount++;
+			}
+			else
+			{
+				l.hasshadow = false;
+			}
+		}
+	}
+	for (auto & l : framedata.slist)
+	{
+		if (l.hasshadow)
+		{
+			if (scount != smaxshadow)
+			{
+				scount++;
+			}
+			else
+			{
+				l.hasshadow = false;
+			}
+		}
+	}
+	shadowcount = std::tuple<unsigned int, unsigned int, unsigned int>(dcount, pcount, scount);
+
+	for (unsigned int i = directionalfbo.size(); i != dcount; i++)
+	{
+		directionalfbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+	}
+	for (unsigned int i = pointfbo.size(); i != pcount; i++)
+	{
+		Fbo fbo = Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } }, GL_TEXTURE_CUBE_MAP};
+		pointfbo.push_back(fbo.GetCubeMapSubFbo());
+		pointfbo[pointfbo.size() - 1].push_back(std::move(fbo));
+	}
+	for (unsigned int i = spotfbo.size(); i != scount; i++)
+	{
+		spotfbo.push_back(Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+	}
+
+	pcount = dcount = scount = 0;
+	for (auto & l : framedata.dlist)
+	{
+		if (l.hasshadow)
+		{
+			l.sampler2D = directionalfbo[dcount].GetDepthHandle();
+			dcount++;
+		}
+		else
+		{
+			l.sampler2D = 0xFFFFFFFFFFFFFFFF;
+		}
+	}
+	for (auto & l : framedata.plist)
+	{
+		if (l.hasshadow)
+		{
+			l.samplerCubemap = pointfbo[pcount][6].GetDepthHandle();
+		}
+		else
+		{
+			l.samplerCubemap = 0xFFFFFFFFFFFFFFFF;
+		}
+	}
+	for (auto & l : framedata.slist)
+	{
+		if (l.hasshadow)
+		{
+			l.sampler2D = spotfbo[scount].GetDepthHandle();
+		}
+		else
+		{
+			l.sampler2D = 0xFFFFFFFFFFFFFFFF;
+		}
+	}
+}
+
+void ShadowRenderer::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
+{
+	transformlist.resize(1u);
+	pointvplist.resize(0u);
+	for (auto & l : framedata.dlist)
+	{
+		if (l.hasshadow)
+		{
+			l.hasshadow = transformlist.size();
+			glm::vec3 anchorpoint = eye - l.direction * maxdrange;
+			glm::vec3 up{ 0.0, 1.0, 0.0 };
+			if (glm::dot(l.direction, up) > 0.9999)
+			{
+				up = glm::vec3(1.0, 0.0, 0.0);
+			}
+			glm::mat4 VP = glm::ortho(maxdrange, maxdrange, maxdrange, maxdrange, 0.0f, maxdrange * 2) * glm::lookAt(anchorpoint, anchorpoint + l.direction, up);
+			transformlist.push_back(LightTransform{VP, vec2(0.0f, 2 * maxdrange)});
+		}
+	}
+	for (auto & l : framedata.slist)
+	{
+		if (l.hasshadow)
+		{
+			l.hasshadow = transformlist.size();
+			glm::vec3 up{ 0.0, 1.0, 0.0 };
+			if (glm::dot(l.direction, up) > 0.9999)
+			{
+				up = glm::vec3(1.0, 0.0, 0.0);
+			}
+			float range = glm::min(l.GetRange(0.05), maxsrange);
+			glm::mat4 VP = glm::perspective(glm::degrees(glm::acos(l.zerocos)), 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + l.direction, up);
+			transformlist.push_back(LightTransform{ VP, vec2(0.1f, range) });
+		}
+	}
+	for (auto & l : framedata.plist)
+	{
+		if (l.hasshadow)
+		{
+			for (unsigned int i = 0; i != 6; i++)
+			{
+				static vec3 facedir[6] = {
+					vec3{ 1.0, 0.0, 0.0 },
+					vec3{ -1.0, 0.0, 0.0 },
+					vec3{ 0.0, 1.0, 0.0 },
+					vec3{ 0.0, -1.0, 0.0 },
+					vec3{ 0.0, 0.0, 1.0 },
+					vec3{ 0.0, 0.0, -1.0 }
+				};
+				static vec3 faceupvec[6] = {
+					vec3{ 0.0, -1.0, 0.0 },
+					vec3{ 0.0, -1.0, 0.0 },
+					vec3{ 0.0, 0.0, 1.0 },
+					vec3{ 0.0, 0.0, -1.0 },
+					vec3{ 0.0, -1.0, 0.0 },
+					vec3{ 0.0, -1.0, 0.0 }
+				};
+				float range = glm::min(l.GetRange(0.05), maxprange);
+				glm::mat4 VP = glm::perspective(90.0f, 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
+				pointvplist.push_back(LightTransform{VP, glm::vec2(0.1f, range)});
+			}
+		}
+	}
+}

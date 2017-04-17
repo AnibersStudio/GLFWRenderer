@@ -237,6 +237,10 @@
     <None Include="Shader\LightCulling\ProxyFragment.glsl" />
     <None Include="Shader\LightCulling\ProxyVertex.glsl" />
     <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl" />
+    <None Include="Shader\Shadow\ShadowBlurFragment.glsl" />
+    <None Include="Shader\Shadow\ShadowBlurVertex.glsl" />
+    <None Include="Shader\Shadow\ShadowLinearFragment.glsl" />
+    <None Include="Shader\Shadow\ShadowLinearVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

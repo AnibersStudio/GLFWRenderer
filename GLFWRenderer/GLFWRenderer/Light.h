@@ -12,7 +12,8 @@ struct DirectionalLight
 	GLuint64 sampler2D;
 
 	glm::vec3 direction;
-	float not_used[1]{};
+	// This will become a ID to transform list
+	unsigned int hasshadow;
 };
 
 struct Attenuation
@@ -33,6 +34,7 @@ struct PointLight
 
 	Attenuation atten;
 	glm::vec3 position;
+	// This will become a ID to transform list
 	unsigned int hasshadow = false;
 
 	float IntenAt(glm::vec3 pos) const { float distance = length(pos - position); return intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance); }
@@ -50,6 +52,7 @@ struct SpotLight
 
 	Attenuation atten;
 	glm::vec3 position;
+	// This will become a ID to transform list
 	unsigned int hasshadow = false;
 
 	//Must be normalized!
@@ -62,4 +65,13 @@ struct SpotLight
 	float IntenAt(glm::vec3 pos) const;
 
 	float GetRange(float threshold) const;
+};
+
+struct LightTransform
+{
+	//Only directional/spot light need this. Point light will be set to glm::mat4(1.0)
+	glm::mat4 VP = glm::mat4(1.0f);
+	// .x near plane .y far plane
+	glm::vec2 plane = glm::vec2(0.1f, 64.0f);
+	float not_used[2]{};
 };

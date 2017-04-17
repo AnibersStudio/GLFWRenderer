@@ -20,7 +20,7 @@ void RenderController::Draw(RenderContext context)
 	RenderPrepare(context, tileworldsize);
 	///Calculate WVPs
 	glm::mat4 V = glm::lookAt(context.eye, context.target, context.up);
-	glm::mat4 P = glm::perspective(glm::radians(context.FieldOfView / width * height), (float)width / (float)height, nearplane, context.ViewDistance);
+	glm::mat4 P = glm::perspective(context.FieldOfView / width * height, (float)width / (float)height, nearplane, context.ViewDistance);
 	glm::mat4 WVP = P * V;
 	///Calculate Opace Vertices Count
 	unsigned int OpaceVerticesCount = 0;
