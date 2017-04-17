@@ -7,6 +7,7 @@ DebugOutput::DebugOutput(unsigned int w, unsigned int h)
 {
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
 	vao.SetData(quad, sizeof(quad));
+	glstate.w = width, glstate.h = height;
 }
 
 void DebugOutput::Draw(GLuint display, GLState& oldglstate)
@@ -24,11 +25,13 @@ void DebugOutput::Draw(GLuint display, GLState& oldglstate)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-PreDepthStage::PreDepthStage() 
+PreDepthStage::PreDepthStage(unsigned int w, unsigned int h)
 	: depthcontroller (ShaderController({ { "Shader/Depth/NativeDepthVertex.glsl", GL_VERTEX_SHADER },
 	{ "Shader/Depth/NativeDepthFragment.glsl", GL_FRAGMENT_SHADER } }, 
 	{ { "WVP", GL_FLOAT_MAT4 } }))
-{}
+{
+	glstate.w = w, glstate.h = h;
+}
 
 void PreDepthStage::Prepare(glm::mat4 WVP)
 {
@@ -52,6 +55,7 @@ ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLO
 fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
 forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}} }
 {
+	glstate.w = w, glstate.h = h;
 }
 
 void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP)
@@ -95,13 +99,17 @@ proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Sh
 proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
+	depthatomicstate.w = w, depthatomicstate.h = h;
 	depthrangestate.depthfunc = GL_ALWAYS;
+	depthrangestate.w = w, depthrangestate.h = h;
 	inerproxystate.cullface = GL_FRONT;
 	inerproxystate.depthfunc = GL_GREATER;
 	inerproxystate.depthmask = GL_FALSE;
+	inerproxystate.w = tilecount.x, inerproxystate.h = tilecount.y;
 	outerproxystate.cullface = GL_BACK;
 	outerproxystate.depthfunc = GL_LESS;
 	outerproxystate.depthmask = GL_FALSE;
+	outerproxystate.w = tilecount.x, outerproxystate.h = tilecount.y;
 
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
@@ -219,7 +227,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 		proxyrenderer.Set("listcounter", boost::any(lightlinkedlistcounter));
 		proxyrenderer.Draw();
 		proxyvao.Bind();
-		glViewport(0, 0, tilecount.x, tilecount.y);
 
 		GLuint lightindexobject[2] { pointlightindex, spotlightindex };
 		unsigned int instancecount[4] {inerpointlightcount, pointlightcount - inerpointlightcount, inerspotlightcount, spotlightcount - inerspotlightcount};
@@ -249,7 +256,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 				instancestride += instancecount[drawid];
 			}
 		}
-		glViewport(0, 0, width, height);
 	}
 
 	GLuint datap[2 * 43 * 24];
@@ -268,117 +274,127 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 	CheckGLError();
 }
 
-ShadowRenderer::ShadowRenderer() : maxdrange(96.0f), maxprange(96.0f), maxsrange(96.0f),
+ShadowStage::ShadowStage() : maxdrange(96.0f), maxprange(96.0f), maxsrange(96.0f),
 quadvao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
-lineardepthcon{ {{"Shader/Shadow/ShadowLinearVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowLinearFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"planes", GL_FLOAT_VEC2}} },
-logspaceblurcon{ {{"Shader/Shadow/ShadowBlurVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowBlurFragment.glsl", GL_FRAGMENT_SHADER}}, {{"shadowsampler", GL_UNSIGNED_INT64_NV}, {"bluraxis", GL_UNSIGNED_INT}} }
+lineardepthcon{ {{"Shader/Shadow/ShadowLinearVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowLinearFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"plane", GL_FLOAT_VEC2}} },
+logspaceblurcon{ {{"Shader/Shadow/ShadowBlurVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Shadow/ShadowBlurFragment.glsl", GL_FRAGMENT_SHADER}}, {{"shadowsampler", GL_TEXTURE_2D}, {"bluraxis", GL_UNSIGNED_INT}} }
 {
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
 	quadvao.SetData(quad, sizeof(quad));
+	linearstate.w = linearstate.h = 1024;
+	linearhighpstate.w = linearhighpstate.h = 4096;
+
+	blurstate.depthfunc = GL_ALWAYS;
+	blurstate.w = blurstate.h = 1024;
+	blurhighpstate.depthfunc = GL_ALWAYS;
+	blurhighpstate.w = blurhighpstate.h = 4096;
 }
 
-void ShadowRenderer::Init()
+void ShadowStage::Init()
 {
 }
 
-void ShadowRenderer::Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye)
+void ShadowStage::Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye)
 {
 	dmaxshadow = 4;
 	smaxshadow = glm::min(pointshadow, 32u);
 	pmaxshadow = glm::min(spotshadow, 32u);
 	SetShadowedLight(framedata);
 	CalculateVP(framedata, eye);
+	lineardepthcon.Clear();
+	logspaceblurcon.Clear();
 }
 
-void ShadowRenderer::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertscount)
+void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertscount)
 {
 	unsigned int dcount = std::get<0>(shadowcount);
 	unsigned int pcount = std::get<1>(shadowcount);
 	unsigned int scount = std::get<2>(shadowcount);
-
-	glstate.HotSet(oldglstate);
+	CheckGLError();
+	CheckGLError();
+	linearhighpstate.HotSet(oldglstate);
 	vao.Bind();
 	lineardepthcon.Draw();
+
 	for (unsigned int i = 0; i != dcount; i++)
 	{
 		lineardepthcon.Set("WVP", boost::any(transformlist[i].VP));
 		lineardepthcon.Set("plane", boost::any(transformlist[i].plane));
 		GetMiddleFbo(1).first.BindDepth();
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
 
 		if (highindex % batchcount == 0 || i == dcount - 1)
 		{	
+			blurhighpstate.HotSet(oldglstate);
 			quadvao.Bind();
 			logspaceblurcon.Draw();
 
-			GetMiddleFbo(2);
 			logspaceblurcon.Set("bluraxis", boost::any(0u));
 			for (unsigned int j = 0; j != highindex; j++)
 			{
-				auto sourcemiddle = GetMiddleFbo(1);
-				Fbo & dest = directionalfbo[i - highindex + j];
+				auto source = highpmiddlefbo[j];
+				auto middle = highpsinglebluredfbo[j];
 
-				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+				logspaceblurcon.Set("shadowsampler", boost::any(source.GetDepthID()));
 
-				sourcemiddle.second.BindDepth();
+				middle.BindDepth();
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
-			GetMiddleFbo(2);
 			logspaceblurcon.Set("bluraxis", boost::any(1u));
 			for (unsigned int j = 0; j != highindex; j++)
 			{
-				auto sourcemiddle = GetMiddleFbo(1);
-				Fbo & dest = directionalfbo[i - highindex + j];
+				auto middle = highpsinglebluredfbo[j];
+				Fbo & dest = directionalfbo[i - highindex + 1 + j];
 
-				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
+				logspaceblurcon.Set("shadowsampler", boost::any(middle.GetDepthID()));
 
 				dest.BindDepth();
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
 
+			linearhighpstate.HotSet(oldglstate);
 			vao.Bind();
 			lineardepthcon.Draw();
 			GetMiddleFbo(2);
 		}
 	}
 
+	linearstate.HotSet(oldglstate);
 	for (unsigned int i = 0; i != scount; i++)
 	{
 		lineardepthcon.Set("WVP", boost::any(transformlist[i + dcount].VP));
 		lineardepthcon.Set("plane", boost::any(transformlist[i + dcount].plane));
 		GetMiddleFbo(0).first.BindDepth();
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
-
 		if (index % batchcount == 0 || i == scount - 1)
 		{
+			blurstate.HotSet(oldglstate);
 			quadvao.Bind();
 			logspaceblurcon.Draw();
-
-			GetMiddleFbo(2);
 			logspaceblurcon.Set("bluraxis", boost::any(0u));
 			for (unsigned int j = 0; j != index; j++)
 			{
-				auto sourcemiddle = GetMiddleFbo(0);
-				Fbo & dest = spotfbo[i - index + j];
+				auto & source = middlefbo[j];
+				auto & middle = singlebluredfbo[j];
 
-				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+				logspaceblurcon.Set("shadowsampler", boost::any(source.GetDepthID()));
 
-				sourcemiddle.second.BindDepth();
+				middle.BindDepth();
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
-			GetMiddleFbo(2);
 			logspaceblurcon.Set("bluraxis", boost::any(1u));
 			for (unsigned int j = 0; j != index; j++)
 			{
-				auto sourcemiddle = GetMiddleFbo(0);
-				Fbo & dest = spotfbo[i - index + j];
-
-				logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
-
+				auto middle = singlebluredfbo[j];
+				Fbo & dest = spotfbo[i - index + 1 + j];
+				logspaceblurcon.Set("shadowsampler", boost::any(middle.GetDepthID()));
 				dest.BindDepth();
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			}
 
+			linearstate.HotSet(oldglstate);
 			vao.Bind();
 			lineardepthcon.Draw();
 			GetMiddleFbo(2);
@@ -393,50 +409,50 @@ void ShadowRenderer::Draw(GLState & oldglstate, Vao & vao, unsigned int opacever
 			lineardepthcon.Set("WVP", boost::any(pointvplist[i + dcount].VP));
 			lineardepthcon.Set("plane", boost::any(pointvplist[i + dcount].plane));
 			GetMiddleFbo(0).first.BindDepth();
+			glClear(GL_DEPTH_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
 
 			if (index % batchcount == 0 || i == pcount * 6)
 			{
+				blurstate.HotSet(oldglstate);
 				quadvao.Bind();
 				logspaceblurcon.Draw();
 
-				GetMiddleFbo(2);
 				logspaceblurcon.Set("bluraxis", boost::any(0u));
 				for (unsigned int j = 0; j != index; j++)
 				{
-					auto sourcemiddle = GetMiddleFbo(0);
-					Fbo & dest = pointfbo[(i - index + j) / 6u][(i - index + j) % 6u];
+					auto & source = middlefbo[j];
+					auto & middle = singlebluredfbo[j];
 
-					logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.first.GetDepthHandle()));
+					logspaceblurcon.Set("shadowsampler", boost::any(source.GetDepthID()));
 
-					sourcemiddle.second.BindDepth();
+					middle.BindDepth();
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
-				GetMiddleFbo(2);
 				logspaceblurcon.Set("bluraxis", boost::any(1u));
 				for (unsigned int j = 0; j != index; j++)
 				{
-					auto sourcemiddle = GetMiddleFbo(0);
-					Fbo & dest = pointfbo[(i - index + j) / 6u][(i - index + j) % 6u];
+					auto & middle = singlebluredfbo[j];
+					Fbo & dest = pointfbo[(i - index + 1 + j) / 6u][(i - index + 1 + j) % 6u];
 
-					logspaceblurcon.Set("shadowsampler", boost::any(sourcemiddle.second.GetDepthHandle()));
+					logspaceblurcon.Set("shadowsampler", boost::any(middle.GetDepthID()));
 
 					dest.BindDepth();
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
 
+				linearstate.HotSet(oldglstate);
 				vao.Bind();
 				lineardepthcon.Draw();
 				GetMiddleFbo(2);
 			}
 		}
 	}
-
-
-	
+	CheckGLError();
+	CheckGLError();
 }
 
-std::pair<Fbo&, Fbo&> ShadowRenderer::GetMiddleFbo(int option)
+std::pair<Fbo&, Fbo&> ShadowStage::GetMiddleFbo(int option)
 {
 	switch (option)
 	{
@@ -448,8 +464,8 @@ std::pair<Fbo&, Fbo&> ShadowRenderer::GetMiddleFbo(int option)
 		index++;
 		if (index > middlefbo.size())
 		{
-			middlefbo.push_back(Fbo{ { 1024, 1024 }, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
-			singlebluredfbo.push_back(Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+			middlefbo.push_back(Fbo{ { 1024, 1024 }, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } }} } });
+			singlebluredfbo.push_back(Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } }} } });
 		}
 		return std::pair<Fbo&, Fbo&>(middlefbo[index - 1], singlebluredfbo[index - 1]);
 		break;
@@ -457,8 +473,8 @@ std::pair<Fbo&, Fbo&> ShadowRenderer::GetMiddleFbo(int option)
 		highindex++;
 		if (highindex > highpmiddlefbo.size())
 		{
-			highpmiddlefbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
-			highpsinglebluredfbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+			highpmiddlefbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } }, glm::vec4(1.0) } } });
+			highpsinglebluredfbo.push_back(Fbo{ { 4096, 4096 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } }, glm::vec4(1.0) } } });
 		}
 		return std::pair<Fbo&, Fbo&>(highpmiddlefbo[highindex - 1], highpsinglebluredfbo[highindex - 1]);
 		break;
@@ -468,7 +484,7 @@ std::pair<Fbo&, Fbo&> ShadowRenderer::GetMiddleFbo(int option)
 	return std::pair<Fbo&, Fbo&>(middlefbo[0], singlebluredfbo[0]);
 }
 
-void ShadowRenderer::SetShadowedLight(PerFrameData & framedata)
+void ShadowStage::SetShadowedLight(PerFrameData & framedata)
 {
 	unsigned int pcount = 0, scount = 0, dcount = 0;
 	for (auto & l : framedata.dlist)
@@ -567,9 +583,9 @@ void ShadowRenderer::SetShadowedLight(PerFrameData & framedata)
 	}
 }
 
-void ShadowRenderer::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
+void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 {
-	transformlist.resize(1u);
+	transformlist.resize(0u);
 	pointvplist.resize(0u);
 	for (auto & l : framedata.dlist)
 	{
@@ -578,7 +594,7 @@ void ShadowRenderer::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 			l.hasshadow = transformlist.size();
 			glm::vec3 anchorpoint = eye - l.direction * maxdrange;
 			glm::vec3 up{ 0.0, 1.0, 0.0 };
-			if (glm::dot(l.direction, up) > 0.9999)
+			if (glm::abs(glm::dot(l.direction, up)) > 0.9999)
 			{
 				up = glm::vec3(1.0, 0.0, 0.0);
 			}
@@ -592,11 +608,11 @@ void ShadowRenderer::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 		{
 			l.hasshadow = transformlist.size();
 			glm::vec3 up{ 0.0, 1.0, 0.0 };
-			if (glm::dot(l.direction, up) > 0.9999)
+			if (glm::abs(glm::dot(l.direction, up)) > 0.9999)
 			{
 				up = glm::vec3(1.0, 0.0, 0.0);
 			}
-			float range = glm::min(l.GetRange(0.05), maxsrange);
+			float range = glm::clamp(l.GetRange(0.05), 0.2f, maxsrange);
 			glm::mat4 VP = glm::perspective(glm::degrees(glm::acos(l.zerocos)), 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + l.direction, up);
 			transformlist.push_back(LightTransform{ VP, vec2(0.1f, range) });
 		}
@@ -623,7 +639,7 @@ void ShadowRenderer::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 					vec3{ 0.0, -1.0, 0.0 },
 					vec3{ 0.0, -1.0, 0.0 }
 				};
-				float range = glm::min(l.GetRange(0.05), maxprange);
+				float range = glm::clamp(l.GetRange(0.05), 0.2f, maxprange);
 				glm::mat4 VP = glm::perspective(90.0f, 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
 				pointvplist.push_back(LightTransform{VP, glm::vec2(0.1f, range)});
 			}

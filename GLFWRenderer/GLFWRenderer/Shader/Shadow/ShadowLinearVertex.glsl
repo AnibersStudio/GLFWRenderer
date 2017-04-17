@@ -9,7 +9,7 @@ out float depth;
 
 void main()
 {
-	vec4 fragdepth =  WVP * vec4(position, 1.0f);
-	gl_Position  = fragdepth;
-	depth = (fragdepth.w - planes.x) / (planes.y - planes.x);
+	vec4 fragpos =  WVP * vec4(position, 1.0f);
+	gl_Position  = fragpos;
+	depth = (fragpos.w - plane.x) / (plane.y - plane.x);
 }

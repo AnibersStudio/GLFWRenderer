@@ -2,6 +2,7 @@
 
 void GLState::ColdSet()
 {
+	glViewport(0, 0, w, h);
 	if (depthtest)
 	{
 		glEnable(GL_DEPTH_TEST);
@@ -36,6 +37,10 @@ void GLState::ColdSet()
 
 void GLState::HotSet(GLState & oldstate)
 {
+	if (w != oldstate.w || h != oldstate.h)
+	{
+		glViewport(0, 0, w, h);
+	}
 	if (depthtest != oldstate.depthtest)
 	{
 		if (depthtest)

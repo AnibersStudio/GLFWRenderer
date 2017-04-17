@@ -25,8 +25,6 @@ void main()
 	uvec2 tilecoord = uvec2(gl_FragCoord.xy);
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 
-	lightlinked[0].x = 1u;
-
 	memoryBarrierBuffer();
 	uint tiletail = lightindex[tileindex].y;
 	uint nexttail = atomicCounterIncrement(listcounter);

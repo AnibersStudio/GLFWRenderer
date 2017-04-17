@@ -130,3 +130,11 @@ void DynamicLightManager::Delete(stub light)
 	}
 }
 
+void DynamicLightManager::Clear()
+{
+	dl.clear();
+	slist.clear();
+	plist.clear();
+	dindex.clear();
+}
+

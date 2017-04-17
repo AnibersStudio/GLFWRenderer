@@ -20,6 +20,7 @@ public:
 	stub Add(PointLight light);
 	stub Add(SpotLight light);
 	void Delete(stub light);
+	void Clear();
 private:
 	std::vector<DirectionalLight> dl;
 	std::list<PointLight> plist;

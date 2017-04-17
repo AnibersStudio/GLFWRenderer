@@ -7,6 +7,8 @@
 
 struct GLState
 {
+	/// <summary> View port/ framebuffer size </summary>
+	unsigned int w, h;
 	/// <summary> Enable depth test or not. Default is true(test) </summary>
 	bool depthtest = true;
 	/// <summary> The depth function of depth test. Default is GL_LESS(front drawn) </summary>

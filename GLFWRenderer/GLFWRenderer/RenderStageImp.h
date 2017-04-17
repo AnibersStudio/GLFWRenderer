@@ -23,7 +23,7 @@ public:
 class PreDepthStage
 {
 public:
-	PreDepthStage();
+	PreDepthStage(unsigned int w, unsigned int h);
 	void Init() {}
 	void Prepare(glm::mat4 WVP);
 	void Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned int vertcount);
@@ -100,10 +100,10 @@ private:
 	ShaderController lightindexinitializer;
 };
 
-class ShadowRenderer
+class ShadowStage
 {
 public:
-	ShadowRenderer();
+	ShadowStage();
 
 	void Init();
 	void Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye);
@@ -111,6 +111,16 @@ public:
 
 	std::tuple<unsigned int, unsigned int, unsigned int> GetShadowCount() { return shadowcount; };
 	std::vector<LightTransform> & GetTransfromList() { return transformlist; };
+
+	std::vector<Fbo> & GetFboDirectional() { return directionalfbo; }
+	std::vector<std::vector<Fbo>> & GetFboPoint() { return pointfbo; }
+	std::vector<Fbo> & GetFboSpot() { return spotfbo; }
+
+
+	std::vector<Fbo> highpmiddlefbo;
+	std::vector<Fbo> highpsinglebluredfbo;
+	std::vector<Fbo> middlefbo;
+	std::vector<Fbo> singlebluredfbo;
 private:
 	/// <summary> Option = 0: lowp 1: highp 2: reset </summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
@@ -129,16 +139,16 @@ private:
 	std::tuple<unsigned int, unsigned int, unsigned int> shadowcount;
 	const unsigned int batchcount = 8;
 
-	GLState glstate;
+	GLState linearstate;
+	GLState linearhighpstate;
+	GLState blurstate;
+	GLState blurhighpstate;
 	ShaderController lineardepthcon;
 	ShaderController logspaceblurcon;
 
-	Vao & quadvao;
+	Vao quadvao;
 
-	std::vector<Fbo> highpmiddlefbo;
-	std::vector<Fbo> highpsinglebluredfbo;
-	std::vector<Fbo> middlefbo;
-	std::vector<Fbo> singlebluredfbo;
+
 	unsigned int highindex = 0;
 	unsigned int index = 0;
 

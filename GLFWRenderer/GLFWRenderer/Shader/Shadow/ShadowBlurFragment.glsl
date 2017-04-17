@@ -2,7 +2,7 @@
 #define SAMPLE_COUNT 3
 #define C_VALUE 1000.0f
 #define E_VALUE 2.71828f
-uniform float blurkernel[6] = {0.227967f, 0.193627f, 0.118646f, 0.0524476f, 0.0167259f};
+uniform float blurkernel[SAMPLE_COUNT] = {0.4219f, 0.3584f, 0.2195f};
 uniform vec2 axispara[2] = {{1.0f, 0.0f}, {0.0f, 1.0f}};
 
 uniform sampler2D shadowsampler;
@@ -10,7 +10,7 @@ uniform unsigned int bluraxis;
 
 void main()
 {
-	vec2 texelsize = 1.0 / vec2(textureSize(imagesampler, 0));
+	vec2 texelsize = 1.0 / vec2(textureSize(shadowsampler, 0));
     vec2 texcoord = gl_FragCoord.xy * texelsize;
 	
 	float d = texture(shadowsampler, texcoord).x;

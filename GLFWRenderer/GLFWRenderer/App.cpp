@@ -10,6 +10,7 @@ App::App()
 	IndexedModel t2("Res/MC/Sand.obj");
 	ArrayModel am2(t2);
 	ArrayModel am3(t2);
+	ArrayModel am4(t2);
 	IndexedModel t3("Res/MC/Diamond.obj");
 	ArrayModel am5(t3);
 
@@ -18,14 +19,17 @@ App::App()
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
 	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
-	
+	am4.Transform(scale(glm::mat4(1.0), glm::vec3(0.1, 0.1, 0.1)));
+	am4.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 12.0, 5.0)));
+
 	meshmanager.Add(am);
 	meshmanager.Add(am2);
 	meshmanager.Add(am3);
 	meshmanager.Add(am5);
+	meshmanager.Add(am4);
 
 	PointLight point{ glm::vec3(1.0), 0.1, 1.0, 1.0, 1, {5.0, 0.0, 3.0}, vec3(0.0, 0.0, -3.0) };
-	SpotLight spot{ glm::vec3(1.0), 2.0, 1.0, 1.0, 1, {1.0, 1.0, 1.0}, vec3(0.0, 2.0, 0.0), false, vec3(0.0, -1.0, 0.0), 0.7, 0.8 };
+	SpotLight spot{ glm::vec3(1.0), 2.0, 1.0, 1.0, 1, {1.0, 1.0, 0.0}, vec3(0.0, 4.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.9, 0.95 };
 	//lightmanager.Add(point);
 	lightmanager.Add(spot);
 }
@@ -83,7 +87,6 @@ void App::Run()
 		rendercontext.eye = maincamera.GetEye();
 		rendercontext.target = maincamera.GetTarget();
 		rendercontext.up = maincamera.GetUp();
-
 		renderer.Draw(rendercontext);
 		if (glfwGetTime() - starttime > 1.0)
 		{

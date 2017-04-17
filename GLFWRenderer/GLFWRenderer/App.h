@@ -56,4 +56,6 @@ private:
 	DynamicMeshManager meshmanager;
 	DynamicLightManager lightmanager;
 	RenderController renderer{ meshmanager, lightmanager, settings.width, settings.height };
+
+	glm::vec3 lightpos = glm::vec3(0.0f, 4.0f, 0.0f);
 };

@@ -2,11 +2,12 @@
 #include "GLConstManager.h"
 #include "RenderStageImp.h"
 
-RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
+RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), depthstage(PreDepthStage{w, h}), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
 {
 	depthstage.Init();
 	lightcullingstage.Init();
 	forwardstage.Init();
+	shadowstage.Init();
 }
 
 void RenderController::Draw(RenderContext context)
@@ -42,14 +43,17 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Prepare(WVP);
 	lightcullingstage.Prepare(WVP, framedata);
 	forwardstage.Prepare(framedata, WVP);
+	shadowstage.Prepare(context.ShadowPoint, context.ShadowSpot, framedata, context.eye);
 	
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
 	lightcullingstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount, TransVerticesCount);
+	shadowstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount);
 	forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount);
 
 	static DebugOutput screendrawer{width, height};
 	//screendrawer.Draw(lightcullingstage.GetMaxDepth().GetDepthID(), glstate);
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
+	screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
 
 	oldcontext = context;
 }

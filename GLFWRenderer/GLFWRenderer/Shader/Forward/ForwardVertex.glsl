@@ -15,8 +15,8 @@ void main()
 	texcoord = texturecoord;
 	for (unsigned int i = 1u; i != lightspacecount; i++)
 	{
-		vec4 lightspacepos = lightWVP * vec4(position);
-		lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
-		lightspace[i].z = (lightspacepos.w - plane.x) / (plane.y - plane.x);
+		//vec4 lightspacepos = lightWVP * vec4(position);
+		//lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
+		//lightspace[i].z = (lightspacepos.w - plane.x) / (plane.y - plane.x);
 	}
 }
