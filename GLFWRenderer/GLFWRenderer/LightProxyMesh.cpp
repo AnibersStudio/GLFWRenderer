@@ -1,5 +1,5 @@
 #include "LightProxyMesh.h"
-
+#include <iostream>
 const std::vector<float>& ProxyPyramid::GetVertices()
 {
 	static std::vector<float> vertices
@@ -7,16 +7,17 @@ const std::vector<float>& ProxyPyramid::GetVertices()
 		0.0f, 0.0f, 0.0f,   0.5f, -0.5f, -1.0f,   0.5f, 0.5f, -1.0f,
 		0.0f, 0.0f, 0.0f,    -0.5f, -0.5f, -1.0f,   0.5f, -0.5f, -1.0f,
 		0.0f, 0.0f, 0.0f,    -0.5f, 0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,
-		0.5f, 0.5f, 1.0f,   -0.5f, -0.5f, -1.0f,   -0.5f, 0.5f, -1.0f,
-		0.5f, 0.5f, 1.0f,   0.5f, -0.5f, -1.0f,   -0.5f, -0.5f, -1.0f };
+		0.5f, 0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,   -0.5f, 0.5f, -1.0f,
+		0.5f, 0.5f, -1.0f,   0.5f, -0.5f, -1.0f,   -0.5f, -0.5f, -1.0f };
 	return vertices;
 }
 
 bool ProxyPyramid::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, float range, glm::vec3 dir, float coszero, float pixelsize)
 {
-	float distance = glm::max(glm::length(eye - center), 1.0f);
-	float additionalsize = distance * pixelsize * 0.5;
-	float tanzeroangle = glm::sqrt(1 - coszero * coszero);
+	float distance = glm::length(eye - center);
+	float paradistance = distance + 0.5f + range;
+	float additionalsize = paradistance * pixelsize * 0.5;
+	float tanzeroangle = glm::sqrt((1 - coszero * coszero) / (coszero * coszero));
 	float xoyscale = tanzeroangle * range * 2;
 	float additionalscale = glm::max((xoyscale + additionalsize) / xoyscale, (range + additionalsize) / range);
 	range *= additionalscale;
@@ -31,19 +32,20 @@ bool ProxyPyramid::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, floa
 	else
 	{
 		float cosine = glm::dot(glm::normalize(eye - center), dir);
-		return cosine <= circumcos;
+
+		return cosine >= circumcos;
 	}
 }
 
 glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range, glm::vec3 & dir, float coszero, float pixelsize)
 {
-	float distance = glm::max(glm::length(eye - center), 1.0f);
-	float additionalsize = distance * pixelsize * 0.5;
+	float distance = glm::length(eye - center);
+	float paradistance = distance + 0.5f + range + 100.0f;
+	float additionalsize = paradistance * pixelsize * (0.5f + 0.5f); // 0.5 for rasterization, 0.5 for depth translate;
 	float tanzeroangle = glm::sqrt((1 - coszero * coszero) / (coszero * coszero));
 	float xoyscale = tanzeroangle * range * 2;
 	float additionalscale = glm::max((xoyscale + additionalsize) / xoyscale, (range + additionalsize) / range);
 	glm::vec3 scalevector = glm::vec3(xoyscale * additionalscale, xoyscale * additionalscale, range * additionalscale);
-	glm::mat4 transform = glm::scale(glm::mat4(1.0), scalevector);
 
 	glm::vec3 axis;
 	float degrees;
@@ -54,12 +56,11 @@ glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range
 	}
 	else
 	{
-		axis = glm::cross(glm::vec3(0.0f, 0.0f, -1.0f), dir);
+		axis = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, -1.0f), dir));
 		double dotproduct = glm::dot(glm::vec3(0.0f, 0.0f, -1.0f), dir);
 		degrees = glm::degrees(glm::acos(dotproduct));
 	}
-	transform = glm::rotate(transform, degrees, axis);
-	return glm::translate(transform, center);
+	return glm::scale(glm::translate(glm::rotate(glm::translate(glm::mat4(1.0f), center), degrees, axis), glm::vec3(0.0f, 0.0f, 0.5f * range * (additionalscale - 1.0f))), scalevector);
 }
 
 const std::vector<float>& ProxyIcosahedron::GetVertices()
@@ -92,16 +93,18 @@ const std::vector<float>& ProxyIcosahedron::GetVertices()
 
 bool ProxyIcosahedron::InCircumscribeLight(glm::vec3 & eye, glm::vec3 & center, float range, float pixelsize)
 {
-	float distance = glm::max(glm::length(eye - center), 1.0f);
-	float additionalsize = distance * 0.5 * pixelsize;
+	float distance = glm::length(eye - center);
+	float paradistance = distance + 0.5f;
+	float additionalsize = paradistance * 0.5 * pixelsize;
 	float circumrange = range + 1.2 + additionalsize;
 	return distance <= circumrange;
 }
 
 glm::mat4 ProxyIcosahedron::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range, float pixelsize)
 {
-	float distance = glm::max(glm::length(eye - center), 1.0f);
-	float additionalsize = distance * pixelsize * 0.5;
+	float distance = glm::length(eye - center);
+	float paradistance = distance + 0.5f;
+	float additionalsize = distance * pixelsize * (0.5f + 0.5f);
 	glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(range + additionalsize + 1.2/*1.2 is from innerscribe to circumscribe*/));
 	return glm::translate(scale, glm::vec3(center));
 }

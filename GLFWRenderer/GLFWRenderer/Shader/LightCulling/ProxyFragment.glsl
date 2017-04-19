@@ -26,19 +26,20 @@ void main()
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 
 	memoryBarrierBuffer();
-	uint tiletail = lightindex[tileindex].y;
 	uint nexttail = atomicCounterIncrement(listcounter);
-	if (tiletail == 0)
+	uint tiletail = atomicExchange(lightindex[tileindex].y, nexttail);
+	if (tiletail == 0u)
 	{
-		atomicExchange(lightindex[tileindex].x, nexttail);
+		// No need for atomic
+		//atomicExchange(lightindex[tileindex].x, nexttail);
+		lightindex[tileindex].x = nexttail;
 	}
-	atomicExchange(lightindex[tileindex].y, nexttail);
 
-	if (tiletail > 0)
+	lightlinked[nexttail].x = lightid;
+	if (tiletail != 0u)
 	{
 		lightlinked[tiletail].y = nexttail;
 	}
-	lightlinked[nexttail].x = lightid;
 }
 uint encodefloat(float invalue)
 {

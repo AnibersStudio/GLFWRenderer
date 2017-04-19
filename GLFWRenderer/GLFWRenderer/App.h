@@ -51,11 +51,9 @@ private:
 	MomentInfo moment;
 
 	GLFWcontext context{ settings.width, settings.height, "GLFWapp", settings.isfullscreen };
-	Camera maincamera = Camera(glm::vec3(0.0f, 10.0f, 20.0f), 0.0f, -20.0f);
+	Camera maincamera = Camera(glm::vec3(0.0f, 5.0f, 20.0f), 0.0f, -20.0f);
 	RenderContext rendercontext;
 	DynamicMeshManager meshmanager;
 	DynamicLightManager lightmanager;
 	RenderController renderer{ meshmanager, lightmanager, settings.width, settings.height };
-
-	glm::vec3 lightpos = glm::vec3(0.0f, 4.0f, 0.0f);
 };

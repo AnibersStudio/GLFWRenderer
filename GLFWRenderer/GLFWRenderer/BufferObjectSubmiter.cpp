@@ -26,7 +26,9 @@ void BufferObjectSubmiter::SetData(GLuint bufferID, const void * data, size_t si
 	}
 	else
 	{
-		glNamedBufferSubDataEXT(bufferID, 0, size, data);
+		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 

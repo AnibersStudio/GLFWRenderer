@@ -54,7 +54,7 @@ unsigned int DynamicLightManager::AppendSpotLight(glm::vec3 eye, std::vector<Spo
 	std::list<SpotLight> outerlist;
 	for (auto & l : slist)
 	{
-		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.005),l.direction, l.zerocos, pixelsize))
+		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.005),l.direction, l.zerodot, pixelsize))
 		{
 			inerlist.push_back(l);
 		}
@@ -72,12 +72,12 @@ unsigned int DynamicLightManager::AppendSpotLight(glm::vec3 eye, std::vector<Spo
 	for (auto & l : inerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerocos, pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerodot, pixelsize));
 	}
 	for (auto & l : outerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerocos, pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerodot, pixelsize));
 	}
 
 	return inerlist.size();

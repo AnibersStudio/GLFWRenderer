@@ -1,22 +1,42 @@
 #version 430 core
+#extension GL_ARB_bindless_texture : require
+
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 texturecoord;
 
-uniform mat4 WVP;
-uniform unsigned int lightspacecount;
-
+out vec3 fragpos;
 out vec2 texcoord;
-// hasshadow - 1 is the index of this array
-out vec3 lightspace[36];
+// transformID - 1 is the index of this array
+out vec3 lightspace[20];
+
+uniform mat4 WVP;
+uniform uint lightspacecount;
+
+struct LightTransform
+{
+	//Only directional/spot light need this. Point light will be set to glm::mat4(1.0)
+	mat4 VP;
+	// .x near plane .y far plane
+	vec2 plane;
+	float not_used[2];
+};
+
+layout (std140) uniform lighttransformlist
+{
+	// index is transformID - 1
+	LightTransform lighttransform[36];
+};
 
 void main()
 {
 	gl_Position = WVP * vec4(position, 1.0f);
+	fragpos = position;
 	texcoord = texturecoord;
-	for (unsigned int i = 1u; i != lightspacecount; i++)
+	for (unsigned int i = 0u; i != lightspacecount; i++)
 	{
-		//vec4 lightspacepos = lightWVP * vec4(position);
-		//lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
-		//lightspace[i].z = (lightspacepos.w - plane.x) / (plane.y - plane.x);
+		vec4 lightspacepos = lighttransform[i].VP * vec4(position, 1.0f);
+		lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
+		lightspace[i].z = (lightspacepos.w - lighttransform[i].plane.x) / (lighttransform[i].plane.y - lighttransform[i].plane.x);
 	}
+
 }

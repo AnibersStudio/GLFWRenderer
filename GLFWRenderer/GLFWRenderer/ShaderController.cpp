@@ -180,7 +180,6 @@ std::string ShaderController::ReadFile(std::string path)
 void ShaderController::GetAllUniformLocation()
 {
 	static unsigned int samplercounter;
-	static unsigned int uniformbuffercounter;
 	for (auto & v : varmap)
 	{
 		GLuint samplerlocation;
@@ -199,9 +198,7 @@ void ShaderController::GetAllUniformLocation()
 			break;
 		case GL_UNIFORM_BUFFER:
 			blockindex = glGetUniformBlockIndex(shaderprogram, v.second.name.c_str());
-			glUniformBlockBinding(shaderprogram, blockindex, uniformbuffercounter);
-			v.second.location = blockindex;
-			uniformbuffercounter++;
+			glUniformBlockBinding(shaderprogram, blockindex, v.second.location);
 			break;
 		case GL_SHADER_STORAGE_BUFFER:
 			break;

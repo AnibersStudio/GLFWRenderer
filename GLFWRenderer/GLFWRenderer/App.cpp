@@ -18,19 +18,20 @@ App::App()
 	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
 	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
 	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
-	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
+	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, -5.0)));
+	am5.Transform(rotate(glm::mat4(1.0), 90.0f, glm::vec3(0.0, 1.0, 0.0)));
 	am4.Transform(scale(glm::mat4(1.0), glm::vec3(0.1, 0.1, 0.1)));
-	am4.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 12.0, 5.0)));
+	am4.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
 
 	meshmanager.Add(am);
-	meshmanager.Add(am2);
-	meshmanager.Add(am3);
-	meshmanager.Add(am5);
+	//meshmanager.Add(am2);
+	//meshmanager.Add(am3);
+	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	PointLight point{ glm::vec3(1.0), 0.1, 1.0, 1.0, 1, {5.0, 0.0, 3.0}, vec3(0.0, 0.0, -3.0) };
-	SpotLight spot{ glm::vec3(1.0), 2.0, 1.0, 1.0, 1, {1.0, 1.0, 0.0}, vec3(0.0, 4.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.9, 0.95 };
-	//lightmanager.Add(point);
+	PointLight point{ glm::vec3(1.0), 10.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0) };
+	SpotLight spot{ glm::vec3(1.0), 10.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.5, 0.4 };
+	lightmanager.Add(point);
 	lightmanager.Add(spot);
 }
 

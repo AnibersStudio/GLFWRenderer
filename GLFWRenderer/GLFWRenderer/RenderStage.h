@@ -5,6 +5,7 @@
 class PostProcessRenderStage
 {
 public:
+	virtual void Init() = 0;
 	virtual void Prepare(RenderContext context, GLuint source) = 0;
 	virtual void Draw() = 0;
 	virtual GLuint Result() = 0;

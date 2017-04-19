@@ -20,19 +20,19 @@ float SpotLight::IntenAt(glm::vec3 pos) const
 	float cosine = glm::dot(glm::normalize(pos - this->position), direction);
 	float distance = length(pos - position);
 	float decay = intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance);
-	if (decay < 0.00001 || cosine > zerocos)
+	if (decay < 0.00001 || cosine < zerodot)
 	{
 		return 0.0f;
 	}
 
 	float cosinefactor;
-	if (cosine < fullcos)
+	if (cosine > fulldot)
 	{
 		cosinefactor = 1.0f;
 	}
 	else
 	{
-		cosinefactor = (cosine - fullcos) / (zerocos - fullcos);
+		cosinefactor = (cosine - zerodot) / (fulldot - zerodot);
 	}
 	return cosinefactor * decay;
 }

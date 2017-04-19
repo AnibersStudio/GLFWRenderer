@@ -52,29 +52,48 @@ void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned in
 }
 
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
-fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
-forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}} }
+fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffuse", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}, {"lightspacecount", GL_UNSIGNED_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, 
+		  {"lighttransformlist", GL_UNIFORM_BUFFER, 0}, {"pointlightindexlist", GL_SHADER_STORAGE_BUFFER, 2}, {"spotlightindexlist", GL_SHADER_STORAGE_BUFFER, 3}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 4}} }
 {
 	glstate.w = w, glstate.h = h;
+	lighttransformlistbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof((4 + 16 + 16) * sizeof(LightTransform)));
 }
 
-void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP)
+void ForwardStage::Init(glm::uvec2 tilecount)
+{
+	forwardcon.Set("tilecount", boost::any(tilecount));
+}
+
+void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount)
 {
 	data = &framedata;
+	unsigned int dshadowcount = std::get<0>(shadowcount);
+	unsigned int sshadowcount = std::get<2>(shadowcount);
+
 	if (framedata.Vertex.size())
 	{
 		vao.SetData(&framedata.Vertex[0].position, framedata.Vertex.size() * sizeof(Vertex));
 	}
 	forwardcon.Clear();
 	forwardcon.Set("WVP", boost::any(WVP));
+	forwardcon.Set("lightspacecount", boost::any(dshadowcount + sshadowcount));
+	if (lighttransformlist.size())
+	{
+		BufferObjectSubmiter::GetInstance().SetData(lighttransformlistbuffer, &lighttransformlist[0].VP[0][0], lighttransformlist.size() * sizeof(LightTransform));
+	}
 }
 
-void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount)
+void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked)
 {
 	glstate.HotSet(oldglstate);
 
 	auto diffuse = data->Material[0].diffusetex->GetObjectHandle();
 	forwardcon.Set("diffuse", boost::any(diffuse));
+	forwardcon.Set("lighttransformlist", lighttransformlistbuffer);
+	forwardcon.Set("pointlightindexlist", boost::any(std::get<0>(lightlinked)));
+	forwardcon.Set("spotlightindexlist", boost::any(std::get<1>(lightlinked)));
+	forwardcon.Set("lightlinkedlist", boost::any(std::get<2>(lightlinked)));
 	forwardcon.Draw();
 
 	vao.Bind();
@@ -92,10 +111,10 @@ depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUT
 depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthrangerenderer{ { {"Shader/LightCulling/DepthRangeVertex.glsl", GL_VERTEX_SHADER}, { "Shader/LightCulling/DepthRangeFragment.glsl", GL_FRAGMENT_SHADER }}, {{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"minormax", GL_UNSIGNED_INT},{ "depthrange", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
-mindepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
-maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
+mindepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
+maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
-proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"instanceoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"inerclamp", GL_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
+proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
 proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
@@ -110,6 +129,9 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 	outerproxystate.depthfunc = GL_LESS;
 	outerproxystate.depthmask = GL_FALSE;
 	outerproxystate.w = tilecount.x, outerproxystate.h = tilecount.y;
+	
+	inerproxystate.depthfunc = GL_ALWAYS;
+	outerproxystate.depthfunc = GL_ALWAYS;
 
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
@@ -230,9 +252,9 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 
 		GLuint lightindexobject[2] { pointlightindex, spotlightindex };
 		unsigned int instancecount[4] {inerpointlightcount, pointlightcount - inerpointlightcount, inerspotlightcount, spotlightcount - inerspotlightcount};
+		unsigned int lightoffset[4] { 0, inerpointlightcount, 0, inerspotlightcount };
 		GLState glstates[4] { inerproxystate, outerproxystate, inerproxystate, outerproxystate };
 		Fbo * depthfbo[4] { &mindepth, &maxdepth, &mindepth, &maxdepth };
-		int inerclamp[4]{ true, false, true, false };
 
 		unsigned int vertexcount[4]{ ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount(), ProxyPyramid::GetVertexCount(), ProxyPyramid::GetVertexCount() };
 		unsigned int vertexorigin[4]{0, 0, ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount()};
@@ -247,7 +269,7 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 				if (instancecount[drawid])
 				{
 					glstates[drawid].HotSet(oldglstate);
-					proxyrenderer.Set("inerclamp", boost::any(inerclamp[drawid]));
+					proxyrenderer.Set("lightoffset", boost::any(lightoffset[drawid]));
 					depthfbo[drawid]->BindDepth();
 
 					glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertexorigin[drawid], vertexcount[drawid], instancecount[drawid], instancestride);
@@ -257,21 +279,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 			}
 		}
 	}
-
-	GLuint datap[2 * 43 * 24];
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, pointlightindex);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datap);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-	GLuint datas[2 * 43 * 24];
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, spotlightindex);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datas);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);	
-	GLuint datal[2 * 43 * 24];
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightlinkedlist);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::uvec2) * tilecount.x * tilecount.y, datal);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-	CheckGLError();
-	CheckGLError();
 }
 
 ShadowStage::ShadowStage() : maxdrange(96.0f), maxprange(96.0f), maxsrange(96.0f),
@@ -297,8 +304,8 @@ void ShadowStage::Init()
 void ShadowStage::Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye)
 {
 	dmaxshadow = 4;
-	smaxshadow = glm::min(pointshadow, 32u);
-	pmaxshadow = glm::min(spotshadow, 32u);
+	smaxshadow = glm::min(pointshadow, 16u);
+	pmaxshadow = glm::min(spotshadow, 16u);
 	SetShadowedLight(framedata);
 	CalculateVP(framedata, eye);
 	lineardepthcon.Clear();
@@ -310,8 +317,6 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 	unsigned int dcount = std::get<0>(shadowcount);
 	unsigned int pcount = std::get<1>(shadowcount);
 	unsigned int scount = std::get<2>(shadowcount);
-	CheckGLError();
-	CheckGLError();
 	linearhighpstate.HotSet(oldglstate);
 	vao.Bind();
 	lineardepthcon.Draw();
@@ -591,7 +596,6 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 	{
 		if (l.hasshadow)
 		{
-			l.hasshadow = transformlist.size();
 			glm::vec3 anchorpoint = eye - l.direction * maxdrange;
 			glm::vec3 up{ 0.0, 1.0, 0.0 };
 			if (glm::abs(glm::dot(l.direction, up)) > 0.9999)
@@ -600,21 +604,22 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 			}
 			glm::mat4 VP = glm::ortho(maxdrange, maxdrange, maxdrange, maxdrange, 0.0f, maxdrange * 2) * glm::lookAt(anchorpoint, anchorpoint + l.direction, up);
 			transformlist.push_back(LightTransform{VP, vec2(0.0f, 2 * maxdrange)});
+			l.hasshadow = transformlist.size();
 		}
 	}
 	for (auto & l : framedata.slist)
 	{
 		if (l.hasshadow)
 		{
-			l.hasshadow = transformlist.size();
 			glm::vec3 up{ 0.0, 1.0, 0.0 };
 			if (glm::abs(glm::dot(l.direction, up)) > 0.9999)
 			{
 				up = glm::vec3(1.0, 0.0, 0.0);
 			}
 			float range = glm::clamp(l.GetRange(0.05), 0.2f, maxsrange);
-			glm::mat4 VP = glm::perspective(glm::degrees(glm::acos(l.zerocos)), 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + l.direction, up);
+			glm::mat4 VP = glm::perspective(glm::degrees(glm::acos(l.zerodot)), 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + l.direction, up);
 			transformlist.push_back(LightTransform{ VP, vec2(0.1f, range) });
+			l.hasshadow = transformlist.size();
 		}
 	}
 	for (auto & l : framedata.plist)
@@ -641,7 +646,9 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 				};
 				float range = glm::clamp(l.GetRange(0.05), 0.2f, maxprange);
 				glm::mat4 VP = glm::perspective(90.0f, 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
-				pointvplist.push_back(LightTransform{VP, glm::vec2(0.1f, range)});
+				pointvplist.push_back(LightTransform{ VP, glm::vec2(0.1f, range) });
+				transformlist.push_back(LightTransform{ mat4(1.0), glm::vec2(0.1f, range) });
+				l.hasshadow = transformlist.size();
 			}
 		}
 	}

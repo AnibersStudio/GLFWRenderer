@@ -57,9 +57,9 @@ struct SpotLight
 
 	//Must be normalized!
 	glm::vec3 direction;
-	GLfloat fullcos;
+	GLfloat fulldot;
 
-	GLfloat zerocos;
+	GLfloat zerodot;
 	float not_used[3]{};
 
 	float IntenAt(glm::vec3 pos) const;

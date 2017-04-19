@@ -37,9 +37,9 @@ class ForwardStage
 public:
 	ForwardStage(unsigned int w, unsigned int h);
 
-	void Init() {}
-	void Prepare(PerFrameData & framedata, glm::mat4 WVP);
-	void Draw(GLState & oldglstate, unsigned int vertcount);
+	void Init(glm::uvec2 tilecount);
+	void Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount);
+	void Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked);
 
 	Vao & GetVao() { return vao; }
 	Fbo & GetFbo() { return fbo; }
@@ -49,6 +49,8 @@ private:
 	PerFrameData * data;
 	ShaderController forwardcon;
 	GLState glstate;
+
+	GLuint lighttransformlistbuffer;
 };
 
 class LightCullingStage
@@ -63,6 +65,7 @@ public:
 	Fbo & GetMaxDepth() { return maxdepth; }
 	glm::uvec2 GetTileCount() { return tilecount; }
 	glm::vec2 GetTileDismatchScale() { return tiledismatchscale; }
+	std::tuple<GLuint, GLuint, GLuint> GetLightIndexAndLinked() { return {pointlightindex, spotlightindex, lightlinkedlist}; }
 private:
 	unsigned int width, height;
 	const glm::uvec2 tilesize{ 32, 32 };
@@ -115,12 +118,8 @@ public:
 	std::vector<Fbo> & GetFboDirectional() { return directionalfbo; }
 	std::vector<std::vector<Fbo>> & GetFboPoint() { return pointfbo; }
 	std::vector<Fbo> & GetFboSpot() { return spotfbo; }
+	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
-
-	std::vector<Fbo> highpmiddlefbo;
-	std::vector<Fbo> highpsinglebluredfbo;
-	std::vector<Fbo> middlefbo;
-	std::vector<Fbo> singlebluredfbo;
 private:
 	/// <summary> Option = 0: lowp 1: highp 2: reset </summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
@@ -138,6 +137,11 @@ private:
 	std::vector<Fbo> spotfbo;
 	std::tuple<unsigned int, unsigned int, unsigned int> shadowcount;
 	const unsigned int batchcount = 8;
+
+	std::vector<Fbo> highpmiddlefbo;
+	std::vector<Fbo> highpsinglebluredfbo;
+	std::vector<Fbo> middlefbo;
+	std::vector<Fbo> singlebluredfbo;
 
 	GLState linearstate;
 	GLState linearhighpstate;
