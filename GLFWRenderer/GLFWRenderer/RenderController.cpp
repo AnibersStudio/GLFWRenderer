@@ -48,10 +48,15 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
 	lightcullingstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount, TransVerticesCount);
 	shadowstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount);
-	forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount, lightcullingstage.GetLightIndexAndLinked());
+	//forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount, lightcullingstage.GetLightIndexAndLinked());
+
+	ProxyPyramid proxy;
 
 	static DebugOutput screendrawer{width, height};
-	//screendrawer.Draw(lightcullingstage.GetMaxDepth().GetDepthID(), glstate);
+
+	//screendrawer.Draw(lightcullingstage.proxyvao, WVP, 60u, 18u, 0u, 1u, glstate);
+	screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<1>(lightcullingstage.GetLightIndexAndLinked()), glstate);
+	//screendrawer.Draw(WVP, proxy.GetVertices(), framedata.lightinstancemat, glstate);
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 	//screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
 

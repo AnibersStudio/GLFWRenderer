@@ -204,12 +204,6 @@
     <None Include="Shader\LightCulling\DepthDownscaleCompute.glsl">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\LightCulling\DepthRangeFragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\LightCulling\DepthRangeVertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\LightCulling\ProxyFragment.glsl">
       <Filter>Shader</Filter>
     </None>
@@ -232,6 +226,18 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\Shadow\ShadowBlurVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Debug\ForwardDisplayFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Debug\ForwardDisplayVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Debug\TileDisplayFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Debug\TileDisplayVertex.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

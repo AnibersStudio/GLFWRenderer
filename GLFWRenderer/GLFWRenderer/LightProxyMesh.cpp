@@ -4,11 +4,11 @@ const std::vector<float>& ProxyPyramid::GetVertices()
 {
 	static std::vector<float> vertices
 	{ 0.0f, 0.0f, 0.0f,   0.5f, 0.5f, -1.0f,   -0.5f, 0.5f, -1.0f,
-		0.0f, 0.0f, 0.0f,   0.5f, -0.5f, -1.0f,   0.5f, 0.5f, -1.0f,
+		0.0f, 0.0f, 0.0f,   -0.5f, 0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,
 		0.0f, 0.0f, 0.0f,    -0.5f, -0.5f, -1.0f,   0.5f, -0.5f, -1.0f,
-		0.0f, 0.0f, 0.0f,    -0.5f, 0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,
-		0.5f, 0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,   -0.5f, 0.5f, -1.0f,
-		0.5f, 0.5f, -1.0f,   0.5f, -0.5f, -1.0f,   -0.5f, -0.5f, -1.0f };
+		0.0f, 0.0f, 0.0f,    0.5f, -0.5f, -1.0f,   0.5f, 0.5f, -1.0f,
+		0.5f, 0.5f, -1.0f,   0.5f, -0.5f, -1.0f,   -0.5f, -0.5f, -1.0f,
+		-0.5f, -0.5f, -1.0f,   -0.5f, 0.5f, -1.0f,   0.5f, 0.5f, -1.0f };
 	return vertices;
 }
 
@@ -60,7 +60,7 @@ glm::mat4 ProxyPyramid::GetMatrix(glm::vec3 eye, glm::vec3 & center, float range
 		double dotproduct = glm::dot(glm::vec3(0.0f, 0.0f, -1.0f), dir);
 		degrees = glm::degrees(glm::acos(dotproduct));
 	}
-	return glm::scale(glm::translate(glm::rotate(glm::translate(glm::mat4(1.0f), center), degrees, axis), glm::vec3(0.0f, 0.0f, 0.5f * range * (additionalscale - 1.0f))), scalevector);
+	return glm::scale(glm::translate(glm::rotate(glm::translate(glm::mat4(1.0f), center), degrees, axis), glm::vec3(0.0f, 0.0f, -0.5f * range * (additionalscale - 1.0f))), scalevector);
 }
 
 const std::vector<float>& ProxyIcosahedron::GetVertices()
@@ -105,6 +105,6 @@ glm::mat4 ProxyIcosahedron::GetMatrix(glm::vec3 eye, glm::vec3 & center, float r
 	float distance = glm::length(eye - center);
 	float paradistance = distance + 0.5f;
 	float additionalsize = distance * pixelsize * (0.5f + 0.5f);
-	glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(range + additionalsize + 1.2/*1.2 is from innerscribe to circumscribe*/));
-	return glm::translate(scale, glm::vec3(center));
+	
+	return glm::scale(glm::translate(glm::mat4(1.0f), center), glm::vec3(range + additionalsize + 1.2/*1.2 is from innerscribe to circumscribe*/));
 }

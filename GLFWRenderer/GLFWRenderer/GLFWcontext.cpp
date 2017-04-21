@@ -12,6 +12,14 @@ std::deque<Receiver *> receivers;
 void CursorPosCallback(GLFWwindow * winptr, double x, double y);
 void KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode);
 
+void APIENTRY MyProc(GLenum source, GLenum type, GLuint id, GLenum serverity, GLsizei length, const GLchar *message, const GLvoid *userParam)
+{
+	std::cout << "source: " << tostr(source) << "; "
+		<< "type: " << tostr(type) << "; "
+		<< "id: " << id << "; "
+		<< "severity: " << tostr(serverity) << "; "
+		<< "message: " << message << std::endl;
+}
 GLFWcontext::GLFWcontext(int w, int h, std::string t, bool isfullscr) : width(w), height(h), title(t), isfullscreen(isfullscr)
 {
 	glfwInit();						//GLFW initialize
@@ -42,9 +50,11 @@ GLFWcontext::GLFWcontext(int w, int h, std::string t, bool isfullscr) : width(w)
 	}
 
 	glfwGetFramebufferSize(winptr, &w, &h);//Get window size
-	glViewport(0, 0, w, h);				//Set window's left corner to (0,0) and screen coordinate
 
 	defaultstate.ColdSet();
+
+	//glEnable(GL_DEBUG_OUTPUT);
+	//glDebugMessageCallback(&MyProc, nullptr);
 }
 
 GLFWcontext::~GLFWcontext()

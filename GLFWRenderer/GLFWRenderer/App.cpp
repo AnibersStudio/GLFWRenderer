@@ -29,9 +29,9 @@ App::App()
 	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	PointLight point{ glm::vec3(1.0), 10.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0) };
-	SpotLight spot{ glm::vec3(1.0), 10.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.5, 0.4 };
-	lightmanager.Add(point);
+	PointLight point{ glm::vec3(1.0), 1.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0) };
+	SpotLight spot{ glm::vec3(1.0), 2.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.5, 0.4 };
+	//lightmanager.Add(point);
 	lightmanager.Add(spot);
 }
 

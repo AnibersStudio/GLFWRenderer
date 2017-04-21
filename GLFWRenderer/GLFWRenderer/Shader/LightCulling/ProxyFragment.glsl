@@ -3,6 +3,9 @@
 in flat uint lightid;
 
 uniform uvec2 tilecount;
+uniform bool ineroroutertest;
+
+layout (location = 0) out vec4 color;
 
 layout (std430, binding = 0) coherent buffer lightindexlist
 {
@@ -18,30 +21,64 @@ layout (std430, binding = 1) buffer lightlinkedlist
 	//.y means next node
 };
 
+layout (std430, binding = 2) buffer depthrangebuffer
+{
+	uvec2 depthrange[];
+};
+
 layout (binding = 2) uniform atomic_uint listcounter;//Initial value: 1
+
 uint encodefloat(float invalue);
+float decodeuint(uint invalue);
+
 void main() 
 {
-	uvec2 tilecoord = uvec2(gl_FragCoord.xy);
+	float depth = gl_FragCoord.z;
+	uvec2 tilecoord = uvec2(uint(gl_FragCoord.x), uint(gl_FragCoord.y));
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
-
-	memoryBarrierBuffer();
-	uint nexttail = atomicCounterIncrement(listcounter);
-	uint tiletail = atomicExchange(lightindex[tileindex].y, nexttail);
-	if (tiletail == 0u)
+	if (ineroroutertest)
 	{
-		// No need for atomic
-		//atomicExchange(lightindex[tileindex].x, nexttail);
-		lightindex[tileindex].x = nexttail;
+		if (depth > decodeuint(depthrange[tileindex].x))
+		{
+			uint nexttail = atomicCounterIncrement(listcounter);
+			memoryBarrierBuffer();
+			uint tiletail = atomicExchange(lightindex[tileindex].y, nexttail);
+			if (tiletail == 0u)
+			{
+				lightindex[tileindex].x = nexttail;
+			}
+			lightlinked[nexttail].x = lightid;
+			if (tiletail != 0u)
+			{
+				lightlinked[tiletail].y = nexttail;
+			}
+		}
 	}
-
-	lightlinked[nexttail].x = lightid;
-	if (tiletail != 0u)
+	else
 	{
-		lightlinked[tiletail].y = nexttail;
-	}
+		if (depth < decodeuint(depthrange[tileindex].y))
+		{
+			uint nexttail = atomicCounterIncrement(listcounter);
+			memoryBarrierBuffer();
+			uint tiletail = atomicExchange(lightindex[tileindex].y, nexttail);
+			if (tiletail == 0u)
+			{
+				lightindex[tileindex].x = nexttail;
+			}
+			lightlinked[nexttail].x = lightid;
+			if (tiletail != 0u)
+			{
+				lightlinked[tiletail].y = nexttail;
+			}
+		}
+	}		
 }
+
 uint encodefloat(float invalue)
 {
 	return uint(float(uint(0xFFFFFFFF)) * invalue);
+}
+float decodeuint(uint invalue)
+{
+	return float(invalue) / float(uint(0xFFFFFFFF));
 }

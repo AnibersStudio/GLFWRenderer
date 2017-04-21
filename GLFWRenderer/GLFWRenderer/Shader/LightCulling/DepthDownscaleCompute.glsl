@@ -5,9 +5,14 @@ layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 uniform uvec2 resolution;
 uniform sampler2D depthsampler;
 
-layout (std430, binding = 0) buffer depthrange
+layout (std430, binding = 0) coherent buffer depthrange
 {
 	uvec2 value[];
+};
+
+layout (std430, binding = 1) buffer testbuffer
+{
+	float test[];
 };
 
 uint encodefloat(float invalue);
@@ -27,6 +32,11 @@ void main()
 			groupMemoryBarrier();
 			atomicMin(value[tileindex].x, depth);
 			atomicMax(value[tileindex].y, depth);
+
+			//if (value[tileindex].y == depth)
+			//{
+			//	test[tileindex]
+			//}
 		}
 	}
 }

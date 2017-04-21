@@ -222,8 +222,12 @@
     <ResourceCompile Include="GLFWRenderer.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shader\Debug\ForwardDisplayFragment.glsl" />
+    <None Include="Shader\Debug\ForwardDisplayVertex.glsl" />
     <None Include="Shader\Debug\QuadDisplayFragment.glsl" />
     <None Include="Shader\Debug\QuadDisplayVertex.glsl" />
+    <None Include="Shader\Debug\TileDisplayFragment.glsl" />
+    <None Include="Shader\Debug\TileDisplayVertex.glsl" />
     <None Include="Shader\Depth\NativeDepthFragment.glsl" />
     <None Include="Shader\Depth\NativeDepthVertex.glsl" />
     <None Include="Shader\Forward\ForwardFragment.glsl" />
@@ -231,8 +235,6 @@
     <None Include="Shader\LightCulling\DepthAtomicFragment.glsl" />
     <None Include="Shader\LightCulling\DepthAtomicVertex.glsl" />
     <None Include="Shader\LightCulling\DepthDownscaleCompute.glsl" />
-    <None Include="Shader\LightCulling\DepthRangeFragment.glsl" />
-    <None Include="Shader\LightCulling\DepthRangeVertex.glsl" />
     <None Include="Shader\LightCulling\DoubleSSBOInitializeCompute.glsl" />
     <None Include="Shader\LightCulling\ProxyFragment.glsl" />
     <None Include="Shader\LightCulling\ProxyVertex.glsl" />

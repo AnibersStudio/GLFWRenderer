@@ -1,7 +1,7 @@
 #include <string>
 #include "GLCommon.h"
 #include "GLState.h"
-
+#include "CommonTools.h"
 class Receiver
 {
 public:

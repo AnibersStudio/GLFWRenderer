@@ -12,9 +12,15 @@ class DebugOutput
 public:
 	DebugOutput(unsigned int w, unsigned int h);
 	void Draw(GLuint display, GLState& oldglstate);
-
-	Vao vao;
-	ShaderController displaycon;
+	void Draw(glm::mat4 WVP, std::vector<float> vertices, std::vector<glm::mat4> instances, GLState & oldglstate);
+	void Draw(glm::uvec2 tilecount, GLuint lightindexbuffer, GLState & oldglstate);
+	void Draw(Vao & vao, glm::mat4(WVP), unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate);
+	
+	Vao quadvao;
+	Vao forwardvao;
+	ShaderController quaddisplaycon;
+	ShaderController forwarddisplaycon;
+	ShaderController tiledisplaycon;
 	GLState glstate;
 	unsigned int width;
 	unsigned int height;
@@ -61,8 +67,6 @@ public:
 	void Prepare(glm::mat4 WVP, PerFrameData framedata);
 	void Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned int opacevertcount, unsigned int transvertcount);
 
-	Fbo & GetMinDepth() { return mindepth; }
-	Fbo & GetMaxDepth() { return maxdepth; }
 	glm::uvec2 GetTileCount() { return tilecount; }
 	glm::vec2 GetTileDismatchScale() { return tiledismatchscale; }
 	std::tuple<GLuint, GLuint, GLuint> GetLightIndexAndLinked() { return {pointlightindex, spotlightindex, lightlinkedlist}; }
@@ -75,11 +79,9 @@ private:
 	Vao depthrangevao;
 	Vao proxyvao;
 
-	Fbo mindepth;
-	Fbo maxdepth;
+	Fbo proxydepth;
 
 	GLState depthatomicstate;
-	GLState depthrangestate;
 	GLState inerproxystate;
 	GLState outerproxystate;
 
@@ -88,19 +90,19 @@ private:
 	unsigned int inerpointlightcount;
 	unsigned int inerspotlightcount;
 
-public:
 	GLuint depthminmaxbuffer;
 	GLuint pointlightindex;
 	GLuint spotlightindex;
 	GLuint lightlinkedlist;
 	GLuint lightlinkedlistcounter;
-private:
+
 	ShaderController depthatomicrenderer;
 	ShaderController depthdownscaler;
 	ShaderController depthinitializer;
-	ShaderController depthrangerenderer;
 	ShaderController proxyrenderer;
 	ShaderController lightindexinitializer;
+
+	std::vector<float> proxymesh;
 };
 
 class ShadowStage

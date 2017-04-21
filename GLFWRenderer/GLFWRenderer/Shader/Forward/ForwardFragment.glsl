@@ -123,20 +123,27 @@ void main()
 {
 	uvec2 tilecoord = uvec2(gl_FragCoord.xy) / tilesize;
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
-	if (pointlightindex[tileindex].x == uint(0xFFFFFFFF))
+	if (spotlightindex[tileindex].x == uint(0xFFFFFFFF))
 	{
 		Color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 	else
 	{
-		//float zerodot = 0.4;
-		//float fulldot = 0.5;
-		//vec3 position = vec3(0.0, 5.0, 0.0);
-		//vec3 direction = vec3(0.0, -1.0, 0.0);
-		//float dist = length(fragpos - position);
-		//float cosinefactor = max(1.0f, (dot(direction, normalize(fragpos - position)) -  zerodot) /(fulldot - zerodot) );
-		//float attenuation = 1.0 + 1.0 * dist + 0.2 * dist * dist;
-		Color = texture(diffuse, texcoord);/*/ attenuation * 10.0 * cosinefactor;*/
+		float zerodot = 0.4;
+		float fulldot = 0.5;
+		vec3 position = vec3(0.0, 5.0, 0.0);
+		vec3 direction = vec3(0.0, -1.0, 0.0);
+		float dist = length(fragpos - position);
+		float cosinefactor = max(1.0f, (dot(direction, normalize(fragpos - position)) -  zerodot) /(fulldot - zerodot) );
+		float attenuation = 1.0 + 1.0 * dist + 1.0 * dist * dist;
+		Color = texture(diffuse, texcoord)/ attenuation * 10.0 * cosinefactor;
 	}
+	//else
+	//{
+	//	vec3 position = vec3(0.0, 5.0, 0.0);
+	//	float dist = length(fragpos - position);
+	//	float attenuation = 1.0 + 1.0 * dist + 1.0 * dist * dist;
+	//	Color = texture(diffuse, texcoord)/ attenuation * 30.0f;
+	//}
 
 }

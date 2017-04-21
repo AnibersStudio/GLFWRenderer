@@ -1,28 +1,76 @@
 #include "RenderStageImp.h"
 #include "BufferObjectSubmiter.h"
 DebugOutput::DebugOutput(unsigned int w, unsigned int h)
-	: vao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
-	displaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D },{ "winSize",GL_UNSIGNED_INT_VEC2 } })),
+	: quadvao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
+	forwardvao(Vao{ {3, GL_FLOAT},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }),
+	quaddisplaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D },{ "winSize",GL_UNSIGNED_INT_VEC2 } })),
+	forwarddisplaycon(ShaderController({ { "Shader/Debug/ForwardDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/ForwardDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "WVP", GL_FLOAT_MAT4 } })),
+	tiledisplaycon(ShaderController({ { "Shader/Debug/TileDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/TileDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "tilecount", GL_UNSIGNED_INT_VEC2 }, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0} })),
 	width(w), height(h)
 {
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
-	vao.SetData(quad, sizeof(quad));
+	quadvao.SetData(quad, sizeof(quad));
 	glstate.w = width, glstate.h = height;
 }
 
 void DebugOutput::Draw(GLuint display, GLState& oldglstate)
 {
 	glstate.HotSet(oldglstate);
-	displaycon.Clear();
-	displaycon.Set("display", boost::any(display));
-	displaycon.Set("winSize", boost::any(glm::uvec2(width, height)));
-	displaycon.Draw();
+	quaddisplaycon.Clear();
+	quaddisplaycon.Set("display", boost::any(display));
+	quaddisplaycon.Set("winSize", boost::any(glm::uvec2(width, height)));
+	quaddisplaycon.Draw();
+
+	quadvao.Bind();
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void DebugOutput::Draw(glm::mat4 WVP, std::vector<float> vertices, std::vector<glm::mat4> instances, GLState & oldglstate)
+{
+	glstate.HotSet(oldglstate);
+	forwarddisplaycon.Clear();
+	forwarddisplaycon.Set("WVP", boost::any(WVP));
+	forwarddisplaycon.Draw();
+
+	forwardvao.SetData(&vertices[0], sizeof(float) * vertices.size());
+	forwardvao.SetInstanceData(&instances[0][0][0], sizeof(glm::mat4) * instances.size());
+	forwardvao.Bind();
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, vertices.size() / 3, instances.size(), 0);
+}
+
+void DebugOutput::Draw(glm::uvec2 tilecount, GLuint lightindexbuffer, GLState & oldglstate)
+{
+	glstate.HotSet(oldglstate);
+	tiledisplaycon.Clear();
+	tiledisplaycon.Set("tilecount", boost::any(tilecount));
+	tiledisplaycon.Set("lightindexlist", boost::any(lightindexbuffer));
+	tiledisplaycon.Draw();
+
+	quadvao.Bind();
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void DebugOutput::Draw(Vao & vao, mat4(WVP), unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate)
+{
+	glstate.HotSet(oldglstate);
+	forwarddisplaycon.Clear();
+	forwarddisplaycon.Set("WVP", boost::any(WVP));
+	forwarddisplaycon.Draw();
 
 	vao.Bind();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertoffset, vertcount, instancecount, instanceoffset);
 }
 
 PreDepthStage::PreDepthStage(unsigned int w, unsigned int h)
@@ -109,30 +157,21 @@ tiledismatchscale(glm::vec2(w, h) / glm::vec2(tilecount * tilesize)),
 depthinitializer{ { { "Shader/LightCulling/SSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "ssbo", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUTE_SHADER }}, {{"resolution", GL_UNSIGNED_INT_VEC2}, {"depthsampler", GL_UNSIGNED_INT64_NV}, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
-depthrangerenderer{ { {"Shader/LightCulling/DepthRangeVertex.glsl", GL_VERTEX_SHADER}, { "Shader/LightCulling/DepthRangeFragment.glsl", GL_FRAGMENT_SHADER }}, {{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"minormax", GL_UNSIGNED_INT},{ "depthrange", GL_SHADER_STORAGE_BUFFER, 0 } } },
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
-mindepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
-maxdepth{ Fbo{ {tilecount.x, tilecount.y },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
+proxydepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
-proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1}, {"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}} },
+proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"ineroroutertest", GL_UNSIGNED_INT}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1},{ "testbuffer", GL_SHADER_STORAGE_BUFFER, 2 },{"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}, {"depthrangebuffer", GL_SHADER_STORAGE_BUFFER, 2}} },
 proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
 	depthatomicstate.w = w, depthatomicstate.h = h;
-	depthrangestate.depthfunc = GL_ALWAYS;
-	depthrangestate.w = w, depthrangestate.h = h;
 	inerproxystate.cullface = GL_FRONT;
-	inerproxystate.depthfunc = GL_GREATER;
-	inerproxystate.depthmask = GL_FALSE;
+	inerproxystate.depthtest = GL_FALSE;
 	inerproxystate.w = tilecount.x, inerproxystate.h = tilecount.y;
 	outerproxystate.cullface = GL_BACK;
-	outerproxystate.depthfunc = GL_LESS;
-	outerproxystate.depthmask = GL_FALSE;
+	outerproxystate.depthtest = GL_FALSE;
 	outerproxystate.w = tilecount.x, outerproxystate.h = tilecount.y;
 	
-	inerproxystate.depthfunc = GL_ALWAYS;
-	outerproxystate.depthfunc = GL_ALWAYS;
-
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
 	depthdownscaler.Set("resolution", boost::any(glm::uvec2(w, h)));
@@ -140,12 +179,10 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 	depthatomicrenderer.Set("tilesize", boost::any(tilesize));
 	depthatomicrenderer.Set("tilecount", boost::any(tilecount));
 
-	depthrangerenderer.Set("tilecount", boost::any(tilecount));
-
 	float quad[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f };
 	depthrangevao.SetData(quad, sizeof(quad));
 
-	std::vector<float> proxymesh = ProxyIcosahedron::GetVertices();
+	proxymesh = ProxyIcosahedron::GetVertices();
 	const std::vector<float>& proxymesh2 = ProxyPyramid::GetVertices();
 	for (auto f : proxymesh2)
 	{
@@ -155,7 +192,7 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 
 	pointlightindex = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 	spotlightindex = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
-	lightlinkedlist = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y * 256);
+	lightlinkedlist = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y * 128);
 	lightlinkedlistcounter = BufferObjectSubmiter::GetInstance().Generate(sizeof(unsigned int));
 
 	proxyrenderer.Set("tilecount", boost::any(tilecount));
@@ -171,9 +208,6 @@ void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
 
 	depthinitializer.Clear();
 
-	depthrangerenderer.Clear();
-	depthrangerenderer.Set("minormax", boost::any(1u));
-
 	pointlightcount = framedata.plist.size();
 	spotlightcount = framedata.slist.size();
 	inerpointlightcount = framedata.pinercount;
@@ -187,6 +221,7 @@ void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
 	BufferObjectSubmiter::GetInstance().SetData(lightlinkedlistcounter, &countorigin, sizeof(unsigned int));
 
 	lightindexinitializer.Clear();
+
 	proxyrenderer.Clear();
 	proxyrenderer.Set("WVP", boost::any(WVP));
 }
@@ -197,6 +232,14 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 	{
 		depthinitializer.Set("ssbo", boost::any(depthminmaxbuffer));
 		depthinitializer.Draw();
+		glDispatchCompute(tilecount.x, tilecount.y, 1);
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	}
+	// Initialize 2 Light index/linked
+	{
+		lightindexinitializer.Set("ssbo1", boost::any(pointlightindex));
+		lightindexinitializer.Set("ssbo2", boost::any(spotlightindex));
+		lightindexinitializer.Draw();
 		glDispatchCompute(tilecount.x, tilecount.y, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
@@ -220,45 +263,27 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 		glDispatchCompute(tilecount.x, tilecount.y, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
-	// Draw from SSBO to depth
-	{
-		depthrangestate.HotSet(oldglstate);
-		depthrangerenderer.Set("depthrange", boost::any(depthminmaxbuffer));
-		depthrangerenderer.Draw();
-		depthrangevao.Bind();
-
-		mindepth.BindDepth();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-		depthrangerenderer.Set("minormax", boost::any(0u));
-		maxdepth.BindDepth();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	}
-	// Initialize 2 Light index/linked
-	{
-		lightindexinitializer.Set("ssbo1", boost::any(pointlightindex));
-		lightindexinitializer.Set("ssbo2", boost::any(spotlightindex));
-		lightindexinitializer.Draw();
-		glDispatchCompute(tilecount.x, tilecount.y, 1);
-		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	}
 	// Draw Proxies
 	{
 		proxyrenderer.Set("lightlinkedlist", boost::any(lightlinkedlist));
 		proxyrenderer.Set("listcounter", boost::any(lightlinkedlistcounter));
+		proxyrenderer.Set("depthrangebuffer", boost::any(depthminmaxbuffer));
 		proxyrenderer.Draw();
 		proxyvao.Bind();
+		proxydepth.BindDepth();
 
 		GLuint lightindexobject[2] { pointlightindex, spotlightindex };
 		unsigned int instancecount[4] {inerpointlightcount, pointlightcount - inerpointlightcount, inerspotlightcount, spotlightcount - inerspotlightcount};
 		unsigned int lightoffset[4] { 0, inerpointlightcount, 0, inerspotlightcount };
 		GLState glstates[4] { inerproxystate, outerproxystate, inerproxystate, outerproxystate };
-		Fbo * depthfbo[4] { &mindepth, &maxdepth, &mindepth, &maxdepth };
+		unsigned int ineroroutertest[4]{ true, false, true, false };
 
 		unsigned int vertexcount[4]{ ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount(), ProxyPyramid::GetVertexCount(), ProxyPyramid::GetVertexCount() };
 		unsigned int vertexorigin[4]{0, 0, ProxyIcosahedron::GetVertexCount(), ProxyIcosahedron::GetVertexCount()};
 		unsigned int instancestride = 0;
+
+		glm::uvec2 depthminmax[1032];
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, depthminmaxbuffer);
 
 		for (unsigned int i = 0; i != 2; i++) //point and spot light
 		{
@@ -270,8 +295,8 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 				{
 					glstates[drawid].HotSet(oldglstate);
 					proxyrenderer.Set("lightoffset", boost::any(lightoffset[drawid]));
-					depthfbo[drawid]->BindDepth();
-
+					proxyrenderer.Set("ineroroutertest", boost::any(ineroroutertest[drawid]));
+					
 					glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertexorigin[drawid], vertexcount[drawid], instancecount[drawid], instancestride);
 					glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 				}

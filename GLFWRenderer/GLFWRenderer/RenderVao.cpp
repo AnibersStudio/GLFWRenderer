@@ -68,6 +68,8 @@ void Vao::SetInstanceData(const void * dataptr, size_t size)
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, dataptr);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
+
+
 }
 
 size_t Vao::GetSizeofType(GLenum type)
