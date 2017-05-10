@@ -29,10 +29,14 @@ App::App()
 	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	PointLight point{ glm::vec3(1.0), 1.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0) };
-	SpotLight spot{ glm::vec3(1.0), 2.0, 1.0, 1.0, 0, {1.0, 1.0, 1.0}, vec3(0.0, 5.0, 0.0), true, vec3(0.0, -1.0, 0.0), 0.5, 0.4 };
+	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(0.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false, {1.0f, 1.0f, 0.1f}, vec3(-12.0f, 3.0f, 0.0f) };
+	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f) };
 	//lightmanager.Add(point);
+	//lightmanager.Add(point2);
 	lightmanager.Add(spot);
+	//lightmanager.Add(spot2);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)
@@ -50,6 +54,9 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 		case GLFW_KEY_X:
 			context.ShowCursor();
 			moment.firstmousemove = true;
+			break;
+		case GLFW_KEY_C:
+			rendercontext.isdebug = !rendercontext.isdebug;
 			break;
 		default:
 			moment.keys[key] = true;

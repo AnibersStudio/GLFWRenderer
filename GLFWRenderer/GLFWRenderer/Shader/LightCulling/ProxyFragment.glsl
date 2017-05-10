@@ -1,6 +1,7 @@
 #version 430 core
 
 in flat uint lightid;
+in float depth;
 
 uniform uvec2 tilecount;
 uniform bool ineroroutertest;
@@ -33,12 +34,12 @@ float decodeuint(uint invalue);
 
 void main() 
 {
-	float depth = gl_FragCoord.z;
 	uvec2 tilecoord = uvec2(uint(gl_FragCoord.x), uint(gl_FragCoord.y));
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 	if (ineroroutertest)
 	{
-		if (depth > decodeuint(depthrange[tileindex].x))
+	//encodefloat(clamp(depth, 0.0f, 1.0f)) >= depthrange[tileindex].x
+		if (true)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
@@ -56,7 +57,8 @@ void main()
 	}
 	else
 	{
-		if (depth < decodeuint(depthrange[tileindex].y))
+	//encodefloat(clamp(depth, 0.0f, 1.0f)) <= depthrange[tileindex].y
+		if (encodefloat(clamp(depth, 0.0f, 1.0f)) <= depthrange[tileindex].y)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
@@ -71,7 +73,7 @@ void main()
 				lightlinked[tiletail].y = nexttail;
 			}
 		}
-	}		
+	}
 }
 
 uint encodefloat(float invalue)

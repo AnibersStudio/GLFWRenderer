@@ -9,11 +9,12 @@ struct DirectionalLight
 	float intensity;
 	float diffuse;
 	float specular;
-	GLuint64 sampler2D;
 
-	glm::vec3 direction;
+	GLuint64 sampler2D;
 	// This will become a ID to transform list
 	unsigned int hasshadow;
+
+	glm::vec3 direction;
 };
 
 struct Attenuation
@@ -21,7 +22,6 @@ struct Attenuation
 	GLfloat constant = 1.0;
 	GLfloat linear = 0.0;
 	GLfloat exp = 1.0;
-	float not_used[1]{};
 };
 
 struct PointLight
@@ -30,12 +30,14 @@ struct PointLight
 	float intensity;
 	float diffuse;
 	float specular;
+
 	GLuint64 samplerCubemap = 0xFFFFFFFFFFFFFFFF;
+	// This will become a ID to transform list
+	unsigned int hasshadow = false;
 
 	Attenuation atten;
 	glm::vec3 position;
-	// This will become a ID to transform list
-	unsigned int hasshadow = false;
+	float not_used[1]{};
 
 	float IntenAt(glm::vec3 pos) const { float distance = length(pos - position); return intensity / (atten.constant + atten.linear * distance + atten.exp * distance * distance); }
 
@@ -48,19 +50,18 @@ struct SpotLight
 	float intensity;
 	float diffuse;
 	float specular;
+
 	GLuint64 sampler2D = 0xFFFFFFFFFFFFFFFF;
+	// This will become a ID to transform list
+	unsigned int hasshadow = false;
 
 	Attenuation atten;
 	glm::vec3 position;
-	// This will become a ID to transform list
-	unsigned int hasshadow = false;
+	GLfloat zerodot;
 
 	//Must be normalized!
 	glm::vec3 direction;
 	GLfloat fulldot;
-
-	GLfloat zerodot;
-	float not_used[3]{};
 
 	float IntenAt(glm::vec3 pos) const;
 

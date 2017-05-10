@@ -57,6 +57,9 @@ private:
 	GLState glstate;
 
 	GLuint lighttransformlistbuffer;
+	GLuint directionallightbuffer;
+	GLuint pointlightbuffer;
+	GLuint spotlightbuffer;
 };
 
 class LightCullingStage
@@ -70,7 +73,7 @@ public:
 	glm::uvec2 GetTileCount() { return tilecount; }
 	glm::vec2 GetTileDismatchScale() { return tiledismatchscale; }
 	std::tuple<GLuint, GLuint, GLuint> GetLightIndexAndLinked() { return {pointlightindex, spotlightindex, lightlinkedlist}; }
-private:
+//private:
 	unsigned int width, height;
 	const glm::uvec2 tilesize{ 32, 32 };
 	glm::uvec2 tilecount;
@@ -102,7 +105,9 @@ private:
 	ShaderController proxyrenderer;
 	ShaderController lightindexinitializer;
 
-	std::vector<float> proxymesh;
+
+	GLuint vertexbuffer;
+	GLuint atomiccounter;
 };
 
 class ShadowStage
@@ -125,6 +130,7 @@ public:
 private:
 	/// <summary> Option = 0: lowp 1: highp 2: reset </summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
+	void InitMiddleFbo();
 	void SetShadowedLight(PerFrameData & framedata);
 	void CalculateVP(PerFrameData & framedata, glm::vec3 eye);
 	unsigned int dmaxshadow;

@@ -3,9 +3,11 @@
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 texturecoord;
+layout (location = 2) in vec3 normal;
 
 out vec3 fragpos;
 out vec2 texcoord;
+out vec3 fragnormal;
 // transformID - 1 is the index of this array
 out vec3 lightspace[20];
 
@@ -18,7 +20,6 @@ struct LightTransform
 	mat4 VP;
 	// .x near plane .y far plane
 	vec2 plane;
-	float not_used[2];
 };
 
 layout (std140) uniform lighttransformlist
@@ -32,6 +33,7 @@ void main()
 	gl_Position = WVP * vec4(position, 1.0f);
 	fragpos = position;
 	texcoord = texturecoord;
+	fragnormal = normal;
 	for (unsigned int i = 0u; i != lightspacecount; i++)
 	{
 		vec4 lightspacepos = lighttransform[i].VP * vec4(position, 1.0f);

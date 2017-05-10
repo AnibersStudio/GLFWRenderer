@@ -16,7 +16,7 @@ unsigned int DynamicLightManager::AppendPointLight(glm::vec3 eye, std::vector<Po
 	std::list<PointLight> outerlist;
 	for (auto & l : plist)
 	{
-		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.005), pixelsize))
+		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.01), pixelsize))
 		{
 			inerlist.push_back(l);
 		}
@@ -34,12 +34,12 @@ unsigned int DynamicLightManager::AppendPointLight(glm::vec3 eye, std::vector<Po
 	for (auto & l : inerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.01), pixelsize));
 	}
 	for (auto & l : outerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.01), pixelsize));
 	}
 	return inerlist.size();
 }
@@ -54,7 +54,7 @@ unsigned int DynamicLightManager::AppendSpotLight(glm::vec3 eye, std::vector<Spo
 	std::list<SpotLight> outerlist;
 	for (auto & l : slist)
 	{
-		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.005),l.direction, l.zerodot, pixelsize))
+		if (proxy.InCircumscribeLight(eye, l.position, l.GetRange(0.01),l.direction, l.zerodot, pixelsize))
 		{
 			inerlist.push_back(l);
 		}
@@ -72,12 +72,12 @@ unsigned int DynamicLightManager::AppendSpotLight(glm::vec3 eye, std::vector<Spo
 	for (auto & l : inerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerodot, pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.01), l.direction, l.zerodot, pixelsize));
 	}
 	for (auto & l : outerlist)
 	{
 		lightlist.push_back(l);
-		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.005), l.direction, l.zerodot, pixelsize));
+		lightproxytransform.push_back(proxy.GetMatrix(eye, l.position, l.GetRange(0.01), l.direction, l.zerodot, pixelsize));
 	}
 
 	return inerlist.size();

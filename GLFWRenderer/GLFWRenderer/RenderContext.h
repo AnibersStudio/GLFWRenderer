@@ -32,4 +32,6 @@ struct RenderContext
 	bool ToneMapping = true;
 	/// <summary> Apply Global Illumination. Costly </summary>
 	bool isGI = true;
+
+	bool isdebug = false;
 };
