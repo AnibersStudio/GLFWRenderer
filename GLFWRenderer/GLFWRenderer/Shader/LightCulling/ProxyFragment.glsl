@@ -29,6 +29,16 @@ layout (std430, binding = 2) buffer depthrangebuffer
 
 layout (binding = 2) uniform atomic_uint listcounter;//Initial value: 1
 
+
+
+
+layout (std430, binding = 3) buffer vertexbuffer
+{
+	uvec2 depthcomp[];
+};
+
+
+
 uint encodefloat(float invalue);
 float decodeuint(uint invalue);
 
@@ -72,6 +82,11 @@ void main()
 			{
 				lightlinked[tiletail].y = nexttail;
 			}
+		}
+		else
+		{
+			depthcomp[tileindex].x = depthrange[tileindex].y;
+			depthcomp[tileindex].y = encodefloat(clamp(depth, 0.0f, 1.0f));
 		}
 	}
 }

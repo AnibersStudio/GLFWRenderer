@@ -32,11 +32,6 @@ void main()
 			groupMemoryBarrier();
 			atomicMin(value[tileindex].x, depth);
 			atomicMax(value[tileindex].y, depth);
-
-			//if (value[tileindex].y == depth)
-			//{
-			//	test[tileindex]
-			//}
 		}
 	}
 }

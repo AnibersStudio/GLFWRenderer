@@ -10,13 +10,6 @@ uniform vec2 tiledismatchscale;
 out flat uint lightid;
 out float depth;
 
-layout (std430, binding = 3) buffer vertexbuffer
-{
-	vec4 vertexdata[];
-};
-
-layout (binding = 4) uniform atomic_uint counter;
-
 void main()
 {
 	vec4 vertexposition = WVP * transform * vec4(position, 1.0f);
@@ -27,7 +20,4 @@ void main()
 	gl_Position = vec4(clipspace.xy * vertexposition.w, 0.0f * vertexposition.w, vertexposition.w);
 	lightid = lightoffset + gl_InstanceID;
 	depth = clipspace.z * 0.5f + 0.5f;
-
-	uint index = atomicCounterIncrement(counter);
-	vertexdata[index] = vec4(clipspace.xy, 0.0f, float(lightid));
 }
