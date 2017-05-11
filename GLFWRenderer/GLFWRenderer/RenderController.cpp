@@ -64,7 +64,6 @@ void RenderController::Draw(RenderContext context)
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 	//screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
 
-
 	oldcontext = context;
 }
 

@@ -38,8 +38,7 @@ void main()
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 	if (ineroroutertest)
 	{
-	//encodefloat(clamp(depth, 0.0f, 1.0f)) >= depthrange[tileindex].x
-		if (true)
+		if (encodefloat(clamp(depth, 0.0f, 1.0f)) > depthrange[tileindex].x)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
@@ -57,7 +56,7 @@ void main()
 	}
 	else
 	{
-		if (encodefloat(clamp(depth, 0.0f, 1.0f)) <= depthrange[tileindex].y)
+		if (encodefloat(clamp(depth, 0.0f, 1.0f)) < depthrange[tileindex].y)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();

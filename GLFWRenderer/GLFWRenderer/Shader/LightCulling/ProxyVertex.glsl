@@ -25,7 +25,19 @@ void main()
 
 	//translate depth
 	float nativedepth = clipspace.z * 0.5f + 0.5f;
-	vec3 vertnormal = normalize((transpose(inverse(WVP * transform)) * vec4(normal)).xyz);
-	vec2 tileplanesize = vec2(2.0f) / vec2(tilecount) / vec2(2.0f);
-
+	vec4 targetposition = WVP * transform * vec4(position + normal, 1.0f);
+	vec3 target = targetposition.xyz / targetposition.w;
+	vec2 targetndc = target.xy * 0.5f + 0.5f;
+	targetndc *= tiledismatchscale;
+	target.xy = (targetndc - 0.5f) + 0.5f;
+	vec3 vertnormal = target - clipspace;
+	vec2 tileplanesize = vec2(2.0f) / vec2(float(tilecount.x), float(tilecount.y)) / vec2(2.0f);
+	float dzdx = abs(vertnormal.x / vertnormal.z);
+	float dzdy = abs(vertnormal.y / vertnormal.z);
+	float depthtranslate = dzdx * tileplanesize.x + dzdy * tileplanesize.y;
+	if (!ineroroutertest)
+	{
+		depthtranslate = - depthtranslate;
+	}
+	depth = nativedepth + depthtranslate / 2.0f;
 }
