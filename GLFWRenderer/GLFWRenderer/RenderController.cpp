@@ -2,6 +2,7 @@
 #include "GLConstManager.h"
 #include "RenderStageImp.h"
 #include <iostream>
+#include <iomanip>
 RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), depthstage(PreDepthStage{w, h}), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
 {
 	depthstage.Init();
@@ -62,6 +63,7 @@ void RenderController::Draw(RenderContext context)
 	//screendrawer.Draw(WVP, proxy.GetVertices(), framedata.lightinstancemat, glstate);
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 	//screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
+
 
 	oldcontext = context;
 }

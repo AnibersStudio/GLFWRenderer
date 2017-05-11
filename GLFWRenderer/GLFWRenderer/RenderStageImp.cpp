@@ -176,7 +176,7 @@ depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
 proxydepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
 proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"ineroroutertest", GL_UNSIGNED_INT}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1},{ "testbuffer", GL_SHADER_STORAGE_BUFFER, 2 },{"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}, {"depthrangebuffer", GL_SHADER_STORAGE_BUFFER, 2}, {"vertexbuffer", GL_SHADER_STORAGE_BUFFER, 3} } },
-proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
+proxyvao{ {3, GL_FLOAT}, {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
 	depthatomicstate.w = w, depthatomicstate.h = h;
@@ -212,12 +212,6 @@ proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT
 
 	proxyrenderer.Set("tilecount", boost::any(tilecount));
 	proxyrenderer.Set("tiledismatchscale", boost::any(tiledismatchscale));
-
-	
-
-
-
-	vertexbuffer = BufferObjectSubmiter::GetInstance().Generate(tilecount.x * tilecount.y * sizeof(glm::uvec2));
 }
 
 void LightCullingStage::Prepare(glm::mat4 WVP, PerFrameData framedata)
@@ -284,14 +278,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 		glDispatchCompute(tilecount.x, tilecount.y, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
-	
-
-	unsigned int t[2000]{};
-	init(t, 1u, 2000);
-	proxyrenderer.Set("vertexbuffer", vertexbuffer);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexbuffer);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, tilecount.x * tilecount.y * sizeof(unsigned int), t);
-
 	// Draw Proxies
 	{
 		proxyrenderer.Set("lightlinkedlist", boost::any(lightlinkedlist));
@@ -330,12 +316,6 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 			}
 		} 
 	}
-
-
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexbuffer);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, tilecount.x * tilecount.y * sizeof(unsigned int), t);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 ShadowStage::ShadowStage() : maxdrange(96.0f), maxprange(96.0f), maxsrange(96.0f),
