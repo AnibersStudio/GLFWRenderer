@@ -29,14 +29,14 @@ App::App()
 	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
-	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(0.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
-	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false, {1.0f, 1.0f, 0.1f}, vec3(-12.0f, 3.0f, 0.0f) };
-	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f) };
-	//lightmanager.Add(point);
-	//lightmanager.Add(point2);
+	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(0.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false, {1.0f, 1.0f, 0.1f}, vec3(0.0f, 3.0f, 0.0f) };
+	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(12.0f, 3.0f, 0.0f) };
+	lightmanager.Add(point);
+	lightmanager.Add(point2);
 	lightmanager.Add(spot);
-	//lightmanager.Add(spot2);
+	lightmanager.Add(spot2);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)

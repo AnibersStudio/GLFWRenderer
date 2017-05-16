@@ -59,17 +59,33 @@ void DebugOutput::Draw(glm::uvec2 tilecount, GLuint lightindexbuffer, GLState & 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void DebugOutput::Draw(Vao & vao, mat4(WVP), unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate)
-{
-	glstate.HotSet(oldglstate);
+void DebugOutput::Draw(Vao & vao, mat4(WVP), unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate, bool clear, bool face)
+{	
+	GLState particustate = glstate;
+	if (!clear)
+	{
+		if (face)
+		{
+			particustate.cullface = GL_FRONT;
+		}
+		else
+		{
+			particustate.cullface = GL_BACK;
+		}
+		particustate.blend = true;
+	}
+	particustate.HotSet(oldglstate);
 	forwarddisplaycon.Clear();
 	forwarddisplaycon.Set("WVP", boost::any(WVP));
 	forwarddisplaycon.Draw();
 
 	vao.Bind();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
+	if (clear)
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 	glDrawArraysInstancedBaseInstance(GL_TRIANGLES, vertoffset, vertcount, instancecount, instanceoffset);
 }
 
@@ -101,8 +117,8 @@ void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned in
 
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
 fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
-forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffusetex", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}, {"lightspacecount", GL_UNSIGNED_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2},
-         /* {"dlcount", GL_UNSIGNED_INT}, */{"directionallightlist", GL_UNIFORM_BUFFER, 0}, {"pointlightlist", GL_SHADER_STORAGE_BUFFER, 0}, {"spotlightlist", GL_SHADER_STORAGE_BUFFER, 1},
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffusetex", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}, {"lightspacecount", GL_UNSIGNED_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"eye", GL_FLOAT_VEC3},
+          {"dlcount", GL_UNSIGNED_INT}, {"directionallightlist", GL_UNIFORM_BUFFER, 0}, {"pointlightlist", GL_SHADER_STORAGE_BUFFER, 0}, {"spotlightlist", GL_SHADER_STORAGE_BUFFER, 1},
 		  {"lighttransformlist", GL_UNIFORM_BUFFER, 1}, {"pointlightindexlist", GL_SHADER_STORAGE_BUFFER, 2}, {"spotlightindexlist", GL_SHADER_STORAGE_BUFFER, 3}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 4}} }
 {
 	glstate.w = w, glstate.h = h;
@@ -117,7 +133,7 @@ void ForwardStage::Init(glm::uvec2 tilecount)
 	forwardcon.Set("tilecount", boost::any(tilecount));
 }
 
-void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount)
+void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount, vec3 eye)
 {
 	data = &framedata;
 	unsigned int dshadowcount = std::get<0>(shadowcount);
@@ -130,7 +146,8 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<
 	forwardcon.Clear();
 	forwardcon.Set("WVP", boost::any(WVP));
 	forwardcon.Set("lightspacecount", boost::any(dshadowcount + sshadowcount));
-	//forwardcon.Set("dlcount", framedata.dlist.size());
+	forwardcon.Set("eye", boost::any(eye));
+	forwardcon.Set("dlcount", framedata.dlist.size());
 	if (lighttransformlist.size())
 	{
 		BufferObjectSubmiter::GetInstance().SetData(lighttransformlistbuffer, &lighttransformlist[0].VP[0][0], lighttransformlist.size() * sizeof(LightTransform));
@@ -175,17 +192,19 @@ depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
 proxydepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
 lightindexinitializer{ { { "Shader/LightCulling/DoubleSSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } }, { {"ssbo1", GL_SHADER_STORAGE_BUFFER, 0}, {"ssbo2", GL_SHADER_STORAGE_BUFFER, 1} } },
-proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"ineroroutertest", GL_UNSIGNED_INT}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1},{ "testbuffer", GL_SHADER_STORAGE_BUFFER, 2 },{"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}, {"depthrangebuffer", GL_SHADER_STORAGE_BUFFER, 2}, {"vertexbuffer", GL_SHADER_STORAGE_BUFFER, 3} } },
-proxyvao{ {3, GL_FLOAT}, {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
+proxyrenderer{ {{"Shader/LightCulling/ProxyVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/ProxyFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"lightoffset", GL_UNSIGNED_INT}, {"tiledismatchscale", GL_FLOAT_VEC2}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"ineroroutertest", GL_UNSIGNED_INT}, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 1},{ "testbuffer", GL_SHADER_STORAGE_BUFFER, 2 },{"listcounter", GL_ATOMIC_COUNTER_BUFFER, 2}, {"depthrangebuffer", GL_SHADER_STORAGE_BUFFER, 2} } },
+proxyvao{ {3, GL_FLOAT}, {4, GL_FLOAT, true},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }
 {
 	depthatomicstate.depthmask = GL_FALSE;
 	depthatomicstate.w = w, depthatomicstate.h = h;
 	inerproxystate.cullface = GL_FRONT;
 	inerproxystate.depthtest = false;
 	inerproxystate.w = tilecount.x, inerproxystate.h = tilecount.y;
+	inerproxystate.depthclamp = true;
 	outerproxystate.cullface = GL_BACK;
 	outerproxystate.depthtest = false;
 	outerproxystate.w = tilecount.x, outerproxystate.h = tilecount.y;
+	outerproxystate.depthclamp = true;
 	
 	depthminmaxbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(glm::uvec2) * tilecount.x * tilecount.y);
 
@@ -314,7 +333,7 @@ void LightCullingStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigne
 				}
 				instancestride += instancecount[drawid];
 			}
-		} 
+		}
 	}
 }
 

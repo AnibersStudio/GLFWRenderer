@@ -33,6 +33,14 @@ void GLState::ColdSet()
 	}
 	glCullFace(cullface);
 	glFrontFace(frontface);
+	if (depthclamp)
+	{
+		glEnable(GL_DEPTH_CLAMP);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_CLAMP);
+	}
 }
 
 void GLState::HotSet(GLState & oldstate)
@@ -97,5 +105,18 @@ void GLState::HotSet(GLState & oldstate)
 	{
 		glFrontFace(frontface);
 	}
+
+	if (depthclamp != oldstate.depthclamp)
+	{
+		if (depthclamp)
+		{
+			glEnable(GL_DEPTH_CLAMP);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_CLAMP);
+		}
+	}
+
 	oldstate = *this;
 }

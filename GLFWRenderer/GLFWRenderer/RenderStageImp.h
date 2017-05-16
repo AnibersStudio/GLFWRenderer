@@ -7,6 +7,7 @@
 #include "PerFrameData.h"
 #include "GLState.h"
 #include "LightProxyMesh.h"
+
 class DebugOutput
 {
 public:
@@ -14,8 +15,8 @@ public:
 	void Draw(GLuint display, GLState& oldglstate);
 	void Draw(glm::mat4 WVP, std::vector<float> vertices, std::vector<glm::mat4> instances, GLState & oldglstate);
 	void Draw(glm::uvec2 tilecount, GLuint lightindexbuffer, GLState & oldglstate);
-	void Draw(Vao & vao, glm::mat4(WVP), unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate);
-	
+	void Draw(Vao & vao, glm::mat4 WVP, unsigned int vertoffset, unsigned int vertcount, unsigned int instanceoffset, unsigned int instancecount, GLState & oldglstate, bool clear, bool face);
+
 	Vao quadvao;
 	Vao forwardvao;
 	ShaderController quaddisplaycon;
@@ -44,7 +45,7 @@ public:
 	ForwardStage(unsigned int w, unsigned int h);
 
 	void Init(glm::uvec2 tilecount);
-	void Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount);
+	void Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount, vec3 eye);
 	void Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked);
 
 	Vao & GetVao() { return vao; }
@@ -73,7 +74,7 @@ public:
 	glm::uvec2 GetTileCount() { return tilecount; }
 	glm::vec2 GetTileDismatchScale() { return tiledismatchscale; }
 	std::tuple<GLuint, GLuint, GLuint> GetLightIndexAndLinked() { return {pointlightindex, spotlightindex, lightlinkedlist}; }
-//private:
+private:
 	unsigned int width, height;
 	const glm::uvec2 tilesize{ 32, 32 };
 	glm::uvec2 tilecount;
@@ -104,10 +105,6 @@ public:
 	ShaderController depthinitializer;
 	ShaderController proxyrenderer;
 	ShaderController lightindexinitializer;
-
-
-	GLuint vertexbuffer;
-	GLuint atomiccounter;
 };
 
 class ShadowStage
@@ -128,7 +125,7 @@ public:
 	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
 private:
-	/// <summary> Option = 0: lowp 1: highp 2: reset </summary>
+	/// <summary> Option = 0: lowp 1: highp </summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
 	void InitMiddleFbo();
 	void SetShadowedLight(PerFrameData & framedata);

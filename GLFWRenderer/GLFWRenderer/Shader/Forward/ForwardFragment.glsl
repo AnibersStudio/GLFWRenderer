@@ -13,7 +13,7 @@ uniform uvec2 tilecount;
 uniform uint lightspacecount;
 uniform uint dlcount;
 uniform sampler2D diffusetex;
-
+uniform vec3 eye;
 
 struct DirectionalLight
 {
@@ -127,7 +127,7 @@ layout (std430, binding = 4) buffer lightlinkedlist
 vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal);
 vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
 vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
-vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction);
+vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction, vec3 eyedir);
 
 void main() 
 {
@@ -138,11 +138,11 @@ void main()
 	vec3 diffuse = texture(diffusetex, texcoord).rgb;
 	//Calculate dl
 	vec3 color = vec3(0.0f);
-	//color += LightByDL(diffuse, vec3(0.4f), 50.0f, fragnormal);
-	//color += LightByPL(diffuse, vec3(0.4f), 50.0f, fragnormal, tileindex);
-	color += LightBySL(diffuse, vec3(0.4f), 50.0f, fragnormal, tileindex);
+	color += LightByDL(diffuse, vec3(0.4f), 100.0f, fragnormal);
+	color += LightByPL(diffuse, vec3(0.4f), 100.0f, fragnormal, tileindex);
+	color += LightBySL(diffuse, vec3(0.4f), 100.0f, fragnormal, tileindex);
 
-	Color = vec4(color, 1.0f);
+	Color = vec4(color.xyz, 1.0f);
 }
 
 vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal)
@@ -150,7 +150,7 @@ vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal)
 	vec3 color = vec3(0.0f);
 	for (uint i = 0; i != dlcount; i++)
 	{
-		color += BlinnPhongFresnel(diffuse * dl[i].diffuse, specular * dl[i].specular, shininess, normal, dl[i].color, dl[i].direction) * dl[i].intensity;
+		color += BlinnPhongFresnel(diffuse * dl[i].diffuse, specular * dl[i].specular, shininess, normal, dl[i].color, -dl[i].direction, normalize(eye - fragpos)) * dl[i].intensity;
 	}
 	return color;
 }
@@ -167,9 +167,13 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			PointLight thislight = pl[lightlinked[i].x];
 			float dist = length(thislight.position - fragpos);
 			float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
-			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos)) * thislight.intensity / distdecay;
+			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 			i = lightlinked[i].y;
 		}
+		PointLight thislight = pl[lightlinked[endindex].x];
+		float dist = length(thislight.position - fragpos);
+		float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
+		color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 	}
 	return color;
 }
@@ -186,23 +190,29 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			float dist = length(thislight.position - fragpos);
 			float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
 			float angledecay = clamp((dot(thislight.direction, normalize(fragpos - thislight.position)) - thislight.zerodot) / (thislight.fulldot - thislight.zerodot), 0.0f, 1.0f);
-			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos)) * thislight.intensity / distdecay * angledecay;
+			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 			i = lightlinked[i].y;
 		}
 		SpotLight thislight = sl[lightlinked[endindex].x];
 		float dist = length(thislight.position - fragpos);
 		float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
 		float angledecay = clamp((dot(thislight.direction, normalize(fragpos - thislight.position)) - thislight.zerodot) / (thislight.fulldot - thislight.zerodot), 0.0f, 1.0f);
-		color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos)) * thislight.intensity / distdecay * angledecay;
+		color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 	}
 	return color;
 }
 
-vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction)
+//vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction, vec3 eyedir)
+//{
+//	vec3 halfangle = normalize(normal + direction);
+//	vec3 schlickfresnel = mix(vec3(1 - pow(dot(direction, halfangle), 5.0f)), vec3(1.0f), specular);
+//	vec3 materialfactor = diffuse + (shininess + 2.0f) / 8.0f * pow(dot(normal, halfangle), shininess) * schlickfresnel;
+//	return materialfactor * color * max(dot(normal, direction), 0.0f);
+//}
+vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction, vec3 eyedir)
 {
-	return diffuse;
-	vec3 halfangle = normalize(normal - direction);
-	vec3 schlickfresnel = mix(vec3(1 - pow(dot(-direction, halfangle), 5.0f)), vec3(1.0f), specular);
-	vec3 materialfactor = diffuse + (shininess + 2.0f) / 8.0f * pow(dot(normal, halfangle), shininess) * schlickfresnel;
-	return materialfactor * color * max(dot(normal, -direction), 0.0f);
+	vec3 halfangle = normalize(eyedir + direction);
+	vec3 diffusefactor = diffuse;
+	vec3 specularfactor = specular * pow(dot(halfangle, normal), shininess);
+	return (diffusefactor + specularfactor) * max(dot(normal, direction), 0.0f);
 }

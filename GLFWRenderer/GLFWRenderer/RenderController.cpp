@@ -44,7 +44,7 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Prepare(WVP);
 	lightcullingstage.Prepare(WVP, framedata);
 	shadowstage.Prepare(context.ShadowPoint, context.ShadowSpot, framedata, context.eye);
-	forwardstage.Prepare(framedata, WVP, shadowstage.GetLightTransformList(), shadowstage.GetShadowCount());
+	forwardstage.Prepare(framedata, WVP, shadowstage.GetLightTransformList(), shadowstage.GetShadowCount(), context.eye);
 
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
 	lightcullingstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount, TransVerticesCount);
@@ -55,12 +55,12 @@ void RenderController::Draw(RenderContext context)
 
 	static DebugOutput screendrawer{width, height};
 
-	//screendrawer.Draw(lightcullingstage.proxyvao, WVP, 60u, 18u, 0u, 1u, glstate);
+	//screendrawer.Draw(lightcullingstage.proxyvao, WVP, 60u, 18u, 0u, 1u, glstate, false, lightcullingstage.inerspotlightcount);
+	//screendrawer.Draw(WVP, proxy.GetVertices(), framedata.lightinstancemat, glstate);
 	if (context.isdebug)
 	{
-		screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<1>(lightcullingstage.GetLightIndexAndLinked()), glstate);
+		screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<0>(lightcullingstage.GetLightIndexAndLinked()), glstate);
 	}
-	//screendrawer.Draw(WVP, proxy.GetVertices(), framedata.lightinstancemat, glstate);
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
 	//screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
 

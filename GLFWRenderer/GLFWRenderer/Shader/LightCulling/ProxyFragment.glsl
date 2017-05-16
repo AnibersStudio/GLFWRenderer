@@ -1,7 +1,6 @@
 #version 430 core
 
 in flat uint lightid;
-in float depth;
 
 uniform uvec2 tilecount;
 uniform bool ineroroutertest;
@@ -38,7 +37,7 @@ void main()
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 	if (ineroroutertest)
 	{
-		if (encodefloat(clamp(depth, 0.0f, 1.0f)) > depthrange[tileindex].x)
+		if (gl_FragCoord.z >= decodeuint(depthrange[tileindex].x))
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
@@ -56,7 +55,7 @@ void main()
 	}
 	else
 	{
-		if (encodefloat(clamp(depth, 0.0f, 1.0f)) < depthrange[tileindex].y)
+		if (gl_FragCoord.z <= decodeuint(depthrange[tileindex].y))
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
