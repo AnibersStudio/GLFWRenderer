@@ -37,7 +37,7 @@ void main()
 	for (unsigned int i = 0u; i != lightspacecount; i++)
 	{
 		vec4 lightspacepos = lighttransform[i].VP * vec4(position, 1.0f);
-		lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
-		lightspace[i].z = (lightspacepos.w - lighttransform[i].plane.x) / (lighttransform[i].plane.y - lighttransform[i].plane.x);
+		lightspace[i].xy = (lightspacepos.xy / lightspacepos.w * 0.5f + 0.5f) * lightspacepos.w;
+		lightspace[i].z = lightspacepos.w;
 	}
 }

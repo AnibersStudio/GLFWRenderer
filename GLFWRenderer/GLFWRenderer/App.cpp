@@ -29,14 +29,14 @@ App::App()
 	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(0.0f, 10.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(-4.0f, 8.0f, 0.0f), 0.4f, vec3(0.7f, -1.0f, 0.0f), 0.6f };
 	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(4.0f, 8.0f, 0.0f), 0.4f, vec3(-0.707f, -0.707f, 0.0f), 0.6f };
 	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true, {2.0f, 0.4f, 0.0f}, vec3(3.0f, 3.0f, 3.0f) };
 	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true,{ 2.0f, 0.4f, 0.0f }, vec3(-3.0f, 3.0f, 3.0f) };
-	//stuba = lightmanager.Add(spot);
-	//lightmanager.Add(spot2);
-	lightmanager.Add(point);
-	stuba = lightmanager.Add(point2);
+	stuba = lightmanager.Add(spot);
+	lightmanager.Add(spot2);
+	//lightmanager.Add(point);
+	//stuba = lightmanager.Add(point2);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)
