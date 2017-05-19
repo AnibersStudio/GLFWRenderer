@@ -694,6 +694,10 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 	{
 		if (l.hasshadow)
 		{
+			float range = glm::clamp(l.GetRange(0.01), 0.2f, maxprange);
+			pointposlist.push_back(l.position);
+			transformlist.push_back(LightTransform{ mat4(1.0), glm::vec2(0.1f, range) });
+			l.hasshadow = transformlist.size();
 			for (unsigned int i = 0; i != 6; i++)
 			{
 				static vec3 facedir[6] = {
@@ -712,12 +716,8 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 					vec3{ 0.0, -1.0, 0.0 },
 					vec3{ 0.0, -1.0, 0.0 }
 				};
-				float range = glm::clamp(l.GetRange(0.01), 0.2f, maxprange);
 				glm::mat4 VP = glm::perspective(90.0f, 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
 				pointvplist.push_back(LightTransform{ VP, glm::vec2(0.1f, range) });
-				transformlist.push_back(LightTransform{ mat4(1.0), glm::vec2(0.1f, range) });
-				pointposlist.push_back(l.position);
-				l.hasshadow = transformlist.size();
 			}
 		}
 	}
