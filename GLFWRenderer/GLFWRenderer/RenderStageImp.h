@@ -124,7 +124,7 @@ public:
 	std::vector<Fbo> & GetFboSpot() { return spotfbo; }
 	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
-private:
+//private:
 	/// <summary> Option = 0: lowp 1: highp </summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
 	void InitMiddleFbo();
@@ -136,12 +136,13 @@ private:
 	
 	std::vector<LightTransform> pointvplist;
 	std::vector<LightTransform> transformlist;
+	std::vector<glm::vec3> pointposlist;
 
 	std::vector<Fbo> directionalfbo;
 	std::vector<std::vector<Fbo>> pointfbo;
 	std::vector<Fbo> spotfbo;
 	std::tuple<unsigned int, unsigned int, unsigned int> shadowcount;
-	const unsigned int batchcount = 8;
+	const unsigned int batchcount = 6;
 
 	std::vector<Fbo> highpmiddlefbo;
 	std::vector<Fbo> highpsinglebluredfbo;
@@ -153,10 +154,10 @@ private:
 	GLState blurstate;
 	GLState blurhighpstate;
 	ShaderController lineardepthcon;
+	ShaderController omnidirectionalcon;
 	ShaderController logspaceblurcon;
 
 	Vao quadvao;
-
 
 	unsigned int highindex = 0;
 	unsigned int index = 0;

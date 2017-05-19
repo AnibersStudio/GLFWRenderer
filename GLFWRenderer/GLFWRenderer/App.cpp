@@ -24,25 +24,26 @@ App::App()
 	am4.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
 
 	meshmanager.Add(am);
-	//meshmanager.Add(am2);
+	meshmanager.Add(am2);
 	//meshmanager.Add(am3);
 	//meshmanager.Add(am5);
 	meshmanager.Add(am4);
 
-	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(-12.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
-	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(0.0f, 3.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
-	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false, {1.0f, 1.0f, 0.1f}, vec3(0.0f, 3.0f, 0.0f) };
-	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, false,{ 1.0f, 1.0f, 0.1f }, vec3(12.0f, 3.0f, 0.0f) };
-	lightmanager.Add(point);
+	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 6.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(1.0f, 10.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(0.0f, 8.0f, 0.0f), 0.4f, vec3(0.0f, -1.0f, 0.0f), 0.6f };
+	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true, {2.0f, 0.4f, 0.0f}, vec3(3.0f, 3.0f, 3.0f) };
+	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true,{ 2.0f, 0.4f, 0.0f }, vec3(-3.0f, 3.0f, 3.0f) };
+	stuba = lightmanager.Add(point);
 	lightmanager.Add(point2);
-	lightmanager.Add(spot);
-	lightmanager.Add(spot2);
+	//stuba = lightmanager.Add(spot);
+	//lightmanager.Add(spot2);
 }
 
 bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, int mode)
 {
 	if (action == GLFW_PRESS)
 	{
+		decltype(lightmanager.Add(SpotLight())) stub = boost::any_cast<decltype(lightmanager.Add(SpotLight()))>(stuba);
 		switch (key)
 		{
 		case GLFW_KEY_ESCAPE:
@@ -57,6 +58,12 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 			break;
 		case GLFW_KEY_C:
 			rendercontext.isdebug = !rendercontext.isdebug;
+			break;
+		case GLFW_KEY_V:
+			(* std::get<1>(stub)).position.y ++;
+			break;
+		case GLFW_KEY_B:
+			(*std::get<1>(stub)).position.y--;
 			break;
 		default:
 			moment.keys[key] = true;

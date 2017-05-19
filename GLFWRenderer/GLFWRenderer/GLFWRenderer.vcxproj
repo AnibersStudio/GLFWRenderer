@@ -241,6 +241,8 @@
     <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl" />
     <None Include="Shader\Shadow\ShadowBlurFragment.glsl" />
     <None Include="Shader\Shadow\ShadowBlurVertex.glsl" />
+    <None Include="Shader\Shadow\ShadowOmnidirectionalFragment.glsl" />
+    <None Include="Shader\Shadow\ShadowOmnidirectionalVertex.glsl" />
     <None Include="Shader\Shadow\ShadowLinearFragment.glsl" />
     <None Include="Shader\Shadow\ShadowLinearVertex.glsl" />
   </ItemGroup>

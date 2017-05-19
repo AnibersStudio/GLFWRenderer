@@ -46,21 +46,11 @@ bool ProxyPyramid::InCircumscribeLight(glm::vec3 eye, glm::vec3 center, float ra
 
 	if (distance > circumrange)
 	{
-		std::cout << "out" << std::endl;
 		return false;
 	}
 	else
 	{
 		float cosine = glm::dot(glm::normalize(eye - center), dir);
-
-		if (cosine >= circumcos)
-		{
-			std::cout << "in" << std::endl;
-		}
-		else
-		{
-			std::cout << "out" << std::endl;
-		}
 
 		return cosine >= circumcos;
 	}

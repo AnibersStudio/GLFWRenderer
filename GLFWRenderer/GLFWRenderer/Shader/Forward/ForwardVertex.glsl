@@ -40,5 +40,4 @@ void main()
 		lightspace[i].xy = lightspacepos.xy / lightspacepos.w * 0.5 + 0.5;
 		lightspace[i].z = (lightspacepos.w - lighttransform[i].plane.x) / (lighttransform[i].plane.y - lighttransform[i].plane.x);
 	}
-
 }

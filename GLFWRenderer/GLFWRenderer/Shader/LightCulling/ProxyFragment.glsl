@@ -37,7 +37,7 @@ void main()
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 	if (ineroroutertest)
 	{
-		if (gl_FragCoord.z >= decodeuint(depthrange[tileindex].x))
+		if (gl_FragCoord.z >= decodeuint(depthrange[tileindex].x) && depthrange[tileindex].x != 0xFFFFFFFF)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();
@@ -55,7 +55,7 @@ void main()
 	}
 	else
 	{
-		if (gl_FragCoord.z <= decodeuint(depthrange[tileindex].y))
+		if (gl_FragCoord.z <= decodeuint(depthrange[tileindex].y) && depthrange[tileindex].y != 0u)
 		{
 			uint nexttail = atomicCounterIncrement(listcounter);
 			memoryBarrierBuffer();

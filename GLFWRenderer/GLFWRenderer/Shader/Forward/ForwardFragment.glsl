@@ -1,6 +1,6 @@
 #version 450
 #extension GL_ARB_bindless_texture : enable
-
+#define C_VALUE 400.0f
 layout (location = 0) out vec4 Color;
 
 in vec3 fragpos;
@@ -26,7 +26,7 @@ struct DirectionalLight
 	sampler2D shadowsampler;
 
 	// This will become a ID to transform list
-	uint hasshadow;
+	uint transformID;
 
 	vec3 direction;
 };
@@ -63,8 +63,7 @@ struct SpotLight
 
 	sampler2D shadowsampler;
 	//// This - 1 will become a ID to transform list
-	//uint transformID;
-	float transformID;
+	uint transformID;
 
 	Attenuation atten;
 	vec3 position;
@@ -128,6 +127,9 @@ vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal);
 vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
 vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
 vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction, vec3 eyedir);
+float ShadowFactor(sampler2D ztex, vec3 frag);
+float ShadowFactor(samplerCube ztex, vec3 frag, float depth);
+float Esm(float depth, float zintex);
 
 void main() 
 {
@@ -150,7 +152,12 @@ vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal)
 	vec3 color = vec3(0.0f);
 	for (uint i = 0; i != dlcount; i++)
 	{
-		color += BlinnPhongFresnel(diffuse * dl[i].diffuse, specular * dl[i].specular, shininess, normal, dl[i].color, -dl[i].direction, normalize(eye - fragpos)) * dl[i].intensity;
+		float shadowfactor = 1.0f;
+		if (dl[i].transformID > 0)
+		{
+			shadowfactor = ShadowFactor(dl[i].shadowsampler, lightspace[dl[i].transformID - 1]);
+		}
+		color += shadowfactor * BlinnPhongFresnel(diffuse * dl[i].diffuse, specular * dl[i].specular, shininess, normal, dl[i].color, -dl[i].direction, normalize(eye - fragpos)) * dl[i].intensity;
 	}
 	return color;
 }
@@ -163,17 +170,31 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 	if (i != uint(0xFFFFFFFF))
 	{
 		while(i != endindex)
-		{
+		{	
 			PointLight thislight = pl[lightlinked[i].x];
 			float dist = length(thislight.position - fragpos);
 			float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
-			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
+
+			float shadowfactor = 1.0f;
+			if (thislight.transformID > 0)
+			{
+				vec2 plane = lighttransform[thislight.transformID - 1].plane;
+				shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(fragpos - thislight.position), (length(fragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
+			}
+			color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 			i = lightlinked[i].y;
 		}
 		PointLight thislight = pl[lightlinked[endindex].x];
 		float dist = length(thislight.position - fragpos);
 		float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
-		color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
+
+		float shadowfactor = 1.0f;
+		if (thislight.transformID > 0)
+		{
+			vec2 plane = lighttransform[thislight.transformID - 1].plane;
+			shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(fragpos - thislight.position), (length(fragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
+		}
+		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 	}
 	return color;
 }
@@ -190,14 +211,25 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			float dist = length(thislight.position - fragpos);
 			float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
 			float angledecay = clamp((dot(thislight.direction, normalize(fragpos - thislight.position)) - thislight.zerodot) / (thislight.fulldot - thislight.zerodot), 0.0f, 1.0f);
-			color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
+
+			float shadowfactor = 1.0f;
+			if (thislight.transformID > 0)
+			{
+				shadowfactor = ShadowFactor(thislight.shadowsampler, lightspace[thislight.transformID - 1]);
+			}
+			color +=  shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 			i = lightlinked[i].y;
 		}
 		SpotLight thislight = sl[lightlinked[endindex].x];
 		float dist = length(thislight.position - fragpos);
 		float distdecay = thislight.atten.constant + thislight.atten.linear * dist + thislight.atten.exponential * dist * dist;
 		float angledecay = clamp((dot(thislight.direction, normalize(fragpos - thislight.position)) - thislight.zerodot) / (thislight.fulldot - thislight.zerodot), 0.0f, 1.0f);
-		color += BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
+		float shadowfactor = 1.0f;
+		if (thislight.transformID > 0)
+		{
+			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspace[thislight.transformID - 1]);
+		}
+		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 	}
 	return color;
 }
@@ -212,7 +244,23 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal, vec3 color, vec3 direction, vec3 eyedir)
 {
 	vec3 halfangle = normalize(eyedir + direction);
-	vec3 diffusefactor = diffuse;
-	vec3 specularfactor = specular * pow(dot(halfangle, normal), shininess);
-	return (diffusefactor + specularfactor) * max(dot(normal, direction), 0.0f);
+	float diffusefactor = dot(normal, direction);
+	if (diffusefactor <= 0)
+		return vec3(0.0f);
+	float specularfactor = pow(dot(halfangle, normal), shininess);
+	return (diffusefactor * diffuse + specularfactor * specular);
+}
+
+float ShadowFactor(sampler2D ztex, vec3 frag)
+{
+	return Esm(min(frag.z, 1.0f), texture(ztex, frag.xy).x);
+}
+float ShadowFactor(samplerCube ztex, vec3 frag, float depth)
+{
+	return Esm(min(depth, 1.0f), texture(ztex, frag).x);
+}
+
+float Esm(float depth, float zintex)
+{
+	return clamp(exp(C_VALUE * (zintex - depth)), 0.0f, 1.0f);
 }

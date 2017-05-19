@@ -240,5 +240,11 @@
     <None Include="Shader\Debug\TileDisplayVertex.glsl">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\Shadow\ShadowOmnidirectionalFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Shadow\ShadowOmnidirectionalVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

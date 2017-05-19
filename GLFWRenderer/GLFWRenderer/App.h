@@ -56,4 +56,6 @@ private:
 	DynamicMeshManager meshmanager;
 	DynamicLightManager lightmanager;
 	RenderController renderer{ meshmanager, lightmanager, settings.width, settings.height };
+
+	boost::any stuba;
 };

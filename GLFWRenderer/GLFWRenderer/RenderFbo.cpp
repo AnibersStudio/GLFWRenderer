@@ -153,13 +153,12 @@ std::vector<Fbo> Fbo::GetCubeMapSubFbo()
 		}
 
 		GLenum fbostatus = glCheckNamedFramebufferStatusEXT(subFbo[i].fbo, GL_FRAMEBUFFER_EXT);
-		if (fbostatus == GL_FRAMEBUFFER_COMPLETE_EXT)
-		{
-			return subFbo;
-		}
 		std::string errormsg;
 		switch (fbostatus)
 		{
+		case GL_FRAMEBUFFER_COMPLETE_EXT:
+			continue;
+			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
 			errormsg = "Incomplete attachment.";
 			break;
@@ -178,7 +177,7 @@ std::vector<Fbo> Fbo::GetCubeMapSubFbo()
 		}
 		throw DrawErrorException("FBO" + tostr(fbo) + "SubFbo" + tostr(i), errormsg);
 	}
-	return std::vector<Fbo>{};
+	return subFbo;
 }
 
 

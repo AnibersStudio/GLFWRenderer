@@ -1,6 +1,6 @@
 #version 430 core
 #define SAMPLE_COUNT 3
-#define C_VALUE 1000.0f
+#define C_VALUE 400.0f
 #define E_VALUE 2.71828f
 uniform float blurkernel[SAMPLE_COUNT] = {0.4219f, 0.3584f, 0.2195f};
 uniform vec2 axispara[2] = {{1.0f, 0.0f}, {0.0f, 1.0f}};
@@ -22,6 +22,7 @@ void main()
 		float dnegative = texture(shadowsampler, texcoord - i * texelsize * axispara[bluraxis]).x;
 		dpositive -= d;
 		dnegative -= d;
+		//When > 0 error
 		sigma += blurkernel[i] * (exp(C_VALUE * dpositive) + exp(C_VALUE * dnegative));
     }
 	sigma = log(sigma) / log(E_VALUE);

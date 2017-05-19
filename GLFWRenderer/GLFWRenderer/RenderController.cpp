@@ -59,10 +59,11 @@ void RenderController::Draw(RenderContext context)
 	//screendrawer.Draw(WVP, proxy.GetVertices(), framedata.lightinstancemat, glstate);
 	if (context.isdebug)
 	{
-		screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<0>(lightcullingstage.GetLightIndexAndLinked()), glstate);
+		//screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<0>(lightcullingstage.GetLightIndexAndLinked()), glstate);
+		screendrawer.Draw(shadowstage.spotfbo[0].GetDepthID(), glstate);
 	}
 	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
-	//screendrawer.Draw(shadowstage.singlebluredfbo[0].GetDepthID(), glstate);
+	//screendrawer.Draw(shadowstage.spotfbo[0].GetDepthID(), glstate);
 
 	oldcontext = context;
 }
