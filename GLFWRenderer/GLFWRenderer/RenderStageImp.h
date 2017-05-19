@@ -125,7 +125,7 @@ public:
 	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
 //private:
-	/// <summary> Option = 0: lowp 1: highp </summary>
+	/// <summary> Option = 0: middlep 1: highp 2: lowp</summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
 	void InitMiddleFbo();
 	void SetShadowedLight(PerFrameData & framedata);
@@ -148,11 +148,15 @@ public:
 	std::vector<Fbo> highpsinglebluredfbo;
 	std::vector<Fbo> middlefbo;
 	std::vector<Fbo> singlebluredfbo;
+	std::vector<Fbo> lowpmiddlefbo;
+	std::vector<Fbo> lowpsinglebluredfbo;
 
 	GLState linearstate;
 	GLState linearhighpstate;
+	GLState linearlowpstate;
 	GLState blurstate;
 	GLState blurhighpstate;
+	GLState blurlowpstate;
 	ShaderController lineardepthcon;
 	ShaderController omnidirectionalcon;
 	ShaderController logspaceblurcon;
@@ -161,6 +165,7 @@ public:
 
 	unsigned int highindex = 0;
 	unsigned int index = 0;
+	unsigned int lowindex = 0;
 
 	const float maxdrange;
 	const float maxprange;

@@ -347,11 +347,14 @@ logspaceblurcon{ {{"Shader/Shadow/ShadowBlurVertex.glsl", GL_VERTEX_SHADER}, {"S
 	quadvao.SetData(quad, sizeof(quad));
 	linearstate.w = linearstate.h = 1024;
 	linearhighpstate.w = linearhighpstate.h = 4096;
+	linearlowpstate.w = linearlowpstate.h = 512;
 
 	blurstate.depthfunc = GL_ALWAYS;
 	blurstate.w = blurstate.h = 1024;
 	blurhighpstate.depthfunc = GL_ALWAYS;
 	blurhighpstate.w = blurhighpstate.h = 4096;
+	blurlowpstate.depthfunc = GL_ALWAYS;
+	blurlowpstate.w = blurlowpstate.h = 512;
 }
 
 void ShadowStage::Init()
@@ -467,7 +470,7 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 	}
 
 	InitMiddleFbo();
-	linearstate.HotSet(oldglstate);
+	linearlowpstate.HotSet(oldglstate);
 	omnidirectionalcon.Draw();
 	for (unsigned int point = 0; point != pcount; point++)
 	{
@@ -477,21 +480,21 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 			omnidirectionalcon.Set("WVP", boost::any(pointvplist[i].VP));
 			omnidirectionalcon.Set("plane", boost::any(pointvplist[i].plane));
 			omnidirectionalcon.Set("center", boost::any(pointposlist[point]));
-			GetMiddleFbo(0).first.BindDepth();
+			GetMiddleFbo(2).first.BindDepth();
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
 
-			if (index == batchcount || i == pcount * 6 - 1)
+			if (lowindex == batchcount || i == pcount * 6 - 1)
 			{
-				blurstate.HotSet(oldglstate);
+				blurlowpstate.HotSet(oldglstate);
 				quadvao.Bind();
 				logspaceblurcon.Draw();
 
 				logspaceblurcon.Set("bluraxis", boost::any(0u));
-				for (unsigned int j = 0; j != index; j++)
+				for (unsigned int j = 0; j != lowindex; j++)
 				{
-					auto & source = middlefbo[j];
-					auto & middle = singlebluredfbo[j];
+					auto & source = lowpmiddlefbo[j];
+					auto & middle = lowpsinglebluredfbo[j];
 
 					logspaceblurcon.Set("shadowsampler", boost::any(source.GetDepthID()));
 
@@ -499,10 +502,10 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
 				logspaceblurcon.Set("bluraxis", boost::any(1u));
-				for (unsigned int j = 0; j != index; j++)
+				for (unsigned int j = 0; j != lowindex; j++)
 				{
-					auto & middle = singlebluredfbo[j];
-					Fbo & dest = pointfbo[(i - index + 1 + j) / 6u][(i - index + 1 + j) % 6u];
+					auto & middle = lowpsinglebluredfbo[j];
+					Fbo & dest = pointfbo[(i - lowindex + 1 + j) / 6u][(i - lowindex + 1 + j) % 6u];
 
 					logspaceblurcon.Set("shadowsampler", boost::any(middle.GetDepthID()));
 
@@ -510,7 +513,7 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
 
-				linearstate.HotSet(oldglstate);
+				linearlowpstate.HotSet(oldglstate);
 				vao.Bind();
 				omnidirectionalcon.Draw();
 				InitMiddleFbo();
@@ -543,6 +546,15 @@ std::pair<Fbo&, Fbo&> ShadowStage::GetMiddleFbo(int option)
 		}
 		return std::pair<Fbo&, Fbo&>(highpmiddlefbo[highindex - 1], highpsinglebluredfbo[highindex - 1]);
 		break;
+	case 2:
+		lowindex++;
+		if (lowindex > lowpmiddlefbo.size())
+		{
+			lowpmiddlefbo.push_back(Fbo{ { 512, 512 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } } } } });
+			lowpsinglebluredfbo.push_back(Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE } } } } });
+		}
+		return std::pair<Fbo&, Fbo&>(lowpmiddlefbo[lowindex - 1], lowpsinglebluredfbo[lowindex - 1]);
+		break;
 	default:
 		throw DrawErrorException("ShadowStage::GetMiddleFbo", "Option" + tostr(option) + "cannot be recognized.");
 	}
@@ -552,6 +564,7 @@ void ShadowStage::InitMiddleFbo()
 {
 	highindex = 0;
 	index = 0;
+	lowindex = 0;
 }
 
 void ShadowStage::SetShadowedLight(PerFrameData & framedata)
@@ -607,7 +620,7 @@ void ShadowStage::SetShadowedLight(PerFrameData & framedata)
 	}
 	for (unsigned int i = pointfbo.size(); i != pcount; i++)
 	{
-		Fbo fbo = Fbo{ { 1024, 1024 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } }, GL_TEXTURE_CUBE_MAP};
+		Fbo fbo = Fbo{ { 512, 512 },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } }, GL_TEXTURE_CUBE_MAP};
 		pointfbo.push_back(fbo.GetCubeMapSubFbo());
 		pointfbo[pointfbo.size() - 1].push_back(std::move(fbo));
 	}
