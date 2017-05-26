@@ -124,7 +124,7 @@ public:
 	std::vector<Fbo> & GetFboSpot() { return spotfbo; }
 	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
-//private:
+private:
 	/// <summary> Option = 0: middlep 1: highp 2: lowp</summary>
 	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
 	void InitMiddleFbo();

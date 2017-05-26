@@ -115,6 +115,23 @@ void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned in
 	glDrawArrays(GL_TRIANGLES, 0, vertcount);
 }
 
+struct ShaderTexture
+{
+	GLuint64 sampler = 0xFFFFFFFFFFFFFFFF;
+	GLboolean is = false;
+};
+
+struct ShaderMaterial
+{
+	Material material;//5 vec3s	
+	ShaderTexture diffuse;
+	ShaderTexture specular;
+	ShaderTexture normal;
+	ShaderTexture emissive;
+	ShaderTexture trans;
+	float not_used[2];
+};
+
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT} }),
 fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
 forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffusetex", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}, {"lightspacecount", GL_UNSIGNED_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"eye", GL_FLOAT_VEC3},
@@ -159,6 +176,7 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<
 		BufferObjectSubmiter::GetInstance().SetData(pointlightbuffer, &framedata.plist[0], sizeof(PointLight) * framedata.plist.size());
 	if (framedata.slist.size())
 		BufferObjectSubmiter::GetInstance().SetData(spotlightbuffer, &framedata.slist[0], sizeof(SpotLight) * framedata.slist.size());
+
 }
 
 void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked)

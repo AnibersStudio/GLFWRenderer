@@ -11,7 +11,7 @@ public:
 	virtual void AppendMesh(unsigned char meshoption, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const override;
 	virtual void AppendOrderedMesh(unsigned char meshoption, glm::vec3 eye, std::vector<TexturedMaterial> & mat, std::vector<unsigned int> & count, std::vector<Vertex> & vertices, std::vector<unsigned int> & materialindex) const override;
 	virtual void AppendPosition(unsigned char meshoption, std::vector<glm::vec3> & positionlist) const override;
-
+	
 	/// <summary> Add a mesh to the scene </summary>
 	stub Add(ArrayModel mesh);
 	/// <summary> Delete a mesh of stub returned by Add() </summary>
@@ -24,6 +24,5 @@ private:
 	std::list<ArrayModel> opacelist;
 	std::list<ArrayModel> fulltranslist;
 	std::list<ArrayModel> semitranslist;
-
 	bool sorted = false;
 };

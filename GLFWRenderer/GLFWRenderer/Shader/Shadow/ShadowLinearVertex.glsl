@@ -11,7 +11,6 @@ void main()
 {
 	vec4 fragpos =  WVP * vec4(position, 1.0f);
 	float depthf = (fragpos.w - plane.x) / (plane.y - plane.x);
-	//fragpos.z = (depthf - 0.5f) * 2.0f * fragpos.w;
 	depth = depthf;
 	gl_Position  = fragpos;
 }

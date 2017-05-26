@@ -5,6 +5,12 @@
 #include "GLCommon.h"
 #include "Mesh.h"
 
+struct MaterialedVertex
+{
+	Vertex vertex;
+	unsigned int material;
+};
+
 class MeshManager
 {
 public:

@@ -22,7 +22,6 @@ void main()
 		float dnegative = texture(shadowsampler, texcoord - i * texelsize * axispara[bluraxis]).x;
 		dpositive -= d;
 		dnegative -= d;
-		//When > 0 error
 		sigma += blurkernel[i] * (exp(C_VALUE * dpositive) + exp(C_VALUE * dnegative));
     }
 	sigma = log(sigma) / log(E_VALUE);

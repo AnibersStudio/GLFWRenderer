@@ -12,7 +12,8 @@ struct Material
 	glm::vec3 specularcolor = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 emissivecolor = glm::vec3(0.0f, 0.0f, 0.0f);
 	GLfloat shininess = 1000.0f;
-	float transparency = 1.0f;
+	GLfloat transparency = 1.0f;
+	float not_used[1];
 	bool operator==(const Material & rhs) const {
 		return ambientcolor == rhs.ambientcolor && diffusecolor == rhs.diffusecolor &&
 			specularcolor == rhs.specularcolor && emissivecolor == rhs.emissivecolor &&
