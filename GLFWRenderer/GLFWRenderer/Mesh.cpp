@@ -1,9 +1,9 @@
 #pragma comment(lib, "assimp-vc140-mt.lib")
 #include "Dependencies/include/assimp/cimport.h"
-
 #include "Mesh.h"
 #include "TextureLoader.h"
-IndexedModel::IndexedModel(const std::string & objpath)
+
+IndexedMesh::IndexedMesh(const std::string & objpath)
 {
 	Assimp::Importer objimporter;
 	const aiScene * scene = objimporter.ReadFile(objpath, aiProcess_Triangulate);
@@ -22,7 +22,7 @@ IndexedModel::IndexedModel(const std::string & objpath)
 	}
 }
 
-void IndexedModel::Transform(const glm::mat4 & transformmatrix)
+void IndexedMesh::Transform(const glm::mat4 & transformmatrix)
 {
 	for (auto & vertex : meshv)
 	{
@@ -35,7 +35,7 @@ void IndexedModel::Transform(const glm::mat4 & transformmatrix)
 	}
 }
 
-void IndexedModel::ProcessNode(const aiNode * node, const aiScene * scene)
+void IndexedMesh::ProcessNode(const aiNode * node, const aiScene * scene)
 {
 	for (unsigned int i = 0; i != node->mNumMeshes; i++)
 	{
@@ -47,7 +47,7 @@ void IndexedModel::ProcessNode(const aiNode * node, const aiScene * scene)
 	}
 }
 
-void IndexedModel::ProcessMesh(const aiMesh * mesh, const aiScene * scene)
+void IndexedMesh::ProcessMesh(const aiMesh * mesh, const aiScene * scene)
 {
 	unsigned int indexstart = meshv.size();
 	if (mesh->mTextureCoords[1])
@@ -82,7 +82,7 @@ void IndexedModel::ProcessMesh(const aiMesh * mesh, const aiScene * scene)
 	}
 }
 
-TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
+TexturedMaterial IndexedMesh::ProcessMaterial(const aiMaterial * material)
 {
 	aiColor4D ambient, diffuse, specular, emissive;
 	float shininess, transparency;
@@ -129,7 +129,7 @@ TexturedMaterial IndexedModel::ProcessMaterial(const aiMaterial * material)
 	return texmat;
 }
 
-ArrayModel::ArrayModel(const IndexedModel & im) : path(im.GetPath())
+ArrayMesh::ArrayMesh(const IndexedMesh & im) : path(im.GetPath())
 {
 	auto & matind = im.GetMeshInd();
 	auto & matvert = im.GetMeshVert();
@@ -144,7 +144,7 @@ ArrayModel::ArrayModel(const IndexedModel & im) : path(im.GetPath())
 	}
 }
 
-void ArrayModel::Transform(const glm::mat4 & transformmatrix)
+void ArrayMesh::Transform(const glm::mat4 & transformmatrix)
 {
 	for (auto & object : mesh)
 	{
@@ -161,12 +161,12 @@ void ArrayModel::Transform(const glm::mat4 & transformmatrix)
 
 }
 
-const ArrayModel::Mesh & ArrayModel::GetMesh() const
+const ArrayMesh::Mesh & ArrayMesh::GetMesh() const
 {
 	return mesh;
 }
 
-void ArrayModel::Add(const TexturedMaterial & material, const MeshVert & verlist)
+void ArrayMesh::Add(const TexturedMaterial & material, const MeshVert & verlist)
 {
 	auto & vertvec = mesh[material];
 	vertvec.reserve(vertvec.size() + verlist.size());
@@ -176,7 +176,17 @@ void ArrayModel::Add(const TexturedMaterial & material, const MeshVert & verlist
 	}
 }
 
-ArrayModel & ArrayModel::operator+=(const ArrayModel & rhs)
+unsigned int ArrayMesh::VertexCount()
+{
+	unsigned int vertexcount = 0;
+	for (auto i : mesh)
+	{
+		vertexcount += i.second.size();
+	}
+	return vertexcount;
+}
+
+ArrayMesh & ArrayMesh::operator+=(const ArrayMesh & rhs)
 {
 	for (auto & matvecpair : rhs.mesh)
 	{

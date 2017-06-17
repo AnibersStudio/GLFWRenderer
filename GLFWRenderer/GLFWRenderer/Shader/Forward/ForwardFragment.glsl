@@ -1,6 +1,6 @@
 #version 450
 #extension GL_ARB_bindless_texture : enable
-#define C_VALUE 400.0f
+#define C_VALUE 300.0f
 layout (location = 0) out vec4 Color;
 
 in vec3 fragpos;

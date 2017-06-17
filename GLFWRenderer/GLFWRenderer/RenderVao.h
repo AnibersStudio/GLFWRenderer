@@ -23,7 +23,9 @@ public:
 	/// <summary> Construct a vao whose attribute list is provided. Throws DrawErrorException if valuetype not supported </summary>
 	Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint = GL_STREAM_DRAW);
 	/// <summary> Set data of a vbo. Size in bytes. Apply for more vram if size not enough </summary>
-	void SetData(const void * dataptr, size_t size);
+	void SetData(const void * dataptr, size_t size, size_t reservesize);
+	/// <summary> Set data of a vbo. Size/Offset in bytes. Do nothing if size is not enough </summary>
+	void SetSubData(const void * dataptr, size_t offset, size_t size);
 	/// <summary> Set data of an instance vbo. Size in bytes. Apply for more vram if size not enough </summary>
 	void SetInstanceData(const void * dataptr, size_t size);
 	/// <summary> Bind vbo to be the source of draw </summary>

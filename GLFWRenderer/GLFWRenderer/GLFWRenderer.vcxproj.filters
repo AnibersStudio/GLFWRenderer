@@ -84,6 +84,9 @@
     <ClCompile Include="DynamicLightManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Vertex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -170,6 +173,12 @@
     <ClInclude Include="DynamicLightManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderMaterial.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GLFWRenderer.rc">
@@ -220,12 +229,6 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\Shadow\ShadowLinearVertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\Shadow\ShadowBlurFragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\Shadow\ShadowBlurVertex.glsl">
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\Debug\ForwardDisplayFragment.glsl">

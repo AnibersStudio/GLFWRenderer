@@ -5,29 +5,14 @@ App::App()
 	init(moment.keys, false, 128);
 	context.RegisterReceiver(this);
 
-	IndexedModel t("Res/MC/Stein.obj");
-	ArrayModel am(t);
-	IndexedModel t2("Res/MC/Sand.obj");
-	ArrayModel am2(t2);
-	ArrayModel am3(t2);
-	ArrayModel am4(t2);
-	IndexedModel t3("Res/MC/Diamond.obj");
-	ArrayModel am5(t3);
+	meshmanager.RegisterMesh("Res/MC/Stein.obj", "Stein");
+	meshmanager.RegisterMesh("Res/MC/Sand.obj", "Sand");
 
-	am.Transform(scale(mat4(1.0), vec3(40.0, 1.0, 40.0)));
-	am.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)));
-	am2.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0)));
-	am3.Transform(translate(glm::mat4(1.0), glm::vec3(-5.0, 0.0, 0.0)));
-	am5.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, -5.0)));
-	am5.Transform(rotate(glm::mat4(1.0), 90.0f, glm::vec3(0.0, 1.0, 0.0)));
-	am4.Transform(scale(glm::mat4(1.0), glm::vec3(0.1, 0.1, 0.1)));
-	am4.Transform(translate(glm::mat4(1.0), glm::vec3(0.0, 5.0, 0.0)));
+	glm::mat4 bigone = scale(mat4(1.0), vec3(20.0, 1.0, 20.0));
+	bigone = translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)) * bigone;
 
-	meshmanager.Add(am);
-	meshmanager.Add(am2);
-	//meshmanager.Add(am3);
-	//meshmanager.Add(am5);
-	meshmanager.Add(am4);
+	meshmanager.Add("Sand", bigone);// Seems to have an error when shadow is on. Nothing to do with blur.
+	// Delete/Transform/Clean not tested.
 
 	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(-4.0f, 8.0f, 0.0f), 0.4f, vec3(0.7f, -1.0f, 0.0f), 0.6f };
 	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(4.0f, 8.0f, 0.0f), 0.4f, vec3(-0.707f, -0.707f, 0.0f), 0.6f };

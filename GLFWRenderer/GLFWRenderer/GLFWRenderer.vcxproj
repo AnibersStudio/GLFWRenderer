@@ -187,6 +187,7 @@
     <ClCompile Include="ShaderSubmiter.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
+    <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
@@ -213,10 +214,12 @@
     <ClInclude Include="RenderStageImp.h" />
     <ClInclude Include="RenderVao.h" />
     <ClInclude Include="ShaderController.h" />
+    <ClInclude Include="ShaderMaterial.h" />
     <ClInclude Include="ShaderSubmiter.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TexturedMaterial.h" />
     <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GLFWRenderer.rc" />
@@ -239,8 +242,6 @@
     <None Include="Shader\LightCulling\ProxyFragment.glsl" />
     <None Include="Shader\LightCulling\ProxyVertex.glsl" />
     <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl" />
-    <None Include="Shader\Shadow\ShadowBlurFragment.glsl" />
-    <None Include="Shader\Shadow\ShadowBlurVertex.glsl" />
     <None Include="Shader\Shadow\ShadowOmnidirectionalFragment.glsl" />
     <None Include="Shader\Shadow\ShadowOmnidirectionalVertex.glsl" />
     <None Include="Shader\Shadow\ShadowLinearFragment.glsl" />

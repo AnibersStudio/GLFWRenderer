@@ -7,6 +7,7 @@
 #include "PerFrameData.h"
 #include "GLState.h"
 #include "LightProxyMesh.h"
+#include "MeshManager.h"
 
 class DebugOutput
 {
@@ -125,14 +126,13 @@ public:
 	std::vector<LightTransform> & GetLightTransformList() { return transformlist; }
 
 private:
-	/// <summary> Option = 0: middlep 1: highp 2: lowp</summary>
-	std::pair<Fbo&, Fbo&> GetMiddleFbo(int option);
-	void InitMiddleFbo();
+	void PrepareFbo(unsigned int dmax, unsigned int oldpmax, unsigned int oldsmax, unsigned int pmax, unsigned int smax);
 	void SetShadowedLight(PerFrameData & framedata);
 	void CalculateVP(PerFrameData & framedata, glm::vec3 eye);
-	unsigned int dmaxshadow;
-	unsigned int pmaxshadow;
-	unsigned int smaxshadow;
+	std::vector<unsigned int> CalculateResolution(unsigned int shadowcount, float highpratio,  unsigned int baseresolution, unsigned int resolutiondivisor);
+	unsigned int dmaxshadow = 0u;
+	unsigned int pmaxshadow = 0u;
+	unsigned int smaxshadow = 0u;
 	
 	std::vector<LightTransform> pointvplist;
 	std::vector<LightTransform> transformlist;
@@ -141,33 +141,21 @@ private:
 	std::vector<Fbo> directionalfbo;
 	std::vector<std::vector<Fbo>> pointfbo;
 	std::vector<Fbo> spotfbo;
+	std::vector<GLState> directionalstate;
+	std::vector<GLState> pointstate;
+	std::vector<GLState> spotstate;
 	std::tuple<unsigned int, unsigned int, unsigned int> shadowcount;
 	const unsigned int batchcount = 6;
 
-	std::vector<Fbo> highpmiddlefbo;
-	std::vector<Fbo> highpsinglebluredfbo;
-	std::vector<Fbo> middlefbo;
-	std::vector<Fbo> singlebluredfbo;
-	std::vector<Fbo> lowpmiddlefbo;
-	std::vector<Fbo> lowpsinglebluredfbo;
-
-	GLState linearstate;
-	GLState linearhighpstate;
-	GLState linearlowpstate;
-	GLState blurstate;
-	GLState blurhighpstate;
-	GLState blurlowpstate;
 	ShaderController lineardepthcon;
 	ShaderController omnidirectionalcon;
-	ShaderController logspaceblurcon;
 
-	Vao quadvao;
-
-	unsigned int highindex = 0;
-	unsigned int index = 0;
-	unsigned int lowindex = 0;
-
-	const float maxdrange;
-	const float maxprange;
-	const float maxsrange;
+	const float maxdrange = 96.0f;
+	const float maxprange = 96.0f;
+	const float maxsrange = 96.0f;
+	const unsigned int basedresolution = 4096u;
+	const unsigned int basepresolution = 512u;
+	const unsigned int basesresolution = 1024u;
+	const float highresolutionratio = 0.25;
+	const unsigned int lowresolutiondivisor = 4u;
 };

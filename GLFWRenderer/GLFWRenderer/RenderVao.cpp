@@ -40,20 +40,36 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	}
 }
 
-void Vao::SetData(const void * dataptr, size_t size)
+void Vao::SetData(const void * dataptr, size_t size, size_t reservesize)
 {
-	if (size > buffersize)
+	if (reservesize > buffersize)
 	{
-		glNamedBufferDataEXT(vbo, size, dataptr, usagehint);
-		buffersize = size;
+		glNamedBufferDataEXT(vbo, reservesize, nullptr, usagehint);
+		buffersize = reservesize;
 	}
-	else
+
+	if (dataptr != nullptr)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, dataptr);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
+
 }
+
+void Vao::SetSubData(const void * dataptr, size_t offset, size_t size)
+{
+	if (offset + size <= buffersize)
+	{
+		if (dataptr != nullptr)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vbo);
+			glBufferSubData(GL_ARRAY_BUFFER, offset, size, dataptr);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+	}
+}
+
 
 void Vao::SetInstanceData(const void * dataptr, size_t size)
 {

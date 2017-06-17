@@ -4,22 +4,21 @@
 #include "GLCommon.h"
 #include "Mesh.h"
 #include "Light.h"
+#include <memory>
+#include "ShaderMaterial.h"
+
 struct PerFrameData
 {
 	void Clear() {
-		Material.clear(); MaterialIndex.clear(); Vertex.clear();
-		OpaceCount.clear(); FullTransCount.clear(); SemiTransCount.clear();
-
 		dlist.clear(); plist.clear(); slist.clear(); lightinstancemat.clear();
 		pinercount = 0;sinercount = 0;
 	}
 
-	std::vector<TexturedMaterial> Material;
-	std::vector<unsigned int> MaterialIndex;
-	std::vector<Vertex> Vertex;
-	std::vector<unsigned int> OpaceCount;
-	std::vector<unsigned int> FullTransCount;
-	std::vector<unsigned int> SemiTransCount;
+	const std::vector<ShaderMaterial>* MaterialList;
+	const std::vector<MaterialedVertex>* Opaquelist;
+	const std::vector<MaterialedVertex>* Fulltranslist;
+	const std::vector<MaterialedVertex>* Translist;
+	const std::vector<unsigned int>* Transtasklist;
 
 	std::vector<DirectionalLight> dlist;
 	std::vector<PointLight> plist;

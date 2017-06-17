@@ -15,6 +15,8 @@ struct DirectionalLight
 	unsigned int hasshadow;
 
 	glm::vec3 direction;
+
+	float not_used[4];
 };
 
 struct Attenuation

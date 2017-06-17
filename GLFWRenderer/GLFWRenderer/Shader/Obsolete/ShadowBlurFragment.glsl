@@ -2,7 +2,8 @@
 #define SAMPLE_COUNT 3
 #define C_VALUE 400.0f
 #define E_VALUE 2.71828f
-uniform float blurkernel[SAMPLE_COUNT] = {0.4219f, 0.3584f, 0.2195f};
+//{0.4219f, 0.3584f, 0.2195f}
+uniform float blurkernel[SAMPLE_COUNT] = {1.0f, 0.0f, 0.0f};
 uniform vec2 axispara[2] = {{1.0f, 0.0f}, {0.0f, 1.0f}};
 
 uniform sampler2D shadowsampler;

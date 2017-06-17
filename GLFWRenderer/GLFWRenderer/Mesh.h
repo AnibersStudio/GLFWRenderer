@@ -10,26 +10,19 @@
 #include "Dependencies/include/assimp/scene.h"
 #include "Dependencies/include/assimp/postprocess.h"
 #include <tuple>
+#include "Vertex.h"
 
-struct Vertex
-{
-	glm::vec3 position;
-	glm::vec2 texcoord;
-	glm::vec3 normal;
-	glm::vec3 tangent;
-};
-
-class IndexedModel
+class IndexedMesh
 {
 public:
 	/// <summary> All of the vertices of the mesh </summary>
-	typedef std::vector<Vertex> MeshVert;
+	using MeshVert = std::vector<Vertex> ;
 	/// <summary> Map from material to indices to MeshVert </summary>
-	typedef std::unordered_map<TexturedMaterial, std::vector<unsigned int>> MeshInd;
+	using MeshInd = std::unordered_map<TexturedMaterial, std::vector<unsigned int>> ;
 	/// <summary> Create a empty IndexedModel </summary>
-	IndexedModel() = default;
+	IndexedMesh() = default;
 	/// <summary> Load a mesh from file </summary>
-	IndexedModel(const std::string & objpath);
+	IndexedMesh(const std::string & objpath);
 	/// <summary> Apply a transform to the mesh </summary>
 
 	void Transform(const glm::mat4 & transformmatrix);
@@ -48,17 +41,17 @@ private:
 	MeshInd meshi;
 };
 
-class ArrayModel
+class ArrayMesh
 {
 public:
 	/// <summary> All of the ordered vertices of the mesh </summary>
-	typedef std::vector<Vertex> MeshVert;
+	using MeshVert = std::vector<Vertex> ;
 	/// <summary> Mesh is a map from material to MeshVert </summary>
-	typedef std::unordered_map<TexturedMaterial, MeshVert> Mesh;
+	using Mesh = std::unordered_map<TexturedMaterial, MeshVert> ;
 	/// <summary> Create a default ArrayModel </summary>
-	ArrayModel() = default;
+	ArrayMesh() = default;
 	/// <summary> Create a Mesh from a IndexedModel </summary>
-	ArrayModel(const IndexedModel & im);
+	ArrayMesh(const IndexedMesh & im);
 
 	/// <summary> Apply a transform to mesh </summary>
 	void Transform(const glm::mat4 & transformmatrix);
@@ -66,8 +59,11 @@ public:
 	const Mesh & GetMesh() const;
 	/// <summary> Add a mesh to current mesh </summary>
 	void Add(const TexturedMaterial & material, const MeshVert & verlist);
+	/// <summary> Get count of vertex of the mesh
+	unsigned int VertexCount();
 
-	ArrayModel & operator += (const ArrayModel & rhs);
+
+	ArrayMesh & operator += (const ArrayMesh & rhs);
 
 	glm::vec3 position;
 protected:

@@ -11,13 +11,13 @@ public:
 	/// <summary> Register mesh to open </summary>
 	void Register(std::string name, std::string path)
 	{
-		MeshMap[name] = ArrayModel(path);
+		MeshMap[name] = ArrayMesh(path);
 	}
-	ArrayModel& Get(std::string name)
+	ArrayMesh& Get(std::string name)
 	{
 		return MeshMap[name];
 	}
-	ArrayModel Get(std::string name, glm::mat4 transform)
+	ArrayMesh Get(std::string name, glm::mat4 transform)
 	{
 		auto model = MeshMap[name];
 		model.Transform(transform);
@@ -25,5 +25,5 @@ public:
 	}
 private:
 	MeshLoader() = default;
-	std::unordered_map<std::string, ArrayModel> MeshMap;
+	std::unordered_map<std::string, ArrayMesh> MeshMap;
 };

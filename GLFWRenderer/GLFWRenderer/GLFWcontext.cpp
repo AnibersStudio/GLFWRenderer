@@ -24,7 +24,7 @@ GLFWcontext::GLFWcontext(int w, int h, std::string t, bool isfullscr) : width(w)
 {
 	glfwInit();						//GLFW initialize
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);//GL version 4.3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);	
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);	
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	//GLFW only uses GL's core functionalities
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);

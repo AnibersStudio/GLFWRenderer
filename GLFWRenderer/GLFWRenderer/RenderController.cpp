@@ -1,6 +1,7 @@
 #include "RenderController.h"
 #include "GLConstManager.h"
 #include "RenderStageImp.h"
+#include "TextureLoader.h"
 #include <iostream>
 #include <iomanip>
 RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), depthstage(PreDepthStage{w, h}), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
@@ -25,21 +26,9 @@ void RenderController::Draw(RenderContext context)
 	glm::mat4 P = glm::perspective(context.FieldOfView / width * height, (float)width / (float)height, nearplane, context.ViewDistance);
 	glm::mat4 WVP = P * V;
 	///Calculate Opace Vertices Count
-	unsigned int OpaceVerticesCount = 0;
-	for (auto & v : framedata.OpaceCount)
-	{
-		OpaceVerticesCount += v;
-	}
-	///Calculate Trans Vertices Count
-	unsigned int TransVerticesCount = 0;
-	for (auto & v : framedata.FullTransCount)
-	{
-		TransVerticesCount += v;
-	}
-	for (auto & v : framedata.SemiTransCount)
-	{
-		TransVerticesCount += v;
-	}
+	unsigned int OpaceVerticesCount = framedata.Opaquelist->size();
+	unsigned int FulltransVerticesCount = framedata.Fulltranslist->size();
+	unsigned int TransVerticesCount = framedata.Translist->size();
 
 	depthstage.Prepare(WVP);
 	lightcullingstage.Prepare(WVP, framedata);
@@ -71,15 +60,22 @@ void RenderController::Draw(RenderContext context)
 void RenderController::RenderPrepare(RenderContext context, float pixelsize)
 {
 	framedata.Clear();
-	meshmanager.AppendMesh(MeshManager::Opace, framedata.Material, framedata.OpaceCount, framedata.Vertex, framedata.MaterialIndex);
-	meshmanager.AppendOrderedMesh(MeshManager::FullTrans, context.eye, framedata.Material, framedata.FullTransCount, framedata.Vertex, framedata.MaterialIndex);
-	meshmanager.AppendOrderedMesh(MeshManager::SemiTrans, context.eye, framedata.Material, framedata.SemiTransCount, framedata.Vertex, framedata.MaterialIndex);
 
-	for (auto & m : framedata.Material)
+	if (context.anisotropic)
 	{
-		m.diffusetex->SetAF(GLConstManager::GetInstance().GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)[0]);
+		TextureLoader::GetInstance().SetAF(true);
+	}
+	else
+	{
+		TextureLoader::GetInstance().SetAF(false);
 	}
 	
+	framedata.Opaquelist = &meshmanager.GetOpaqueVertex();
+	framedata.Fulltranslist = &meshmanager.GetFulltransVertex();
+	framedata.Transtasklist = &meshmanager.GenerateTransTask(context.eye);
+	framedata.Translist = &meshmanager.GetTransVertex();
+	framedata.MaterialList = &meshmanager.GetShaderMatList();
+
 	framedata.dlist = lightmanager.GetDirectionalLight();
 	framedata.pinercount = lightmanager.AppendPointLight(context.eye, framedata.plist, framedata.lightinstancemat, pixelsize);
 	framedata.sinercount = lightmanager.AppendSpotLight(context.eye, framedata.slist, framedata.lightinstancemat, pixelsize);
