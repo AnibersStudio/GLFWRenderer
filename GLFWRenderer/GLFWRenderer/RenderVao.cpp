@@ -92,13 +92,11 @@ size_t Vao::GetSizeofType(GLenum type)
 {
 	static std::unordered_map<GLenum, size_t> typesizemap{ {GL_FLOAT, sizeof(GLfloat)},{GL_INT, sizeof(GLint)},{GL_UNSIGNED_INT, sizeof(GLuint)},
 	{GL_BYTE, sizeof(GLbyte)}, {GL_UNSIGNED_BYTE, sizeof(GLubyte)}, {GL_DOUBLE, sizeof(GLdouble)} };
-	size_t size = 0;
-	try {
-		size = typesizemap.at(type);
-	}
-	catch (std::out_of_range&)
+	auto it = typesizemap.find(type);
+	if (it == typesizemap.end())
 	{
 		throw DrawErrorException("Vao" + tostr(vao), "Type " + tostr(type) + " isn't supported in vao.");
 	}
+	auto size = (*it).second;
 	return size;
 }

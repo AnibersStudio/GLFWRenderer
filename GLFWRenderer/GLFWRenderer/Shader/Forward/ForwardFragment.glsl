@@ -76,10 +76,14 @@ struct SpotLight
 
 struct LightTransform
 {
-	//Only directional/spot light need this. Point light will be set to glm::mat4(1.0)
-	mat4 VP;
+	//Only directional/spot light need this. Point light will be set to translate(position)
+	mat4 View;
+	//Only directional/spot light need this. Point light will be set to perspective(90)
+	mat4 Proj;
 	// .x near plane .y far plane
 	vec2 plane;
+	//
+	float texelworldsize;
 };
 
 layout (std140) uniform directionallightlist
@@ -130,6 +134,8 @@ vec3 BlinnPhongFresnel(vec3 diffuse, vec3 specular,	float shininess,vec3 normal,
 float ShadowFactor(sampler2D ztex, vec3 frag);
 float ShadowFactor(samplerCube ztex, vec3 frag, float depth);
 float Esm(float depth, float zintex);
+vec4 NormalOffsetLightSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize);
+vec3 NormalOffsetWorldSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize);
 
 void main() 
 {
@@ -185,7 +191,11 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			if (thislight.transformID > 0)
 			{
 				vec2 plane = lighttransform[thislight.transformID - 1].plane;
-				shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(fragpos - thislight.position), (length(fragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
+				mat4 view = lighttransform[thislight.transformID - 1].View;
+				mat4 proj = lighttransform[thislight.transformID - 1].Proj;
+				float texelworldsize = lighttransform[thislight.transformID - 1].texelworldsize;
+				vec3 offsetfragpos = NormalOffsetWorldSpace(normal, fragpos, view, proj, texelworldsize); 
+				shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(offsetfragpos - thislight.position), (length(offsetfragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
 			}
 			color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 			i = lightlinked[i].y;
@@ -198,7 +208,11 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 		if (thislight.transformID > 0)
 		{
 			vec2 plane = lighttransform[thislight.transformID - 1].plane;
-			shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(fragpos - thislight.position), (length(fragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
+			mat4 view = lighttransform[thislight.transformID - 1].View;
+			mat4 proj = lighttransform[thislight.transformID - 1].Proj;
+			float texelworldsize = lighttransform[thislight.transformID - 1].texelworldsize;
+			vec3 offsetfragpos = NormalOffsetWorldSpace(normal, fragpos, view, proj, texelworldsize); 
+			shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(offsetfragpos - thislight.position), (length(offsetfragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
 		}
 		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 	}
@@ -244,6 +258,7 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos);
 		}
 		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
+		color = vec3(shadowfactor);
 	}
 	return color;
 }
@@ -276,5 +291,49 @@ float ShadowFactor(samplerCube ztex, vec3 frag, float depth)
 
 float Esm(float depth, float zintex)
 {
+	return zintex * 10.0;
 	return clamp(exp(C_VALUE * (zintex - depth)), 0.0f, 1.0f);
+}
+
+vec4 NormalOffsetLightSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize)
+{
+	{//ScaleShadowOffsetByShadowDepth
+		vec4 lightviewpos = view * vec4(worldpos, 1.0f);
+		float shadowfovfactor = max(proj[0].x, proj[1].y);
+		texelsize *= abs(lightviewpos.z) * shadowfovfactor;
+	}
+	//Angle Based Bias
+	vec3 lightpos = - view[3].xyz;
+	vec3 vertextolight = normalize(lightpos - worldpos);
+	float coslightangle = dot(vertextolight, worldnormal);
+	float normaloffsetscale = clamp(1 - coslightangle, 0.0f, 1.0f);
+	vec3 shadowoffset = normaloffsetscale * worldnormal;
+	{//Only offset UV texture coord
+		vec4 lightspacepos = proj * view * vec4(worldpos, 1.0f);
+
+		vec3 offsetworldpos = worldpos + shadowoffset;
+		vec4 offsetlightspacepos = proj * view * vec4(offsetworldpos, 1.0f);
+		lightspacepos.xy = offsetlightspacepos.xy;
+		return lightspacepos;
+	}
+	//{//3D normal offset
+	//	worldpos += shadowoffset;
+	//	return proj * view * vec4(worldpos, 1.0f);
+	//}
+}
+
+vec3 NormalOffsetWorldSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize)
+{
+	{//ScaleShadowOffsetByShadowDepth
+		vec4 lightviewpos = view * vec4(worldpos, 1.0f);
+		float shadowfovfactor = max(proj[0].x, proj[1].y);
+		texelsize *= abs(lightviewpos.z) * shadowfovfactor;
+	}
+	//Angle Based Bias
+	vec3 lightpos = - view[3].xyz;
+	vec3 vertextolight = normalize(lightpos - worldpos);
+	float coslightangle = dot(vertextolight, worldnormal);
+	float normaloffsetscale = clamp(1 - coslightangle, 0.0f, 1.0f);
+	vec3 shadowoffset = normaloffsetscale * worldnormal;
+	return worldpos + shadowoffset;
 }

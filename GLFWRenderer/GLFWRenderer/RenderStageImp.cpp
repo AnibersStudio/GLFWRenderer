@@ -172,7 +172,7 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<
 	forwardcon.Set("dlcount", framedata.dlist.size());
 	if (lighttransformlist.size())
 	{
-		BufferObjectSubmiter::GetInstance().SetData(lighttransformlistbuffer, &lighttransformlist[0].VP[0][0], lighttransformlist.size() * sizeof(LightTransform));
+		BufferObjectSubmiter::GetInstance().SetData(lighttransformlistbuffer, &lighttransformlist[0].View[0][0], lighttransformlist.size() * sizeof(LightTransform));
 	}
 
 	if (framedata.dlist.size())
@@ -394,7 +394,7 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 
 	for (unsigned int i = 0; i != dcount; i++)
 	{
-		lineardepthcon.Set("WVP", boost::any(transformlist[i].VP));
+		lineardepthcon.Set("WVP", boost::any(transformlist[i].Proj * transformlist[i].View));
 		lineardepthcon.Set("plane", boost::any(transformlist[i].plane));
 		directionalstate[i].HotSet(oldglstate);
 		directionalfbo[i].BindDepth();
@@ -404,7 +404,7 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 
 	for (unsigned int i = 0; i != scount; i++)
 	{
-		lineardepthcon.Set("WVP", boost::any(transformlist[i + dcount].VP));
+		lineardepthcon.Set("WVP", boost::any(transformlist[i + dcount].Proj * transformlist[i + dcount].View));
 		lineardepthcon.Set("plane", boost::any(transformlist[i + dcount].plane));
 		spotstate[i].HotSet(oldglstate);
 		spotfbo[i].BindDepth();
@@ -418,7 +418,7 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 		for (unsigned int subface = 0; subface != 6; subface++)
 		{
 			unsigned int i = point * 6 + subface;
-			omnidirectionalcon.Set("WVP", boost::any(pointvplist[i].VP));
+			omnidirectionalcon.Set("WVP", boost::any(pointvplist[i].Proj * pointvplist[i].View));
 			omnidirectionalcon.Set("plane", boost::any(pointvplist[i].plane));
 			omnidirectionalcon.Set("center", boost::any(pointposlist[point]));
 			pointstate[point].HotSet(oldglstate);
@@ -439,7 +439,7 @@ void ShadowStage::PrepareFbo(unsigned int dmax, unsigned int oldpmax, unsigned i
 	}
 	for (unsigned int i = directionalfbo.size(); i < dmax; i++)
 	{
-		directionalfbo.push_back(Fbo{ { basedresolution, basedresolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_LINEAR },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+		directionalfbo.push_back(Fbo{ { basedresolution, basedresolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
 		GLState dstate;
 		dstate.w = dstate.h = basedresolution;
 		directionalstate.push_back(dstate);
@@ -453,7 +453,7 @@ void ShadowStage::PrepareFbo(unsigned int dmax, unsigned int oldpmax, unsigned i
 		for (unsigned int i = 0; i != pmax; i++)
 		{
 			unsigned int resolution = resolist[i];
-			Fbo fbo = Fbo{ { resolution, resolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_LINEAR },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } }, GL_TEXTURE_CUBE_MAP };
+			Fbo fbo = Fbo{ { resolution, resolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } }, GL_TEXTURE_CUBE_MAP };
 			pointfbo.push_back(fbo.GetCubeMapSubFbo());
 			pointfbo[pointfbo.size() - 1].push_back(std::move(fbo));
 			GLState pstate;
@@ -470,7 +470,7 @@ void ShadowStage::PrepareFbo(unsigned int dmax, unsigned int oldpmax, unsigned i
 		for (unsigned int i = 0; i != smax; i++)
 		{
 			unsigned int resolution = resolist[i];
-			spotfbo.push_back(Fbo{ { resolution, resolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_LINEAR },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
+			spotfbo.push_back(Fbo{ { resolution, resolution },{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0) } } });
 			GLState sstate;
 			sstate.w = sstate.h = resolution;
 			spotstate.push_back(sstate);
@@ -538,6 +538,7 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 	transformlist.resize(0u);
 	pointvplist.resize(0u);
 	pointposlist.resize(0u);
+	unsigned int dcount = 0, pcount = 0, scount = 0;
 	for (auto & l : framedata.dlist)
 	{
 		if (l.hasshadow)
@@ -548,9 +549,12 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 			{
 				up = glm::vec3(1.0, 0.0, 0.0);
 			}
-			glm::mat4 VP = glm::ortho(maxdrange, maxdrange, maxdrange, maxdrange, 0.0f, maxdrange * 2) * glm::lookAt(anchorpoint, anchorpoint + l.direction, up);
-			transformlist.push_back(LightTransform{VP, vec2(0.0f, 2 * maxdrange)});
+			glm::mat4 View = glm::lookAt(anchorpoint, anchorpoint + l.direction, up);
+			glm::mat4 Proj = glm::ortho(maxdrange, maxdrange, maxdrange, maxdrange, 0.0f, maxdrange * 2);
+			float texelworldsize = 2 * maxdrange / glm::max(directionalstate[dcount].w, directionalstate[dcount].h);
+			transformlist.push_back(LightTransform{View, Proj, vec2(0.0f, 2 * maxdrange), texelworldsize});
 			l.hasshadow = transformlist.size();
+			dcount++;
 		}
 	}
 	for (auto & l : framedata.slist)
@@ -563,9 +567,12 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 				up = glm::vec3(1.0, 0.0, 0.0);
 			}
 			float range = glm::clamp(l.GetRange(0.01), 0.2f, maxsrange);
-			glm::mat4 VP = glm::perspective(glm::degrees(glm::acos(l.zerodot)), 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + l.direction, up);
-			transformlist.push_back(LightTransform{ VP, vec2(0.1f, range) });
+			glm::mat4 View = glm::lookAt(l.position, l.position + l.direction, up);
+			glm::mat4 Proj = glm::perspective(glm::degrees(glm::acos(l.zerodot)), 1.0f, 0.1f, range);
+			float texelworldsize = 2 * glm::tan(glm::acos(l.zerodot)) * 0.1f / glm::max(spotstate[scount].w, spotstate[scount].h);
+			transformlist.push_back(LightTransform{ View, Proj, vec2(0.1f, range), texelworldsize});
 			l.hasshadow = transformlist.size();
+			scount++;
 		}
 	}
 	for (auto & l : framedata.plist)
@@ -573,8 +580,11 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 		if (l.hasshadow)
 		{
 			float range = glm::clamp(l.GetRange(0.01), 0.2f, maxprange);
+			glm::mat4 View = glm::translate(glm::mat4(1.0f), -l.position);
+			glm::mat4 Proj = glm::perspective(90.0f, 1.0f, 0.1f, range);
+			float texelworldsize = 2 * 0.1f / glm::max(pointstate[pcount].w, pointstate[pcount].h);
+			transformlist.push_back(LightTransform{ View, Proj, glm::vec2(0.1f, range), texelworldsize });
 			pointposlist.push_back(l.position);
-			transformlist.push_back(LightTransform{ mat4(1.0), glm::vec2(0.1f, range) });
 			l.hasshadow = transformlist.size();
 			for (unsigned int i = 0; i != 6; i++)
 			{
@@ -594,8 +604,10 @@ void ShadowStage::CalculateVP(PerFrameData & framedata, glm::vec3 eye)
 					vec3{ 0.0, -1.0, 0.0 },
 					vec3{ 0.0, -1.0, 0.0 }
 				};
-				glm::mat4 VP = glm::perspective(90.0f, 1.0f, 0.1f, range) * glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
-				pointvplist.push_back(LightTransform{ VP, glm::vec2(0.1f, range) });
+				glm::mat4 Proj = glm::perspective(90.0f, 1.0f, 0.1f, range);
+				glm::mat4 View = glm::lookAt(l.position, l.position + facedir[i], faceupvec[i]);
+				pointvplist.push_back(LightTransform{ View, Proj, glm::vec2(0.1f, range), texelworldsize });
+				pcount++;
 			}
 		}
 	}

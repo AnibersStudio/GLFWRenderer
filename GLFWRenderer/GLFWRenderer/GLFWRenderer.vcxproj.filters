@@ -60,9 +60,6 @@
     <ClCompile Include="RenderFbo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="RenderStage.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="DynamicMeshManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -85,6 +82,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Vertex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcess.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,9 +137,6 @@
     <ClInclude Include="RenderFbo.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RenderStage.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MeshManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -177,6 +174,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ShaderMaterial.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

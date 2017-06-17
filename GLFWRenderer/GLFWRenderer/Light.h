@@ -72,9 +72,12 @@ struct SpotLight
 
 struct LightTransform
 {
-	//Only directional/spot light need this. Point light will be set to glm::mat4(1.0)
-	glm::mat4 VP = glm::mat4(1.0f);
+	//Only directional/spot light need this. Point light will be set to translate(position)
+	glm::mat4 View = glm::mat4(1.0f);
+	//Only directional/spot light need this. Point light will be set to perspective(90)
+	glm::mat4 Proj = glm::mat4(1.0f);
 	// .x near plane .y far plane
 	glm::vec2 plane = glm::vec2(0.1f, 64.0f);
-	float not_used[2]{};
+	float texelworldsize;
+	float not_used[1]{};
 };

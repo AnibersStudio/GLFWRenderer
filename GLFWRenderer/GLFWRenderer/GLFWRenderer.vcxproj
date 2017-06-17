@@ -176,11 +176,11 @@
     <ClCompile Include="GLState.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="LightProxyMesh.cpp" />
     <ClCompile Include="RenderController.cpp" />
     <ClCompile Include="RenderFbo.cpp" />
-    <ClCompile Include="RenderStage.cpp" />
     <ClCompile Include="RenderStageImp.cpp" />
     <ClCompile Include="RenderVao.cpp" />
     <ClCompile Include="ShaderController.cpp" />
@@ -207,10 +207,10 @@
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="PerFrameData.h" />
     <ClInclude Include="LightProxyMesh.h" />
+    <ClInclude Include="PostProcess.h" />
     <ClInclude Include="RenderContext.h" />
     <ClInclude Include="RenderController.h" />
     <ClInclude Include="RenderFbo.h" />
-    <ClInclude Include="RenderStage.h" />
     <ClInclude Include="RenderStageImp.h" />
     <ClInclude Include="RenderVao.h" />
     <ClInclude Include="ShaderController.h" />

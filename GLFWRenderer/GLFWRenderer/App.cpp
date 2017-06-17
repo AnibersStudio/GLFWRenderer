@@ -11,13 +11,14 @@ App::App()
 	glm::mat4 bigone = scale(mat4(1.0), vec3(20.0, 1.0, 20.0));
 	bigone = translate(glm::mat4(1.0), glm::vec3(0.0, -3.5, 0.0)) * bigone;
 
-	meshmanager.Add("Sand", bigone);// Seems to have an error when shadow is on. Nothing to do with blur.
+	meshmanager.Add("Sand", bigone);
+	meshmanager.Add("Sand", glm::mat4(1.0f));
 	// Delete/Transform/Clean not tested.
 
 	SpotLight spot2{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(-4.0f, 8.0f, 0.0f), 0.4f, vec3(0.7f, -1.0f, 0.0f), 0.6f };
-	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(4.0f, 8.0f, 0.0f), 0.4f, vec3(-0.707f, -0.707f, 0.0f), 0.6f };
-	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true, {2.0f, 0.4f, 0.0f}, vec3(3.0f, 3.0f, 3.0f) };
-	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 2.0f, 1.0f, 1.0f, 0, true,{ 2.0f, 0.4f, 0.0f }, vec3(-3.0f, 3.0f, 3.0f) };
+	SpotLight spot{ glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 1.0f, 1.0f, 0, true,{ 4.0f, 0.4f, 0.0f }, vec3(4.0f, 3.0f, 0.0f), 0.4f, vec3(-0.707f, -0.707f, 0.0f), 0.6f };
+	PointLight point{ glm::vec3(1.0f, 1.0f, 1.0f), 5.0f, 1.0f, 1.0f, 0, true, {2.0f, 0.4f, 0.0f}, vec3(3.0f, 3.0f, 3.0f) };
+	PointLight point2{ glm::vec3(1.0f, 1.0f, 1.0f), 5.0f, 1.0f, 1.0f, 0, true,{ 2.0f, 0.4f, 0.0f }, vec3(-3.0f, 3.0f, 3.0f) };
 	stuba = lightmanager.Add(spot);
 	//lightmanager.Add(spot2);
 	//lightmanager.Add(point);
@@ -45,10 +46,10 @@ bool App::KeyCallback(GLFWwindow * winptr, int key, int scancode, int action, in
 			rendercontext.isdebug = !rendercontext.isdebug;
 			break;
 		case GLFW_KEY_V:
-			(* std::get<2>(stub)).position.y ++;
+			std::cout << ++(*std::get<2>(stub)).position.y;
 			break;
 		case GLFW_KEY_B:
-			(*std::get<2>(stub)).position.y--;
+			std::cout << --(*std::get<2>(stub)).position.y;
 			break;
 		default:
 			moment.keys[key] = true;
