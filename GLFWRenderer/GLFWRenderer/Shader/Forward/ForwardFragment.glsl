@@ -1,18 +1,17 @@
-#version 450
+#version 430 core
 #extension GL_ARB_bindless_texture : enable
-#define C_VALUE 300.0f
+#define C_VALUE 800.0f
 layout (location = 0) out vec4 Color;
 
 in vec3 fragpos;
 in vec2 texcoord;
 in vec3 fragnormal;
-in vec3 lightspace[20];
+in vec3 fragtangent;
+flat in uint fragmatindex;
 
 uniform uvec2 tilesize = uvec2(32u, 32u);
 uniform uvec2 tilecount;
-uniform uint lightspacecount;
 uniform uint dlcount;
-uniform sampler2D diffusetex;
 uniform vec3 eye;
 
 struct DirectionalLight
@@ -51,7 +50,6 @@ struct PointLight
 
 	Attenuation atten;
 	vec3 position;
-	float not_used[1];
 };
 
 struct SpotLight
@@ -86,6 +84,32 @@ struct LightTransform
 	float texelworldsize;
 };
 
+struct Material
+{
+	vec3 ambientcolor;
+	vec3 diffusecolor;
+	vec3 specularcolor;
+	vec3 emissivecolor;
+	float shininess;
+	float transparency;
+};
+
+struct ShaderTexture
+{
+	sampler2D handle;
+	uint is;
+};
+
+struct ShaderMaterial
+{
+	Material material;//5 vec3s	
+	ShaderTexture diffuse;
+	ShaderTexture specular;
+	ShaderTexture normal;
+	ShaderTexture emissive;
+	ShaderTexture trans;
+};
+
 layout (std140) uniform directionallightlist
 {
 	DirectionalLight dl[4];
@@ -103,7 +127,7 @@ layout (std430, binding = 1) buffer spotlightlist
 
 layout (std140) uniform lighttransformlist
 {
-	LightTransform lighttransform[36];
+	LightTransform lighttransform[84];
 };
 
 layout (std430, binding = 2) buffer pointlightindexlist
@@ -127,6 +151,11 @@ layout (std430, binding = 4) buffer lightlinkedlist
 	//.y means next node
 };
 
+layout (std430, binding = 5) buffer materiallist
+{
+	ShaderMaterial material[];
+};
+
 vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal);
 vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
 vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint tileindex);
@@ -136,6 +165,7 @@ float ShadowFactor(samplerCube ztex, vec3 frag, float depth);
 float Esm(float depth, float zintex);
 vec4 NormalOffsetLightSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize);
 vec3 NormalOffsetWorldSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 proj, float texelsize);
+vec3 NormalByTexture(vec3 linearnormal, vec3 fragtangent, vec3 texnormal);
 
 void main() 
 {
@@ -143,14 +173,48 @@ void main()
 	uvec2 tilecoord = uvec2(gl_FragCoord.xy) / tilesize;
 	uint tileindex = tilecoord.x * tilecount.y + tilecoord.y;
 	//Get material
-	vec3 diffuse = texture(diffusetex, texcoord).rgb;
+	ShaderMaterial fragmat = material[fragmatindex];
+	vec3 ambient = fragmat.material.ambientcolor;
+	vec3 diffuse = fragmat.material.diffusecolor;
+	vec3 specular = fragmat.material.specularcolor;
+	vec3 emissive = fragmat.material.emissivecolor;
+	float trans = fragmat.material.transparency;
+	float shininess = fragmat.material.shininess;
+	vec3 normal = fragnormal;
+	if (fragmat.trans.is > 0)
+	{
+		trans = texture(fragmat.trans.handle, texcoord).a;
+	}
+	if (trans < 0.00001)
+	{
+		discard;
+	}
+	if (fragmat.diffuse.is > 0)
+	{
+		diffuse = texture(fragmat.diffuse.handle, texcoord).rgb;
+	}
+	if (fragmat.specular.is > 0)
+	{
+		specular = texture(fragmat.specular.handle, texcoord).rgb;
+	}
+	if (fragmat.emissive.is > 0)
+	{
+		emissive = texture(fragmat.emissive.handle, texcoord).rgb;
+	}
+
+	if (fragmat.normal.is > 0)
+	{
+		normal = NormalByTexture(fragnormal, fragtangent, texture(fragmat.normal.handle, texcoord).xyz);
+	}
+	ambient *= diffuse;
+
 	//Calculate dl
 	vec3 color = vec3(0.0f);
-	color += LightByDL(diffuse, vec3(0.4f), 100.0f, fragnormal);
-	color += LightByPL(diffuse, vec3(0.4f), 100.0f, fragnormal, tileindex);
-	color += LightBySL(diffuse, vec3(0.4f), 100.0f, fragnormal, tileindex);
+	color += LightByDL(diffuse, specular, shininess, normal);
+	color += LightByPL(diffuse, specular, shininess, normal, tileindex);
+	color += LightBySL(diffuse, specular, shininess, normal, tileindex);
 
-	Color = vec4(color.xyz, 1.0f);
+	Color = vec4(color.xyz + ambient + emissive, trans);
 }
 
 vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal)
@@ -164,12 +228,13 @@ vec3 LightByDL(vec3 diffuse, vec3 specular, float shininess, vec3 normal)
 		if (thislight.transformID > 0)
 		{
 			vec2 plane = lighttransform[thislight.transformID - 1].plane;
-			vec3 lightspacepos = lightspace[thislight.transformID - 1];
-			lightspacepos.xy /= lightspacepos.z;
+			vec4 lightspacepos = NormalOffsetLightSpace(normal, fragpos, lighttransform[thislight.transformID - 1].View, lighttransform[thislight.transformID - 1].Proj, lighttransform[thislight.transformID - 1].texelworldsize);
+			lightspacepos.xy = (lightspacepos.xy / lightspacepos.w * 0.5f + 0.5f);
+			lightspacepos.z = lightspacepos.w;
 			lightspacepos.z = (lightspacepos.z - plane.x) / (plane.y - plane.x);
-			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos);
+			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos.xyz);
 		}
-		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, -thislight.direction, normalize(eye - fragpos)) * thislight.intensity;
+		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.color * thislight.diffuse, specular * thislight.color * thislight.specular, shininess, normal, thislight.color, -thislight.direction, normalize(eye - fragpos)) * thislight.intensity;
 	}
 	return color;
 }
@@ -197,7 +262,7 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 				vec3 offsetfragpos = NormalOffsetWorldSpace(normal, fragpos, view, proj, texelworldsize); 
 				shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(offsetfragpos - thislight.position), (length(offsetfragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
 			}
-			color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
+			color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.color * thislight.diffuse, specular * thislight.color * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 			i = lightlinked[i].y;
 		}
 		PointLight thislight = pl[lightlinked[endindex].x];
@@ -214,7 +279,7 @@ vec3 LightByPL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			vec3 offsetfragpos = NormalOffsetWorldSpace(normal, fragpos, view, proj, texelworldsize); 
 			shadowfactor = ShadowFactor(thislight.shadowsampler, normalize(offsetfragpos - thislight.position), (length(offsetfragpos - thislight.position) -  plane.x) / (plane.y - plane.x));
 		}
-		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
+		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.color * thislight.diffuse, specular * thislight.color * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay;
 	}
 	return color;
 }
@@ -236,12 +301,13 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 			if (thislight.transformID > 0)
 			{
 				vec2 plane = lighttransform[thislight.transformID - 1].plane;
-				vec3 lightspacepos = lightspace[thislight.transformID - 1];
-				lightspacepos.xy /= lightspacepos.z;
+				vec4 lightspacepos = NormalOffsetLightSpace(normal, fragpos, lighttransform[thislight.transformID - 1].View, lighttransform[thislight.transformID - 1].Proj, lighttransform[thislight.transformID - 1].texelworldsize);
+				lightspacepos.xy = (lightspacepos.xy / lightspacepos.w * 0.5f + 0.5f);
+				lightspacepos.z = lightspacepos.w;
 				lightspacepos.z = (lightspacepos.z - plane.x) / (plane.y - plane.x);
-				shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos);
+				shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos.xyz);
 			}
-			color +=  shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
+			color +=  shadowfactor * BlinnPhongFresnel(diffuse * thislight.color * thislight.diffuse, specular * thislight.color * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 			i = lightlinked[i].y;
 		}
 		SpotLight thislight = sl[lightlinked[endindex].x];
@@ -252,13 +318,13 @@ vec3 LightBySL(vec3 diffuse, vec3 specular, float shininess, vec3 normal, uint t
 		if (thislight.transformID > 0)
 		{
 			vec2 plane = lighttransform[thislight.transformID - 1].plane;
-			vec3 lightspacepos = lightspace[thislight.transformID - 1];
-			lightspacepos.xy /= lightspacepos.z;
+			vec4 lightspacepos = NormalOffsetLightSpace(normal, fragpos, lighttransform[thislight.transformID - 1].View, lighttransform[thislight.transformID - 1].Proj, lighttransform[thislight.transformID - 1].texelworldsize);
+			lightspacepos.xy = (lightspacepos.xy / lightspacepos.w * 0.5f + 0.5f);
+			lightspacepos.z = lightspacepos.w;
 			lightspacepos.z = (lightspacepos.z - plane.x) / (plane.y - plane.x);
-			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos);
+			shadowfactor = ShadowFactor(thislight.shadowsampler, lightspacepos.xyz);
 		}
-		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.diffuse, specular * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
-		color = vec3(shadowfactor);
+		color += shadowfactor * BlinnPhongFresnel(diffuse * thislight.color * thislight.diffuse, specular * thislight.color * thislight.specular, shininess, normal, thislight.color, normalize(thislight.position - fragpos), normalize(eye - fragpos)) * thislight.intensity / distdecay * angledecay;
 	}
 	return color;
 }
@@ -291,7 +357,6 @@ float ShadowFactor(samplerCube ztex, vec3 frag, float depth)
 
 float Esm(float depth, float zintex)
 {
-	return zintex * 10.0;
 	return clamp(exp(C_VALUE * (zintex - depth)), 0.0f, 1.0f);
 }
 
@@ -336,4 +401,15 @@ vec3 NormalOffsetWorldSpace(vec3 worldnormal, vec3 worldpos, mat4 view, mat4 pro
 	float normaloffsetscale = clamp(1 - coslightangle, 0.0f, 1.0f);
 	vec3 shadowoffset = normaloffsetscale * worldnormal;
 	return worldpos + shadowoffset;
+}
+
+vec3 NormalByTexture(vec3 linearnormal, vec3 fragtangent, vec3 texnormal)
+{
+	linearnormal = normalize(linearnormal);
+	fragtangent = normalize(fragtangent);
+	fragtangent = normalize(fragtangent - dot(fragtangent, linearnormal) * linearnormal);
+	vec3 fragbitangent = cross(linearnormal, fragtangent);
+	mat3 TBN = mat3(fragtangent, fragbitangent, linearnormal);
+	texnormal = normalize(texnormal * 2.0f - 1.0f);
+	return normalize(TBN * texnormal);
 }

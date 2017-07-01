@@ -14,8 +14,7 @@ struct RenderContext
 	float ViewDistance = 192;
 	/// <summary> The Horizonal field of view value in degrees </summary>
 	float FieldOfView = 60;
-	/// <summary> The value of monitor gamma </summary>
-	float gamma = 2.2;
+
 
 	/// <summary> How many point light can have shadow </summary>
 	unsigned int ShadowPoint = 4;
@@ -25,13 +24,21 @@ struct RenderContext
 	/// <summary> Is anisotropic filter on or not </summary>
 	bool anisotropic = false;
 	/// <summary> Adapt the illumination dynamiclly or not. Fair cost </summary>
-	bool EyeAdapt = true;
-	/// <summary> Let the light source bloom or not. Costly </summary>
+	bool EyeAdapt = false;
+	/// <summary> Adapt the illumination by this rate. 0.0 means always the newest, infinity means history ratio </summary>
+	float EyeAdaptFreshRate = 16;
+	/// <summary> Let the light source bloom or not. Fair cost </summary>
 	bool isBloom = false;
+	/// <summary> The strength of bloom effect </summary>
+	float BloomRatio = 0.8;
+	/// <summary> Apply bloom effect for pixel brighter than this </summary>
+	float BloomThreshold = 0.8;
 	/// <summary> Apply tone mapping or not </summary>
-	bool ToneMapping = true;
+	bool ToneMapping = false;
 	/// <summary> Apply Global Illumination. Costly </summary>
 	bool isGI = true;
+	/// <summary> The value of monitor gamma </summary>
+	float gamma = 2.2;
 
 	bool isdebug = false;
 };

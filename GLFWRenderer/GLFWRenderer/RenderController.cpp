@@ -4,12 +4,17 @@
 #include "TextureLoader.h"
 #include <iostream>
 #include <iomanip>
-RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h), depthstage(PreDepthStage{w, h}), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h })
+RenderController::RenderController(MeshManager & mm, LightManager & lm, unsigned int w, unsigned int h) : meshmanager(mm), lightmanager(lm), width(w), height(h),
+depthstage(PreDepthStage{ w, h }), forwardstage(ForwardStage{ w, h }), lightcullingstage(LightCullingStage{ w, h }),
+bloomer(Bloomer(w, h)), eyeadapter(EyeAdapter(w, h)), tonemapper(ToneMapper(w, h))
 {
 	depthstage.Init();
 	lightcullingstage.Init();
 	shadowstage.Init();
 	forwardstage.Init(lightcullingstage.GetTileCount());
+	bloomer.Init(forwardstage.GetFbo());
+	eyeadapter.Init(forwardstage.GetFbo());
+	tonemapper.Init(forwardstage.GetFbo(), bloomer.Result(), eyeadapter.Result());
 }
 
 void RenderController::Draw(RenderContext context)
@@ -33,14 +38,18 @@ void RenderController::Draw(RenderContext context)
 	depthstage.Prepare(WVP);
 	lightcullingstage.Prepare(WVP, framedata);
 	shadowstage.Prepare(context.ShadowPoint, context.ShadowSpot, framedata, context.eye);
-	forwardstage.Prepare(framedata, WVP, shadowstage.GetLightTransformList(), shadowstage.GetShadowCount(), context.eye);
+	forwardstage.Prepare(framedata, WVP, shadowstage.GetLightTransformList(), context.eye);
+	bloomer.Prepare();
+	eyeadapter.Prepare();
+	tonemapper.Prepare(context.ToneMapping, context.isBloom, context.EyeAdapt, context.BloomRatio, context.BloomThreshold, context.EyeAdaptFreshRate, context.gamma);
 
 	depthstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount);
 	lightcullingstage.Draw(glstate, forwardstage.GetVao(), forwardstage.GetFbo(), OpaceVerticesCount, TransVerticesCount);
 	shadowstage.Draw(glstate, forwardstage.GetVao(), OpaceVerticesCount);
-	forwardstage.Draw(glstate, OpaceVerticesCount + TransVerticesCount, lightcullingstage.GetLightIndexAndLinked());
-
-	ProxyPyramid proxy;
+	forwardstage.Draw(glstate, lightcullingstage.GetLightIndexAndLinked());
+	bloomer.Draw(glstate);
+	eyeadapter.Draw(glstate);
+	tonemapper.Draw(glstate);
 
 	static DebugOutput screendrawer{width, height};
 
@@ -51,8 +60,9 @@ void RenderController::Draw(RenderContext context)
 		//screendrawer.Draw(lightcullingstage.GetTileCount(), std::get<0>(lightcullingstage.GetLightIndexAndLinked()), glstate);
 		//screendrawer.Draw(shadowstage.spotfbo[0].GetDepthID(), glstate);
 	}
-	//screendrawer.Draw(forwardstage.GetFbo().GetDepthID());
-	//screendrawer.Draw(shadowstage.spotfbo[0].GetDepthID(), glstate);
+	//screendrawer.Draw(forwardstage.GetFbo().GetColorID()[0], glstate);
+	//screendrawer.Draw(bloomer.result.GetColorID()[0], glstate);
+	//screendrawer.Draw(eyeadapter.middlelist[10].GetColorID()[0], glstate);
 
 	oldcontext = context;
 }

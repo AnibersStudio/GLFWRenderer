@@ -416,7 +416,7 @@ std::vector<DynamicMeshLoader::MeshPart> DynamicMeshLoader::ApplyMaterialToMesh(
 		for (auto vert : it->second)
 		{
 			vert.Transform(transform);
-			vertexlist.push_back(MaterialedVertex{ vert, index + 1 });
+			vertexlist.push_back(MaterialedVertex{ vert, index});
 		}
 		res.push_back(MeshPart(std::move(vertexlist), pos, trans));
 	}

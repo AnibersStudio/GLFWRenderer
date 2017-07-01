@@ -8,6 +8,7 @@
 #include "RenderContext.h"
 #include "RenderStageImp.h"
 #include "PerFrameData.h"
+#include "PostProcess.h"
 
 class RenderController
 {
@@ -28,6 +29,10 @@ private:
 	ForwardStage forwardstage;
 	LightCullingStage lightcullingstage;
 	ShadowStage shadowstage;
+
+	Bloomer bloomer;
+	EyeAdapter eyeadapter;
+	ToneMapper tonemapper;
 
 	GLState glstate;
 };

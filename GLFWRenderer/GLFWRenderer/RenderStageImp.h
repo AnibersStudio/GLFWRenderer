@@ -40,14 +40,22 @@ private:
 	ShaderController depthcontroller;
 };
 
+struct IndirectDraw
+{
+	GLuint count;
+	GLuint instancecount;
+	GLuint first;
+	GLuint baseInstance;
+};
+
 class ForwardStage
 {
 public:
 	ForwardStage(unsigned int w, unsigned int h);
 
 	void Init(glm::uvec2 tilecount);
-	void Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount, vec3 eye);
-	void Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked);
+	void Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, vec3 eye);
+	void Draw(GLState & oldglstate, std::tuple<GLuint, GLuint, GLuint> lightlinked);
 
 	Vao & GetVao() { return vao; }
 	Fbo & GetFbo() { return fbo; }
@@ -55,13 +63,17 @@ private:
 	Vao vao;
 	Fbo fbo;
 	PerFrameData * data;
+	std::vector<IndirectDraw> cmdlist;
 	ShaderController forwardcon;
-	GLState glstate;
+	GLState opaquestate;
+	GLState fullstate;
+	GLState transstate;
 
 	GLuint lighttransformlistbuffer;
 	GLuint directionallightbuffer;
 	GLuint pointlightbuffer;
 	GLuint spotlightbuffer;
+	GLuint materialbuffer;
 };
 
 class LightCullingStage
@@ -112,7 +124,6 @@ class ShadowStage
 {
 public:
 	ShadowStage();
-
 	void Init();
 	void Prepare(unsigned int pointshadow, unsigned int spotshadow, PerFrameData & framedata, glm::vec3 eye);
 	void Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertcount);
@@ -158,4 +169,16 @@ private:
 	const unsigned int basesresolution = 1024u;
 	const float highresolutionratio = 0.25;
 	const unsigned int lowresolutiondivisor = 4u;
+};
+
+class GIer
+{
+public:
+	GIer();
+	void Init();
+	void Prepare();
+	void Draw(GLState olgglstate);
+
+private:
+
 };

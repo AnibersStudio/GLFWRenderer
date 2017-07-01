@@ -249,5 +249,35 @@
     <None Include="Shader\Shadow\ShadowOmnidirectionalVertex.glsl">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\GI\VoxelInitializeCompute.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\GI\VoxelizationFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\GI\VoxelizationGeometry.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\GI\VoxelizationVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\ExposureDownscaleFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\ExposureDownscaleVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\GussianBlurFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\GussianBlurVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\ToneMappingFragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\PostProcess\ToneMappingVertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -36,6 +36,7 @@ public:
 	size_t GetSize() const { return buffersize; }
 private:
 	size_t GetSizeofType(GLenum type);
+	bool IsFloat(GLenum type);
 	GLuint vao;
 	GLuint vbo;
 	GLuint instancevbo;

@@ -1,0 +1,5 @@
+.Full dynamic scene and light.
+.Tile based forward rendering based on rasterized light culling.
+.Exponential shadow map
+.Diffuse/Specular/Normal/Emissive/Trans texture.
+.

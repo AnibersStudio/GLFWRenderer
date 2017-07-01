@@ -235,6 +235,10 @@
     <None Include="Shader\Depth\NativeDepthVertex.glsl" />
     <None Include="Shader\Forward\ForwardFragment.glsl" />
     <None Include="Shader\Forward\ForwardVertex.glsl" />
+    <None Include="Shader\GI\VoxelInitializeCompute.glsl" />
+    <None Include="Shader\GI\VoxelizationFragment.glsl" />
+    <None Include="Shader\GI\VoxelizationGeometry.glsl" />
+    <None Include="Shader\GI\VoxelizationVertex.glsl" />
     <None Include="Shader\LightCulling\DepthAtomicFragment.glsl" />
     <None Include="Shader\LightCulling\DepthAtomicVertex.glsl" />
     <None Include="Shader\LightCulling\DepthDownscaleCompute.glsl" />
@@ -242,6 +246,12 @@
     <None Include="Shader\LightCulling\ProxyFragment.glsl" />
     <None Include="Shader\LightCulling\ProxyVertex.glsl" />
     <None Include="Shader\LightCulling\SSBOInitializeCompute.glsl" />
+    <None Include="Shader\PostProcess\ExposureDownscaleFragment.glsl" />
+    <None Include="Shader\PostProcess\ExposureDownscaleVertex.glsl" />
+    <None Include="Shader\PostProcess\GussianBlurFragment.glsl" />
+    <None Include="Shader\PostProcess\GussianBlurVertex.glsl" />
+    <None Include="Shader\PostProcess\ToneMappingFragment.glsl" />
+    <None Include="Shader\PostProcess\ToneMappingVertex.glsl" />
     <None Include="Shader\Shadow\ShadowOmnidirectionalFragment.glsl" />
     <None Include="Shader\Shadow\ShadowOmnidirectionalVertex.glsl" />
     <None Include="Shader\Shadow\ShadowLinearFragment.glsl" />

@@ -5,16 +5,16 @@
 struct ShaderTexture
 {
 	GLuint64 handle = 0xFFFFFFFFFFFFFFFF;
-	GLboolean is = false;
+	GLuint is = false;
+	float not_used[1];
 };
 
 struct ShaderMaterial
 {
-	Material material;//5 vec3s	
+	Material material;
 	ShaderTexture diffuse;
 	ShaderTexture specular;
 	ShaderTexture normal;
 	ShaderTexture emissive;
 	ShaderTexture trans;
-	float not_used[2];
 };

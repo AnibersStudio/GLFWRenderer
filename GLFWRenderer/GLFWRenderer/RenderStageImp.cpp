@@ -1,9 +1,10 @@
 #include "RenderStageImp.h"
 #include "BufferObjectSubmiter.h"
+
 DebugOutput::DebugOutput(unsigned int w, unsigned int h)
 	: quadvao(Vao({ { 2, GL_FLOAT } }, GL_STATIC_DRAW)),
 	forwardvao(Vao{ {3, GL_FLOAT},{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true },{ 4, GL_FLOAT, true } }),
-	quaddisplaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D },{ "winSize",GL_UNSIGNED_INT_VEC2 } })),
+	quaddisplaycon(ShaderController({ { "Shader/Debug/QuadDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/QuadDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "display", GL_TEXTURE_2D }})),
 	forwarddisplaycon(ShaderController({ { "Shader/Debug/ForwardDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/ForwardDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "WVP", GL_FLOAT_MAT4 } })),
 	tiledisplaycon(ShaderController({ { "Shader/Debug/TileDisplayVertex.glsl", GL_VERTEX_SHADER },{ "Shader/Debug/TileDisplayFragment.glsl", GL_FRAGMENT_SHADER } }, { { "tilecount", GL_UNSIGNED_INT_VEC2 }, {"lightindexlist", GL_SHADER_STORAGE_BUFFER, 0} })),
 	width(w), height(h)
@@ -18,7 +19,6 @@ void DebugOutput::Draw(GLuint display, GLState& oldglstate)
 	glstate.HotSet(oldglstate);
 	quaddisplaycon.Clear();
 	quaddisplaycon.Set("display", boost::any(display));
-	quaddisplaycon.Set("winSize", boost::any(glm::uvec2(width, height)));
 	quaddisplaycon.Draw();
 
 	quadvao.Bind();
@@ -115,18 +115,23 @@ void PreDepthStage::Draw(GLState & oldglstate, Vao & vao, Fbo & fbo, unsigned in
 	glDrawArrays(GL_TRIANGLES, 0, vertcount);
 }
 
-
 ForwardStage::ForwardStage(unsigned int w, unsigned int h) : vao(Vao{ {3, GL_FLOAT}, {2, GL_FLOAT}, {3, GL_FLOAT}, {3, GL_FLOAT}, {1, GL_UNSIGNED_INT} }),
-fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) } } }),
-forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"diffusetex", GL_UNSIGNED_INT64_ARB}, {"WVP", GL_FLOAT_MAT4}, {"lightspacecount", GL_UNSIGNED_INT}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"eye", GL_FLOAT_VEC3},
+fbo(Fbo{ {w, h}, { { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT, {{GL_TEXTURE_MIN_FILTER, GL_NEAREST}, {GL_TEXTURE_MAG_FILTER, GL_NEAREST}, {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER}, {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER}}, glm::vec4(1.0, 1.0, 1.0, 1.0) }, {GL_COLOR_ATTACHMENT0_EXT, GL_RGBA, GL_RGBA16F, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE }} } } }),
+forwardcon{ {{"Shader/Forward/ForwardVertex.glsl", GL_VERTEX_SHADER}, {"Shader/Forward/ForwardFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"tilecount", GL_UNSIGNED_INT_VEC2}, {"eye", GL_FLOAT_VEC3},
           {"dlcount", GL_UNSIGNED_INT}, {"directionallightlist", GL_UNIFORM_BUFFER, 0}, {"pointlightlist", GL_SHADER_STORAGE_BUFFER, 0}, {"spotlightlist", GL_SHADER_STORAGE_BUFFER, 1},
-		  {"lighttransformlist", GL_UNIFORM_BUFFER, 1}, {"pointlightindexlist", GL_SHADER_STORAGE_BUFFER, 2}, {"spotlightindexlist", GL_SHADER_STORAGE_BUFFER, 3}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 4}} }
+		  {"lighttransformlist", GL_UNIFORM_BUFFER, 1}, {"pointlightindexlist", GL_SHADER_STORAGE_BUFFER, 2}, {"spotlightindexlist", GL_SHADER_STORAGE_BUFFER, 3}, {"lightlinkedlist", GL_SHADER_STORAGE_BUFFER, 4},{ "materiallist", GL_SHADER_STORAGE_BUFFER, 5 } } }
 {
-	glstate.w = w, glstate.h = h;
-	lighttransformlistbuffer = BufferObjectSubmiter::GetInstance().Generate((4 + 16 + 16) * sizeof(LightTransform));
+	opaquestate.w = w, opaquestate.h = h;
+	opaquestate.depthfunc = GL_LEQUAL;
+	fullstate.w = w, fullstate.h = h;
+	fullstate.depthfunc = GL_LEQUAL, fullstate.facetest = false;
+	transstate.w = w, transstate.h = h;
+	transstate.blend = true, transstate.depthmask = GL_FALSE, transstate.facetest = false;
+	lighttransformlistbuffer = BufferObjectSubmiter::GetInstance().Generate((4 + 32 + 48) * sizeof(LightTransform));
 	directionallightbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(DirectionalLight) * 4);
-	pointlightbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(PointLight) * 16);
-	spotlightbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(SpotLight) * 16);
+	pointlightbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(PointLight) * 32);
+	spotlightbuffer = BufferObjectSubmiter::GetInstance().Generate(sizeof(SpotLight) * 48);
+	materialbuffer = BufferObjectSubmiter::GetInstance().Generate();
 }
 
 void ForwardStage::Init(glm::uvec2 tilecount)
@@ -134,11 +139,9 @@ void ForwardStage::Init(glm::uvec2 tilecount)
 	forwardcon.Set("tilecount", boost::any(tilecount));
 }
 
-void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, std::tuple<unsigned int, unsigned int, unsigned int> shadowcount, vec3 eye)
+void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<LightTransform> & lighttransformlist, vec3 eye)
 {
 	data = &framedata;
-	unsigned int dshadowcount = std::get<0>(shadowcount);
-	unsigned int sshadowcount = std::get<2>(shadowcount);
 
 	auto& matlist = *data->MaterialList;
 	auto& opaquelist = *data->Opaquelist;
@@ -156,18 +159,21 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<
 	}
 	if (fulltranslist.size())
 	{
-		vao.SetSubData(&opaquelist[0], vertexoffset * sizeof(MaterialedVertex), fulltranslist.size() * sizeof(MaterialedVertex));
+		vao.SetSubData(&fulltranslist[0], vertexoffset * sizeof(MaterialedVertex), fulltranslist.size() * sizeof(MaterialedVertex));
 		vertexoffset += fulltranslist.size();
 	}
 	if (translist.size())
 	{
-		vao.SetSubData(&opaquelist[0], vertexoffset * sizeof(MaterialedVertex), opaquelist.size() * sizeof(MaterialedVertex));
+		vao.SetSubData(&translist[0], vertexoffset * sizeof(MaterialedVertex), translist.size() * sizeof(MaterialedVertex));
 		vertexoffset += translist.size();
+	}
+	if (matlist.size())
+	{
+		BufferObjectSubmiter::GetInstance().SetData(materialbuffer, &matlist[0].material.ambientcolor[0], matlist.size() * sizeof(ShaderMaterial));
 	}
 
 	forwardcon.Clear();
 	forwardcon.Set("WVP", boost::any(WVP));
-	forwardcon.Set("lightspacecount", boost::any(dshadowcount + sshadowcount));
 	forwardcon.Set("eye", boost::any(eye));
 	forwardcon.Set("dlcount", framedata.dlist.size());
 	if (lighttransformlist.size())
@@ -182,14 +188,23 @@ void ForwardStage::Prepare(PerFrameData & framedata, glm::mat4 WVP, std::vector<
 	if (framedata.slist.size())
 		BufferObjectSubmiter::GetInstance().SetData(spotlightbuffer, &framedata.slist[0], sizeof(SpotLight) * framedata.slist.size());
 
+	const std::vector<unsigned int> & transtasklist = *framedata.Transtasklist;
+	cmdlist.reserve(transtasklist.size());
+	cmdlist.resize(0);
+	IndirectDraw indraw;
+	indraw.baseInstance = 0;
+	indraw.instancecount = 1;
+	indraw.first = framedata.Opaquelist->size() + framedata.Fulltranslist->size();
+	for (auto c : transtasklist)
+	{
+		indraw.count = c;
+		cmdlist.push_back(indraw);
+		indraw.first += c;
+	}
 }
 
-void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount, std::tuple<GLuint, GLuint, GLuint> lightlinked)
+void ForwardStage::Draw(GLState & oldglstate, std::tuple<GLuint, GLuint, GLuint> lightlinked)
 {
-	glstate.HotSet(oldglstate);
-
-	auto diffuse = (*data->MaterialList)[1].diffuse.handle;
-	forwardcon.Set("diffusetex", boost::any(diffuse));
 	forwardcon.Set("lighttransformlist", lighttransformlistbuffer);
 	forwardcon.Set("pointlightindexlist", boost::any(std::get<0>(lightlinked)));
 	forwardcon.Set("spotlightindexlist", boost::any(std::get<1>(lightlinked)));
@@ -197,20 +212,38 @@ void ForwardStage::Draw(GLState & oldglstate, unsigned int vertcount, std::tuple
 	forwardcon.Set("directionallightlist", boost::any(directionallightbuffer));
 	forwardcon.Set("pointlightlist", boost::any(pointlightbuffer));
 	forwardcon.Set("spotlightlist", boost::any(spotlightbuffer));
+	forwardcon.Set("materiallist", boost::any(materialbuffer));
 	forwardcon.Draw();
 
 	vao.Bind();
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	fbo.Bind();
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertcount);
+	if (data->Opaquelist->size())
+	{
+		opaquestate.HotSet(oldglstate);
+		glDrawArrays(GL_TRIANGLES, 0, data->Opaquelist->size());
+	}
+	
+	if (data->Fulltranslist->size())
+	{
+		fullstate.HotSet(oldglstate);
+		glDrawArrays(GL_TRIANGLES, 0, data->Fulltranslist->size());
+
+	}
+
+	if (cmdlist.size())
+	{
+		transstate.HotSet(oldglstate);
+		glMultiDrawArraysIndirect(GL_TRIANGLES, &cmdlist[0], cmdlist.size(), sizeof(cmdlist));
+	}
 }
 
 LightCullingStage::LightCullingStage(unsigned int w, unsigned int h) : width(w), height(h),
 tilecount(static_cast<unsigned int>(glm::ceil(w / static_cast<float>(tilesize.x))), static_cast<unsigned int>(glm::ceil(h / static_cast<float>(tilesize.y)))),
 tiledismatchscale(glm::vec2(w, h) / glm::vec2(tilecount * tilesize)),
 depthinitializer{ { { "Shader/LightCulling/SSBOInitializeCompute.glsl", GL_COMPUTE_SHADER } },{ { "ssbo", GL_SHADER_STORAGE_BUFFER, 0 } } },
-depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUTE_SHADER }}, {{"resolution", GL_UNSIGNED_INT_VEC2}, {"depthsampler", GL_UNSIGNED_INT64_NV}, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
+depthdownscaler{ { { "Shader/LightCulling/DepthDownscaleCompute.glsl", GL_COMPUTE_SHADER }}, {{"resolution", GL_UNSIGNED_INT_VEC2}, {"depthsampler", GL_UNSIGNED_INT64_ARB}, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthatomicrenderer{ { {"Shader/LightCulling/DepthAtomicVertex.glsl", GL_VERTEX_SHADER}, {"Shader/LightCulling/DepthAtomicFragment.glsl", GL_FRAGMENT_SHADER}}, {{"WVP", GL_FLOAT_MAT4}, {"tilesize", GL_UNSIGNED_INT_VEC2},{ "tilecount", GL_UNSIGNED_INT_VEC2 }, {"depthrange", GL_SHADER_STORAGE_BUFFER, 0}} },
 depthrangevao{ { { 2, GL_FLOAT } }, GL_STATIC_DRAW },
 proxydepth{ Fbo{ {tilecount.x, tilecount.y},{ { GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT,{ { GL_TEXTURE_MIN_FILTER, GL_NEAREST },{ GL_TEXTURE_MAG_FILTER, GL_NEAREST },{ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER },{ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER } }, glm::vec4(1.0, 1.0, 1.0, 1.0) } } } },
@@ -375,8 +408,8 @@ void ShadowStage::Prepare(unsigned int pointshadow, unsigned int spotshadow, Per
 	unsigned int oldpmax = pmaxshadow;
 	unsigned int oldsmax = smaxshadow;
 	dmaxshadow = 4;
-	smaxshadow = glm::min(pointshadow, 16u);
-	pmaxshadow = glm::min(spotshadow, 16u);
+	smaxshadow = glm::min(pointshadow, 32u);
+	pmaxshadow = glm::min(spotshadow, 48u);
 	PrepareFbo(dmaxshadow, oldpmax, oldsmax, pmaxshadow, smaxshadow);
 	SetShadowedLight(framedata);
 	CalculateVP(framedata, eye);
@@ -427,8 +460,6 @@ void ShadowStage::Draw(GLState & oldglstate, Vao & vao, unsigned int opacevertsc
 			glDrawArrays(GL_TRIANGLES, 0, opacevertscount);
 		}
 	}
-	CheckGLError();
-	CheckGLError();
 }
 
 void ShadowStage::PrepareFbo(unsigned int dmax, unsigned int oldpmax, unsigned int oldsmax, unsigned int pmax, unsigned int smax)

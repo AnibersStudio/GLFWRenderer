@@ -1,6 +1,6 @@
 #include "RenderVao.h"
 #include <unordered_map>
-
+#include <set>
 Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 {
 	usagehint = UsageHint;
@@ -25,13 +25,27 @@ Vao::Vao(std::vector<VaoRecord> attriblist, GLenum UsageHint)
 	{
 		if (!attriblist[i].instanced)
 		{
-			glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, vertexstride);
+			if (IsFloat(attriblist[i].valuetype))
+			{
+				glVertexArrayVertexAttribOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizepervertex, vertexstride);
+			}
+			else
+			{
+				glVertexArrayVertexAttribIOffsetEXT(vao, vbo, i, attriblist[i].valuecount, attriblist[i].valuetype, sizepervertex, vertexstride);
+			}
 			glEnableVertexArrayAttribEXT(vao, i);
 			vertexstride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
 		}
 		else
 		{
-			glVertexArrayVertexAttribOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizeperinstance, instancestride);
+			if (IsFloat(attriblist[i].valuetype))
+			{
+				glVertexArrayVertexAttribOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, GL_FALSE, sizeperinstance, instancestride);
+			}
+			else
+			{
+				glVertexArrayVertexAttribIOffsetEXT(vao, instancevbo, i, attriblist[i].valuecount, attriblist[i].valuetype, sizeperinstance, instancestride);
+			}
 			glEnableVertexArrayAttribEXT(vao, i);
 			glVertexArrayVertexAttribDivisorEXT(vao, i, 1);
 			instancestride += GetSizeofType(attriblist[i].valuetype) * attriblist[i].valuecount;
@@ -99,4 +113,14 @@ size_t Vao::GetSizeofType(GLenum type)
 	}
 	auto size = (*it).second;
 	return size;
+}
+
+bool Vao::IsFloat(GLenum type)
+{
+	static std::set<GLenum> floatset{GL_FLOAT, GL_DOUBLE};
+	if (floatset.find(type) == floatset.end())
+	{
+		return false;
+	}
+	return true;
 }

@@ -41,8 +41,8 @@ Texture2D::Texture2D(std::string path, bool colortexture)
 
 	//internalformat[isSRGB][hasalpha]
 	GLenum internalformats[2][2] =
-	{ { GL_RGB, GL_RGBA },
-	{GL_SRGB, GL_SRGB_ALPHA} };
+	{ { GL_RGB8, GL_RGBA8 },
+	{GL_SRGB8, GL_SRGB8_ALPHA8} };
 	//imageformats[os:win-0 linux-1 other-2][hasalpha]
 	GLenum imageformats[3][2] =
 	{ {GL_BGR, GL_BGRA},

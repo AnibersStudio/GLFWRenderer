@@ -27,8 +27,8 @@ void main()
     {
         for(int i = 1; i != samplecount; ++i)
         {
-			result += texture(imagesampler,texcoord + vec2(offset.y * i, 0.0)).rgb * weight[i];
-            result += texture(imagesampler, texcoord - vec2(offset.y * i, 0.0)).rgb * weight[i];
+			result += texture(imagesampler,texcoord + vec2(0.0, offset.y * i)).rgb * weight[i];
+            result += texture(imagesampler, texcoord - vec2(0.0, offset.y * i)).rgb * weight[i];
         }
     }
     blurcolor = vec4(result, 1.0);

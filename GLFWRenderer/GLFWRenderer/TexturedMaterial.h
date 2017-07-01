@@ -8,12 +8,15 @@ struct Material
 	Material(const glm::vec3 & a, const glm::vec3 & d, const glm::vec3 & s, const glm::vec3 & e, GLfloat sh, GLfloat tr)
 		: ambientcolor(a), diffusecolor(d), specularcolor(s), emissivecolor(e), shininess(sh), transparency(tr) {}
 	glm::vec3 ambientcolor = glm::vec3(1.0f, 1.0f, 1.0f);
+	float not_used1[1];
 	glm::vec3 diffusecolor = glm::vec3(0.0f, 0.0f, 0.0f);
+	float not_used2[1];
 	glm::vec3 specularcolor = glm::vec3(0.0f, 0.0f, 0.0f);
+	float not_used3[1];
 	glm::vec3 emissivecolor = glm::vec3(0.0f, 0.0f, 0.0f);
 	GLfloat shininess = 1000.0f;
 	GLfloat transparency = 1.0f;
-	float not_used[1];
+	float not_used4[3];
 	bool operator==(const Material & rhs) const {
 		return ambientcolor == rhs.ambientcolor && diffusecolor == rhs.diffusecolor &&
 			specularcolor == rhs.specularcolor && emissivecolor == rhs.emissivecolor &&

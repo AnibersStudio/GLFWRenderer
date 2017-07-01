@@ -109,7 +109,7 @@ TexturedMaterial IndexedMesh::ProcessMaterial(const aiMaterial * material)
 	if (material->GetTextureCount(aiTextureType_SPECULAR))
 	{
 		material->GetTexture(aiTextureType_SPECULAR, 0, &specularname);
-		texmat.speculartex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(specularname.C_Str())), false);
+		texmat.speculartex = TextureLoader::GetInstance().Load2DTexture(std::string(path + "/" + std::string(specularname.C_Str())));//specular is sRGB created.
 	}
 	if (material->GetTextureCount(aiTextureType_EMISSIVE))
 	{

@@ -56,6 +56,11 @@ Fbo::Fbo(std::vector<unsigned int> dimension, std::vector<FboCompRecord> comp, G
 		}
 	}
 
+	for (int i = 0; i != colorattachment.size(); i++)
+	{
+		colorhandle.push_back(0xFFFFFFFFFFFFFFFF);
+	}
+
 	if (drawbuffers.size())
 	{
 		glFramebufferDrawBuffersEXT(fbo, drawbuffers.size(), &drawbuffers[0]);
@@ -180,6 +185,17 @@ std::vector<Fbo> Fbo::GetCubeMapSubFbo()
 	return subFbo;
 }
 
+
+GLuint64 Fbo::GetColorHandle(int i)
+{
+	if (colorhandle[i] == 0xFFFFFFFFFFFFFFFF)
+	{
+		GLuint64 handle = glGetTextureHandleARB(colorattachment[i]);
+		colorhandle[i] = handle;
+		glMakeTextureHandleResidentARB(handle);
+	}
+	return colorhandle[i];
+}
 
 GLuint64 Fbo::GetDepthHandle()
 {
